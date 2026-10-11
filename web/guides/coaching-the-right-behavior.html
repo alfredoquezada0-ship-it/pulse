@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coaching the Right Behavior</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4EAEF; --dot:#CFD9E1; --card:#FFFFFF; --card-2:#F3F6F8; --ink:#13202A; --muted:#4F5F6A; --line:#D3DCE3;
+  --teal:#0A5C61; --teal-hover:#08494D; --teal-ink:#FFFFFF; --teal-soft:#DCEDEE;
+  --sticky:#FFE27A; --sticky-soft:#FFF3C2; --sticky-ink:#352B00;
+  --ok:#1A6A42; --ok-soft:#DFF1E6; --bad:#A3261D; --bad-soft:#FBE4E1;
+  --shadow:0 1px 2px rgba(19,32,42,.06),0 6px 18px rgba(19,32,42,.07);
+  --display:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D151A; --dot:#1A262E; --card:#15212A; --card-2:#1B2933; --ink:#E5ECF0; --muted:#9FB1BC; --line:#2A3A45;
+    --teal:#5CC4C6; --teal-hover:#7AD3D5; --teal-ink:#05292B; --teal-soft:#123538;
+    --sticky:#EBCB5C; --sticky-soft:#3A3318; --sticky-ink:#221B00;
+    --ok:#74D6A0; --ok-soft:#13301F; --bad:#FF8B80; --bad-soft:#3B1915;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D151A; --dot:#1A262E; --card:#15212A; --card-2:#1B2933; --ink:#E5ECF0; --muted:#9FB1BC; --line:#2A3A45;
+  --teal:#5CC4C6; --teal-hover:#7AD3D5; --teal-ink:#05292B; --teal-soft:#123538;
+  --sticky:#EBCB5C; --sticky-soft:#3A3318; --sticky-ink:#221B00;
+  --ok:#74D6A0; --ok-soft:#13301F; --bad:#FF8B80; --bad-soft:#3B1915;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  min-height:100vh; display:flex; flex-direction:column;
+  background-color:var(--bg);
+  background-image:radial-gradient(var(--dot) 1px, transparent 1.2px);
+  background-size:22px 22px;
+  color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Top bar ---------- */
+.top{
+  position:sticky; top:0; z-index:20; background:var(--card); border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:16px; padding:10px 20px; flex-wrap:wrap;
+}
+.brand{display:flex; align-items:center; gap:12px; min-width:0; flex:1 1 260px}
+.mark{
+  width:38px;height:38px;border-radius:10px;background:var(--teal);color:var(--teal-ink);
+  display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:15px;flex:none
+}
+.t1{font-family:var(--display);font-weight:700;font-size:17px;line-height:1.2}
+.t2{font-size:12.5px;color:var(--muted)}
+.jump select{
+  font:inherit;font-size:14px;color:var(--ink);background:var(--card-2);border:1px solid var(--line);
+  border-radius:10px;padding:9px 34px 9px 12px;min-height:44px;max-width:340px;width:100%;
+  appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 18px) 19px,calc(100% - 13px) 19px;background-size:5px 5px;background-repeat:no-repeat;
+}
+.jump{flex:1 1 240px; display:flex; justify-content:center}
+.right{display:flex;align-items:center;gap:10px}
+.score{
+  font-family:var(--mono);font-size:13.5px;background:var(--teal-soft);color:var(--ink);
+  border-radius:999px;padding:8px 14px;white-space:nowrap;border:1px solid transparent
+}
+.score b{color:var(--teal);font-weight:500}
+.score.pop{animation:pop .35s ease}
+@keyframes pop{50%{transform:scale(1.08)}}
+.icon-btn{
+  width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--card-2);
+  display:grid;place-items:center;cursor:pointer
+}
+.icon-btn:hover{border-color:var(--teal)}
+.icon-btn svg{width:20px;height:20px}
+.progress{height:4px;background:var(--line);position:sticky;top:0;z-index:19}
+.progress i{display:block;height:100%;width:0;background:var(--teal);transition:width .3s ease}
+
+/* ---------- Deck ---------- */
+main{flex:1;padding:24px 16px 28px}
+.slide{
+  display:none;max-width:1120px;margin:0 auto;background:var(--card);border:1px solid var(--line);
+  border-radius:16px;box-shadow:var(--shadow);padding:28px 32px 32px
+}
+.slide.active{display:block;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.meta{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.ticket{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+.col{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:6px;padding:3px 8px;background:var(--teal-soft);color:var(--teal)}
+.col.activity{background:var(--sticky-soft);color:var(--ink)}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.15;letter-spacing:-.01em}
+h1{font-size:clamp(34px,5vw,54px)}
+h2{font-size:clamp(25px,3.2vw,34px);margin-bottom:8px}
+h3{font-size:18px;margin-bottom:6px}
+.lede{color:var(--muted);font-size:17px;max-width:72ch;margin:0 0 22px}
+p{margin:0 0 10px}
+.small{font-size:13.5px;color:var(--muted)}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.end{justify-content:flex-end}
+.g{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.card{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.sticky{background:var(--sticky);color:var(--sticky-ink);border-radius:10px;padding:14px 16px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.sec{margin-top:26px}
+.divider{height:1px;background:var(--line);margin:24px 0}
+
+.btn{
+  border:1px solid var(--line);background:var(--card-2);border-radius:10px;padding:10px 18px;min-height:44px;
+  font-weight:600;cursor:pointer;transition:background .15s,border-color .15s
+}
+.btn:hover{border-color:var(--teal)}
+.btn.primary{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
+.btn.primary:hover{background:var(--teal-hover)}
+.btn.sm{padding:6px 12px;min-height:36px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+
+/* ---------- Footer nav ---------- */
+.nav{
+  position:sticky;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 20px
+}
+#pos{font-family:var(--mono);font-size:13px;color:var(--muted);text-align:center}
+.kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+
+/* ---------- Flip cards ---------- */
+.flip{perspective:1100px;background:none;border:0;padding:0;height:var(--h,210px);cursor:pointer;text-align:left;width:100%}
+.flip-inner{position:relative;display:block;width:100%;height:100%;transition:transform .5s ease;transform-style:preserve-3d}
+.flip.on .flip-inner{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:12px;padding:16px;
+  display:flex;flex-direction:column;gap:6px;overflow:auto
+}
+.front{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.flip:hover .front{border-color:var(--teal)}
+.back{background:var(--sticky);color:var(--sticky-ink);transform:rotateY(180deg);font-size:14.5px;line-height:1.45}
+.ftag{font-family:var(--mono);font-size:11.5px;color:var(--teal);text-transform:uppercase;letter-spacing:.06em}
+.ftitle{font-family:var(--display);font-weight:600;font-size:20px;line-height:1.2}
+.fsub{color:var(--muted);font-size:14px}
+.hint{margin-top:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.hint::before{content:"";width:14px;height:2px;background:var(--teal);border-radius:2px}
+.bk-l{display:block;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.bk-q{display:block;font-style:italic;margin-bottom:6px}
+.bk-t{display:block}
+@media (prefers-reduced-motion: reduce){
+  .flip-inner{transition:none}
+  .slide.active{animation:none}
+}
+
+/* ---------- Three-level chain ---------- */
+.chain{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:center;margin:4px 0 22px}
+.chain .card{text-align:center;padding:12px}
+.chain .card b{display:block;font-family:var(--display);font-size:17px}
+.arrow{color:var(--teal);font-weight:700;font-size:20px}
+@media (max-width:640px){.chain{grid-template-columns:1fr}.arrow{transform:rotate(90deg);justify-self:center}}
+
+/* ---------- MCQ ---------- */
+.mcq{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:18px}
+.q{font-weight:600;font-size:16.5px;margin-bottom:12px}
+.opts{display:grid;gap:8px}
+.opt{
+  display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:11px 14px;min-height:44px;cursor:pointer;transition:border-color .15s,background .15s
+}
+.opt:hover:not(:disabled){border-color:var(--teal)}
+.opt:disabled{cursor:default}
+.letter{font-family:var(--mono);font-size:12.5px;width:24px;height:24px;border-radius:6px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal);flex:none;margin-top:1px}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.right .letter{background:var(--ok);color:var(--card)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.wrong .letter{background:var(--bad);color:var(--card)}
+.fb:empty{display:none}
+.fb{margin-top:12px;background:var(--sticky);color:var(--sticky-ink);border-radius:10px;padding:12px 14px;font-size:15px;animation:fade .2s ease}
+.fb strong{font-weight:600}
+
+/* ---------- Shake ---------- */
+.shake{animation:shake .4s ease}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(4px)}}
+
+/* ---------- Ordering ---------- */
+.ord-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.ord-cols{grid-template-columns:1fr}}
+.pool{display:flex;flex-direction:column;gap:8px}
+.chip-step{
+  text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;min-height:44px;cursor:pointer
+}
+.chip-step:hover{border-color:var(--teal)}
+.chip-step.shake{border-color:var(--bad);background:var(--bad-soft)}
+.placed{margin:0;padding:0;list-style:none;counter-reset:st;display:flex;flex-direction:column;gap:8px;min-height:60px;border:2px dashed var(--line);border-radius:12px;padding:8px}
+.placed li{counter-increment:st;background:var(--sticky);color:var(--sticky-ink);border-radius:8px;padding:10px 12px 10px 44px;position:relative;animation:fade .2s ease}
+.placed li::before{content:counter(st);position:absolute;left:12px;top:9px;font-family:var(--mono);font-size:12px;width:22px;height:22px;border-radius:6px;background:var(--sticky-ink);color:var(--sticky);display:grid;place-items:center}
+.miss{font-family:var(--mono);font-size:13px;color:var(--muted)}
+
+/* ---------- Sorting ---------- */
+.notes{flex-direction:row;flex-wrap:wrap;gap:10px;margin-bottom:18px;min-height:20px}
+.note{
+  background:var(--sticky);color:var(--sticky-ink);border:2px solid transparent;border-radius:6px;
+  padding:10px 12px;width:200px;min-height:84px;text-align:left;font-size:14px;line-height:1.35;cursor:grab;
+  transform:rotate(var(--r,0deg));box-shadow:0 3px 8px rgba(0,0,0,.12);transition:transform .15s,border-color .15s
+}
+.note:hover{transform:rotate(0) translateY(-2px)}
+.note.sel{border-color:var(--teal);transform:rotate(0) translateY(-3px);box-shadow:0 0 0 3px var(--teal-soft),0 6px 14px rgba(0,0,0,.18)}
+.note.shake{border-color:var(--bad)}
+.note.placed-n{width:100%;min-height:0;transform:none;cursor:default;box-shadow:none;background:var(--sticky-soft);color:var(--ink);font-size:13.5px;border-color:transparent}
+.buckets{display:grid;grid-template-columns:repeat(var(--n),1fr);gap:12px}
+@media (max-width:860px){.buckets{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.buckets{grid-template-columns:1fr}}
+.bucket{border:2px dashed var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:150px;transition:border-color .15s,background .15s}
+.bucket.ready{border-color:var(--teal);background:var(--teal-soft)}
+.bucket.over{border-style:solid}
+.bucket-h{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-height:44px}
+.bucket-h:hover{border-color:var(--teal)}
+.bname{font-weight:600;line-height:1.25}
+.place{font-size:12px;color:var(--muted)}
+.kind{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;align-self:flex-start;border-radius:4px;padding:1px 6px}
+.kind.s{background:var(--ok-soft);color:var(--ok)}
+.kind.d{background:var(--bad-soft);color:var(--bad)}
+.kind.j{background:var(--bad-soft);color:var(--bad)}
+.kind.b{background:var(--ok-soft);color:var(--ok)}
+.drop{display:flex;flex-direction:column;gap:6px}
+.log-wrap{margin-top:16px}
+.log{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;max-height:170px;overflow:auto;font-size:13.5px}
+.log:empty::before{content:"Placements will show here.";color:var(--muted)}
+.log li{display:flex;gap:8px;padding:6px 10px;border-radius:8px;background:var(--card-2)}
+.log .tag{font-family:var(--mono);font-size:12px;flex:none;width:76px}
+.log .ok .tag{color:var(--ok)}
+.log .no .tag{color:var(--bad)}
+
+/* ---------- Herzberg scale ---------- */
+.scale{position:relative;display:grid;grid-template-columns:40% 30% 30%;height:64px;border-radius:12px;overflow:visible;margin:46px 0 16px}
+.zone{display:flex;flex-direction:column;justify-content:center;padding:0 12px;font-weight:600;font-size:14px}
+.zone small{font-weight:400;font-family:var(--mono);font-size:12px;opacity:.8}
+.zone.det{background:var(--bad-soft);color:var(--bad);border-radius:12px 0 0 12px}
+.zone.pas{background:var(--card-2);color:var(--muted);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.zone.pro{background:var(--ok-soft);color:var(--ok);border-radius:0 12px 12px 0}
+.marker{position:absolute;top:-40px;transform:translateX(-50%);transition:left .5s cubic-bezier(.3,1.3,.5,1);display:flex;flex-direction:column;align-items:center}
+.marker span{background:var(--teal);color:var(--teal-ink);font-size:12.5px;font-weight:600;border-radius:999px;padding:4px 10px;white-space:nowrap}
+.marker::after{content:"";width:3px;height:52px;background:var(--teal);border-radius:2px}
+.toggle{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 16px;min-height:44px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px}
+.toggle::before{content:"";width:16px;height:16px;border-radius:4px;border:2px solid var(--muted)}
+.toggle[aria-pressed="true"]{border-color:var(--teal);background:var(--teal-soft)}
+.toggle[aria-pressed="true"]::before{background:var(--teal);border-color:var(--teal)}
+.hz-note{margin-top:14px;min-height:52px}
+
+/* ---------- Trees ---------- */
+.tree{display:flex;flex-direction:column;gap:0}
+.node{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;position:relative;cursor:default}
+.node + .node{margin-top:22px}
+.node + .node::before{content:"";position:absolute;left:50%;top:-22px;width:2px;height:22px;background:var(--teal)}
+.nlvl{display:block;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.ntext{display:block;font-weight:500}
+.node.kpi{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.node.kpi .nlvl{color:var(--teal-ink);opacity:.8}
+.node.shown{background:var(--sticky);border-color:var(--sticky);color:var(--sticky-ink);animation:fade .25s ease}
+.node.shown .nlvl{color:var(--sticky-ink);opacity:.7}
+.node.locked{border-style:dashed;cursor:pointer}
+.node.locked .ntext{visibility:hidden;height:0;overflow:hidden}
+.node.locked::after{content:"Tap to reveal";font-size:13px;color:var(--muted)}
+.node.coach.shown{background:var(--ok-soft);border-color:var(--ok);color:var(--ink)}
+.node.coach.shown .nlvl{color:var(--ok);opacity:1}
+
+/* ---------- Matrix ---------- */
+.mx-wrap{display:grid;grid-template-columns:minmax(260px,1fr) 1fr;gap:22px;align-items:start}
+@media (max-width:820px){.mx-wrap{grid-template-columns:1fr}}
+.mx{position:relative;aspect-ratio:1/1;max-width:420px;width:100%;margin-left:26px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px}
+.qd{border-radius:8px;padding:8px;font-size:12px;font-weight:600;color:var(--muted);background:var(--card-2);border:1px solid var(--line)}
+.qd.hot{background:var(--teal-soft);color:var(--teal);border-color:var(--teal)}
+.qd.tr{text-align:right}
+.ax-y{position:absolute;left:-28px;top:50%;transform:translate(-50%,-50%) rotate(-90deg);font-size:12px;color:var(--muted);white-space:nowrap;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.ax-x{text-align:center;font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin:8px 0 0 26px;max-width:420px}
+.dot{position:absolute;width:34px;height:34px;border-radius:50%;background:var(--card);border:2px solid var(--ink);display:grid;place-items:center;font-family:var(--mono);font-size:14px;transform:translate(-50%,50%);transition:background .3s}
+.dot.win{background:var(--sticky);border-color:var(--sticky-ink);color:var(--sticky-ink)}
+.blist{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.bi{display:flex;gap:10px;align-items:flex-start;background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14.5px}
+.bi .letter{background:var(--card);border:1px solid var(--line);color:var(--ink)}
+.bi small{display:block;color:var(--muted);font-size:12.5px}
+
+/* ---------- DIRECT ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{border:1px solid var(--line);background:var(--card-2);border-radius:999px;padding:8px 16px;min-height:44px;cursor:pointer;font-weight:600;font-size:14.5px}
+.tab[aria-selected="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
+.drows{display:flex;flex-direction:column;gap:8px}
+.drow{display:grid;grid-template-columns:52px 170px 1fr;gap:12px;align-items:center;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+@media (max-width:640px){.drow{grid-template-columns:44px 1fr}.drow .dt{grid-column:1/-1}}
+.dl{width:44px;height:44px;border-radius:10px;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:22px}
+.dn{font-weight:600}
+.dn small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.dt .s{display:none}
+.direct[data-session="1"] .s1,.direct[data-session="2"] .s2,.direct[data-session="3"] .s3{display:block}
+.direct:not([data-session="1"]) .drow.chg .dt{background:var(--sticky);color:var(--sticky-ink);border-radius:8px;padding:8px 10px}
+.chg-tag{display:none;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px;opacity:.75}
+.direct:not([data-session="1"]) .drow.chg .chg-tag{display:block}
+
+/* ---------- Timeline ---------- */
+.tl{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;position:relative}
+@media (max-width:860px){.tl{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.tl{grid-template-columns:1fr}}
+.tl-step{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer;min-height:44px}
+.tl-step:hover{border-color:var(--teal)}
+.when{font-family:var(--mono);font-size:12px;color:var(--teal)}
+.tl-step b{font-family:var(--display);font-size:17px}
+.tl-step .doc{display:none;margin-top:6px;background:var(--sticky);color:var(--sticky-ink);border-radius:8px;padding:10px;font-size:13.5px}
+.tl-step.on .doc{display:block;animation:fade .2s ease}
+.tl-step .more{font-size:12px;color:var(--muted)}
+.tl-step.on .more{display:none}
+.doc ul{margin:4px 0 0;padding-left:18px}
+
+/* ---------- Scenario ---------- */
+.scn{display:grid;grid-template-columns:minmax(240px,.9fr) 1.1fr;gap:20px;align-items:start}
+@media (max-width:820px){.scn{grid-template-columns:1fr}}
+.case{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.case dl{margin:10px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14.5px}
+.case dt{color:var(--muted);font-size:13px}
+.case dd{margin:0}
+.verb{font-style:italic;border-left:0;background:var(--card);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:14px}
+
+/* ---------- Cover ---------- */
+.cover-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:center}
+@media (max-width:860px){.cover-grid{grid-template-columns:1fr}}
+.shift{display:flex;flex-direction:column;gap:10px}
+.shift .from{background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:14px;color:var(--muted);text-decoration:line-through;text-decoration-color:var(--bad)}
+.shift .to{transform:rotate(-1deg)}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px}
+@media (max-width:760px){.modes{grid-template-columns:1fr}}
+.mode{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:16px;cursor:pointer;min-height:44px}
+.mode:hover{border-color:var(--teal)}
+.mode[aria-pressed="true"]{border:2px solid var(--teal);background:var(--teal-soft)}
+.mode b{font-family:var(--display);font-size:18px}
+.mode .when{margin-top:4px}
+
+/* ---------- Exam ---------- */
+.ex-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.ex-bar{flex:1;max-width:260px;height:6px;border-radius:6px;background:var(--line);overflow:hidden}
+.ex-bar i{display:block;height:100%;background:var(--teal)}
+.big{font-family:var(--display);font-size:64px;font-weight:700;line-height:1;color:var(--teal)}
+.review{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.review .card{font-size:14.5px}
+
+/* ---------- Template ---------- */
+[hidden]{display:none!important}
+.tpl{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.tpl-head{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--line)}
+@media (max-width:760px){.tpl-head{grid-template-columns:1fr 1fr}}
+.tpl-head label{padding:10px 12px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.tpl-head label:last-child{border-right:0}
+.tpl input,.tpl select,.tpl textarea{font:inherit;font-size:15px;color:var(--ink);background:transparent;border:0;border-bottom:1px dashed var(--line);padding:4px 0;width:100%;text-transform:none;letter-spacing:0;font-weight:400}
+.tpl textarea{resize:vertical;min-height:62px;border:1px dashed var(--line);border-radius:8px;padding:8px 10px;line-height:1.45}
+.tpl input:focus,.tpl select:focus,.tpl textarea:focus{outline:2px solid var(--teal);outline-offset:1px}
+.tpl-body{display:grid;grid-template-columns:1fr 1fr}
+@media (max-width:760px){.tpl-body{grid-template-columns:1fr}}
+.fld{padding:14px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.fld:nth-child(2n){border-right:0}
+.fld.full{grid-column:1/-1;border-right:0}
+.fld .fl{display:flex;gap:10px;align-items:baseline;font-weight:600}
+.fld .num{font-family:var(--mono);font-size:12px;color:var(--teal)}
+.fld .help{font-size:12.5px;color:var(--muted)}
+@media (max-width:600px){.top{gap:10px;padding:10px 16px}.jump{flex:1 1 0;min-width:0}.t2{display:none}.note{width:calc(50% - 5px)}.slide{padding:22px 18px 24px}main{padding:16px 12px 20px}.nav{padding:10px 16px}}
+@media print{
+  body{background:#fff}
+  .top,.progress,.nav,.no-print{display:none!important}
+  main{padding:0}
+  .slide{border:0;box-shadow:none;padding:0;max-width:none}
+  .slide:not(.active){display:none!important}
+  .tpl textarea{border:1px solid #bbb}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">BC</span>
+    <div><div class="t1">Coaching the Right Behavior</div><div class="t2">Supervisor training · MedSupp · BVA · IFM · NPG</div></div>
+  </div>
+  <label class="jump"><span class="sr">Jump to slide</span><select id="jump"></select></label>
+  <div class="right">
+    <div class="score" id="score" aria-live="polite">Correct <b id="sc">0</b>/<b id="st">0</b></div>
+    <button id="theme" class="icon-btn" type="button" aria-label="Toggle dark mode">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+<div class="progress"><i id="bar"></i></div>
+<main id="deck"></main>
+<footer class="nav">
+  <button id="prev" class="btn" type="button">&larr; Previous</button>
+  <span id="pos"></span>
+  <button id="next" class="btn primary" type="button">Next &rarr;</button>
+</footer>
+
+<script>
+/* ================= helpers ================= */
+const REG = {}; let uid = 0; const nid = p => p + (++uid);
+const score = { c: 0, t: 0 };
+function addScore(ok){
+  score.t++; if (ok) score.c++;
+  document.getElementById('sc').textContent = score.c;
+  document.getElementById('st').textContent = score.t;
+  const el = document.getElementById('score'); el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+}
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function shake(el){ el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+const L = 'ABCD';
+
+function flip(front, back, o = {}){
+  return `<button class="flip" type="button" aria-pressed="false"${o.h ? ` style="--h:${o.h}px"` : ''}><span class="flip-inner">
+    <span class="face front">${o.tag ? `<span class="ftag">${o.tag}</span>` : ''}<span class="ftitle">${front}</span>${o.sub ? `<span class="fsub">${o.sub}</span>` : ''}<span class="hint">Tap to flip</span></span>
+    <span class="face back">${back}</span></span></button>`;
+}
+function bk3(label, quote, label2, text, core){
+  return bk(label, quote, label2, text) + `<span class="bk-l">Core behavior</span><span class="bk-t"><b>${core}</b></span>`;
+}
+function bk(label, quote, label2, text){
+  return `<span class="bk-l">${label}</span><span class="bk-q">${quote}</span><span class="bk-l">${label2}</span><span class="bk-t">${text}</span>`;
+}
+function mcq(q, opts, correct, explain, cb){
+  const id = nid('q'); REG[id] = { correct, explain, cb, done: false };
+  return `<div class="mcq" data-mcq="${id}"><p class="q">${q}</p><div class="opts">${opts.map((o, i) =>
+    `<button class="opt" type="button" data-opt="${i}"><span class="letter">${L[i]}</span><span>${o}</span></button>`).join('')}</div><div class="fb" aria-live="polite"></div></div>`;
+}
+function ordering(steps){
+  const id = nid('o'); REG[id] = { steps, next: 0, miss: 0, scored: false };
+  return `<div class="order" data-order="${id}"><div class="ord-cols">
+    <div><div class="lbl">Tap the steps in order</div><div class="pool">${poolHTML(steps)}</div></div>
+    <div><div class="lbl">Your sequence</div><ol class="placed"></ol></div></div>
+    <div class="row" style="margin-top:12px"><button class="btn sm" type="button" data-ord-reset>Reset</button><span class="miss">Wrong taps: <b>0</b></span></div>
+    <div class="fb" aria-live="polite"></div></div>`;
+}
+function poolHTML(steps){ return shuffle(steps.map((s, i) => i)).map(i => `<button class="chip-step" type="button" data-step="${i}">${steps[i]}</button>`).join(''); }
+function sorter(buckets, notes){
+  const id = nid('s'); REG[id] = { buckets, notes, sel: null, tried: {}, placed: 0, right: 0 };
+  return `<div class="sorter" data-sort="${id}">
+    <div class="lbl">Tap a note, then tap a bucket (or drag it)</div>
+    <div class="pool notes">${shuffle(notes.map((n, i) => i)).map(i =>
+      `<button type="button" class="note" draggable="true" data-note="${i}" style="--r:${(Math.random() * 4 - 2).toFixed(1)}deg">${notes[i].t}</button>`).join('')}</div>
+    <div class="buckets" style="--n:${buckets.length}">${buckets.map((b, j) =>
+      `<div class="bucket" data-bucket="${j}"><button type="button" class="bucket-h" data-bucket-btn="${j}">${b.kind ? `<span class="kind ${b.kind}">${{s:'Satisfier',d:'Dissatisfier',j:'Judgment',b:'Behavior'}[b.kind]}</span>` : ''}<span class="bname">${b.name}</span><span class="place">Place here</span></button><div class="drop"></div></div>`).join('')}</div>
+    <div class="log-wrap"><div class="lbl">Results log</div><ol class="log" aria-live="polite"></ol></div>
+    <div class="fb" aria-live="polite"></div></div>`;
+}
+function head(n, col, title, lede){
+  return `<div class="meta"><span class="ticket">BHV-${String(n).padStart(2, '0')}</span><span class="col ${col === 'Activity' || col === 'Scenario' || col === 'Exam' ? 'activity' : ''}">${col}</span></div>
+  <h2>${title}</h2>${lede ? `<p class="lede">${lede}</p>` : ''}`;
+}
+
+/* ================= slides ================= */
+const S = [];
+const add = s => S.push(s);
+
+/* 0 Cover */
+add({ nav: 'Cover & study modes', html: () => `
+  <div class="meta"><span class="ticket">BHV-00</span><span class="col">Start here</span></div>
+  <div class="cover-grid">
+    <div>
+      <p class="lbl">Supervisor training series</p>
+      <h1>Coaching the right behavior</h1>
+      <p class="lede" style="margin-top:12px">How to pick the one behavior worth coaching with each agent, using what members feel on the call, and how to follow up with DIRECT until it sticks.</p>
+    </div>
+    <div class="shift" aria-label="The shift this session builds">
+      <div class="from">“This agent’s CSAT is low.”</div>
+      <div class="arrow" style="text-align:center" aria-hidden="true">&darr;</div>
+      <div class="sticky to"><b>“We’ll work on this observable behavior,</b> because it drives this dissatisfier, and we’ll check it again Thursday.”</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <h3>Pick a study mode</h3>
+  <div class="modes">
+    <button class="mode" type="button" data-mode="full" aria-pressed="true"><b>Full session</b><span class="small">Every concept, activity and the exam. Best the first time.</span><span class="when">19 slides · ~40 min</span></button>
+    <button class="mode" type="button" data-mode="practice" aria-pressed="false"><b>Practice only</b><span class="small">Skip the theory. Sorting, ordering, scenarios and the exam.</span><span class="when">11 slides · ~20 min</span></button>
+    <button class="mode" type="button" data-mode="exam" aria-pressed="false"><b>Exam only</b><span class="small">10 random questions from a bank of 24, plus the coaching template.</span><span class="when">3 slides · ~10 min</span></button>
+  </div>
+  <div class="row" style="margin-top:18px;justify-content:space-between">
+    <p class="small" style="margin:0">Use <span class="kbd">&larr;</span> <span class="kbd">&rarr;</span> to move. All agents, members and calls in this deck are fictional.</p>
+    <button class="btn primary" type="button" data-start>Start &rarr;</button>
+  </div>` });
+
+/* 1 Outcome / driver / behavior */
+add({ nav: 'Outcome vs. driver vs. behavior', html: () => `
+  ${head(1, 'Concept', 'The KPI is the scoreboard, not the play.', 'Three levels. You only coach the last one, but you need all three to pick it.')}
+  <div class="chain" aria-hidden="true">
+    <div class="card"><span class="small">The agent does</span><b>Behavior</b></div><span class="arrow">&rarr;</span>
+    <div class="card"><span class="small">The member feels</span><b>Driver</b></div><span class="arrow">&rarr;</span>
+    <div class="card"><span class="small">The report shows</span><b>Outcome</b></div>
+  </div>
+  <div class="g g3">
+    ${flip('Outcome', bk('What it is', 'MES NPS, CSAT, FCR, AHT, quality score.', 'Why it matters', 'It tells you <b>something</b> is off. It never tells you <b>what</b> to coach. “CSAT 81% vs. 90% goal” is a starting point, not a coaching topic.'), { tag: 'Level 1 · the KPI', sub: 'The number on the report.' })}
+    ${flip('Driver', bk('What it is', 'Satisfiers and dissatisfiers: what the member felt.', 'Where you find it', '“I had to call twice.” “Nobody explained my denial.” Survey verbatims and call listening tell you which driver is moving the number.'), { tag: 'Level 2 · what members feel', sub: 'The reason behind the score.' })}
+    ${flip('Behavior', bk('What it is', 'What the agent says or does on the call.', 'The test', 'You can hear it, count it, and the agent controls it. “Reads the denial code without translating it.” <b>This</b> is what you coach.'), { tag: 'Level 3 · what you coach', sub: 'The thing the agent can change tomorrow.' })}
+  </div>
+  <div class="sec">${mcq('Which of these can you actually coach?', [
+    'Her CSAT dropped 6 points this month.',
+    'Members feel rushed on her calls.',
+    'She starts closing before asking if the member has other questions.',
+    'She needs to care more about members.'], 2,
+    'C is something she says or does, you can count it in calls, and she controls it. A is the outcome, B is the driver, and D is a judgment.')}</div>` });
+
+/* 2 Herzberg */
+add({ nav: 'Satisfiers vs. dissatisfiers', html: () => `
+  ${head(2, 'Concept', '“Not bad” is not the same as “great.”', 'A Herzberg-style idea: some things only cause unhappiness when they go wrong. Others only create delight when they show up. Same call, two separate levers.')}
+  <div class="g g2">
+    <div class="card"><span class="kind d">Dissatisfiers</span><h3 style="margin-top:8px">Remove them to stop detractors</h3><p class="small" style="margin:0">Transfers, dead air, a second call. Members expect these not to happen. Fixing them gets you to neutral, not to a 9 or 10.</p></div>
+    <div class="card"><span class="kind s">Satisfiers</span><h3 style="margin-top:8px">Add them to create promoters</h3><p class="small" style="margin:0">Ownership, plain language, clear next steps. Members don’t expect them, so they notice. This is what turns a 7 into a 9.</p></div>
+  </div>
+  <div class="sec card" data-hz>
+    <div class="lbl">Try it: move the member</div>
+    <div class="scale">
+      <div class="zone det">Detractor <small>0–6</small></div><div class="zone pas">Passive <small>7–8</small></div><div class="zone pro">Promoter <small>9–10</small></div>
+      <div class="marker" style="left:18%"><span>Member</span></div>
+    </div>
+    <div class="row">
+      <button class="toggle" type="button" data-hz-btn="dis" aria-pressed="false">Remove dissatisfiers</button>
+      <button class="toggle" type="button" data-hz-btn="sat" aria-pressed="false">Add satisfiers</button>
+    </div>
+    <div class="sticky hz-note" aria-live="polite">Long hold, a transfer, and a denial nobody explained. This member is a detractor.</div>
+  </div>
+  <div class="sec">${mcq('An agent has zero transfers, no dead air and accurate information. Her surveys are mostly passives (7–8). What is your next coaching move?', [
+    'Nothing. No complaints means she is great.',
+    'Re-coach transfers to be safe.',
+    'Add a satisfier, like setting clear expectations or an ownership statement.',
+    'Coach her to lower AHT.'], 2,
+    'Her dissatisfiers are already handled, so more of the same keeps her at neutral. The jump from 7–8 to 9–10 comes from adding a satisfier.')}</div>` });
+
+/* 3 Satisfiers */
+add({ nav: 'Satisfiers in health insurance calls', html: () => `
+  ${head(3, 'Concept', 'Satisfiers: what makes members say “wow.”', 'Seven that show up again and again on health insurance calls. Flip each one to hear what it sounds like, the behavior behind it, and the core behavior it falls under.')}
+  <div class="g g4">
+    ${flip('Taking ownership', bk3('Sounds like', '“I’ll take care of this for you. Stay with me while I fix it.”', 'Behavior', 'Uses an ownership statement and doesn’t hand the problem back to the member.', 'Take Ownership'), { tag: 'Satisfier 1', h: 265 })}
+    ${flip('Plain-language benefits & claims', bk3('Sounds like', '“Your plan paid $120. The $35 left is your specialist copay.”', 'Behavior', 'Translates codes and terms into what it means for the member’s wallet.', 'LARA (Respond)'), { tag: 'Satisfier 2', h: 265 })}
+    ${flip('Setting expectations', bk3('Sounds like', '“You’ll get a letter in 7–10 business days. If not, call us with this reference number.”', 'Behavior', 'States the next step, the timeline and what the member will receive.', 'Set Clear Expectations'), { tag: 'Satisfier 3', h: 265 })}
+    ${flip('Resolving on first contact', bk3('Sounds like', '“It’s reprocessed now. You won’t need to call back about this.”', 'Behavior', 'Completes the fix on this call and confirms it in the system before closing.', 'Take Ownership'), { tag: 'Satisfier 4', h: 265 })}
+    ${flip('Acknowledging health or financial stress', bk3('Sounds like', '“A surprise bill right after a hospital stay is a lot. Let’s look at it together.”', 'Behavior', 'Names the member’s situation before jumping into the process.', 'Demonstrate Empathy'), { tag: 'Satisfier 5', h: 265 })}
+    ${flip('Proactively addressing related issues', bk3('Sounds like', '“While I have you, your follow-up visit authorization is still pending. Let me check it.”', 'Behavior', 'Scans the account for related open items and raises them unprompted.', 'Discover Needs'), { tag: 'Satisfier 6', h: 265 })}
+    ${flip('Confirming understanding before closing', bk3('Sounds like', '“Just so we’re on the same page, what happens when the letter arrives?”', 'Behavior', 'Asks the member to play back the next step, or summarizes and checks.', 'LARA (Ask)'), { tag: 'Satisfier 7', h: 265 })}
+    <div class="card" style="display:flex;flex-direction:column;justify-content:center;gap:6px"><span class="lbl" style="margin:0">Notice</span><p style="margin:0">Every satisfier has a <b>behavior</b> on the back, and the <b>core behavior</b> it belongs to. The satisfier is what the member feels. The behavior is what you coach, inside one of the 7 core behaviors.</p></div>
+  </div>` });
+
+/* 4 Dissatisfiers */
+add({ nav: 'Common dissatisfiers', html: () => `
+  ${head(4, 'Concept', 'Dissatisfiers: what makes members detractors.', 'Eight you’ll see in verbatims every week. The back of each card shows the member’s words and the agent behavior that usually sits behind them.')}
+  <div class="g g4">
+    ${flip('Having to call again', bk('Member says', '“Third time I’m calling about the same claim.”', 'Behavior behind it', 'Doesn’t verify the fix or explain what happens next.'), { tag: 'Dissatisfier 1', h: 220 })}
+    ${flip('Transferred or bounced around', bk('Member says', '“They passed me to three departments.”', 'Behavior behind it', 'Transfers without checking if they can handle it, or without a warm handoff.'), { tag: 'Dissatisfier 2', h: 220 })}
+    ${flip('Long holds and dead air', bk('Member says', '“I sat there in silence forever.”', 'Behavior behind it', 'Navigates systems without narrating; holds without a time estimate or check-back.'), { tag: 'Dissatisfier 3', h: 220 })}
+    ${flip('Inconsistent information', bk('Member says', '“The last rep told me something different.”', 'Behavior behind it', 'Answers from memory instead of checking the knowledge resource.'), { tag: 'Dissatisfier 4', h: 220 })}
+    ${flip('Insurance jargon', bk('Member says', '“I still don’t know what ‘coinsurance after deductible’ means.”', 'Behavior behind it', 'Uses plan terms without explaining them.'), { tag: 'Dissatisfier 5', h: 220 })}
+    ${flip('Broken callback promises', bk('Member says', '“She said she’d call me back. She never did.”', 'Behavior behind it', 'Promises a callback without a specific time or a logged follow-up.'), { tag: 'Dissatisfier 6', h: 220 })}
+    ${flip('Feeling rushed', bk('Member says', '“He couldn’t wait to hang up on me.”', 'Behavior behind it', 'Talks over the member; closes before asking about other questions.'), { tag: 'Dissatisfier 7', h: 220 })}
+    ${flip('A “no” with no explanation', bk('Member says', '“They just said ‘denied.’ Why?”', 'Behavior behind it', 'Reads the denial without the reason or the member’s options.'), { tag: 'Dissatisfier 8', h: 220 })}
+  </div>` });
+
+/* 5 Observable test */
+add({ nav: 'The observable behavior test', practice: true, html: () => `
+  ${head(5, 'Activity', 'The observable behavior test.', 'If you can’t pass all three checks, you’re coaching a label, and the agent has nothing concrete to change.')}
+  <div class="g g3">
+    <div class="card"><span class="when">Check 1</span><h3>Can you see or hear it?</h3><p class="small" style="margin:0">On a recording, could two supervisors point to the same moment?</p></div>
+    <div class="card"><span class="when">Check 2</span><h3>Can you count it?</h3><p class="small" style="margin:0">“3 of 5 calls” works. “Kind of often” doesn’t.</p></div>
+    <div class="card"><span class="when">Check 3</span><h3>Does the agent control it?</h3><p class="small" style="margin:0">System outages and policy aren’t behaviors. What they say and do is.</p></div>
+  </div>
+  <div class="sec">${sorter([{ name: 'Judgment (a label)', kind: 'j' }, { name: 'Observable behavior', kind: 'b' }], [
+    { t: 'Is apathetic', b: 0 },
+    { t: 'Does not confirm the issue is resolved before closing', b: 1 },
+    { t: 'Has a bad attitude', b: 0 },
+    { t: 'Places the member on hold without saying why or for how long', b: 1 },
+    { t: 'Isn’t customer-focused', b: 0 },
+    { t: 'Uses “EOB” and “deductible” without explaining them', b: 1 },
+    { t: 'Lacks ownership', b: 0 },
+    { t: 'Says “that’s not my department” and transfers', b: 1 },
+    { t: 'Is too slow', b: 0 },
+    { t: 'Goes silent 20+ seconds while searching the system', b: 1 }])}</div>` });
+
+/* 6 Trees */
+const tree = (kpi, drv, beh, coach) => `<div class="tree" data-tree>
+  <div class="node kpi"><span class="nlvl">Outcome · KPI</span><span class="ntext">${kpi}</span></div>
+  <div class="node locked" data-node><span class="nlvl">Driver · dissatisfier</span><span class="ntext">${drv}</span></div>
+  <div class="node locked" data-node><span class="nlvl">Behavior · what they do</span><span class="ntext">${beh}</span></div>
+  <div class="node locked coach" data-node><span class="nlvl">Coach to</span><span class="ntext">${coach}</span></div>
+  <button class="btn sm" type="button" data-tree-next style="margin-top:12px;align-self:flex-start">Reveal next level</button></div>`;
+add({ nav: 'From KPI to driver to behavior', html: () => `
+  ${head(6, 'Concept', 'From KPI to driver to behavior.', 'Build the tree top-down. Start at the number, go through what the member felt, land on what the agent did. Reveal each level.')}
+  <div class="g g3">
+    ${tree('Low FCR', '“I had to call again.”', 'Does not verify resolution or explain what happens next.', 'Confirms the fix in the system and states the next step and timeline before closing.')}
+    ${tree('Low MES NPS', '“Nobody explained my denial.”', 'Reads the denial code without translating it into plain language.', 'Explains the reason in plain words, then the member’s options.')}
+    ${tree('High AHT', '“Long dead air.”', 'Navigates systems in silence instead of narrating.', 'Narrates: “I’m pulling up your claim now, give me a few seconds.”')}
+  </div>
+  <p class="small sec">Notice the third tree: the fix for AHT isn’t “talk faster.” Narrating keeps the member engaged and usually cuts the “are you still there?” loops that stretch the call.</p>` });
+
+/* 7 Build a tree */
+add({ nav: 'Build your own tree', practice: true, html: () => `
+  ${head(7, 'Activity', 'Your turn: build the tree.', 'Read the case, then pick the driver and the behavior. The tree fills in as you go.')}
+  <div class="scn">
+    <div>
+      <div class="case"><span class="lbl">Case · Agent Dana (fictional), MedSupp</span>
+        <dl><dt>CSAT</dt><dd>81% (goal 90%)</dd><dt>Surveys</dt><dd>7 negative this month</dd><dt>Calls</dt><dd>5 reviewed</dd></dl>
+        <div class="verb">“I felt rushed.” · “He didn’t let me finish explaining.” · “Before I could ask about my other bill, he was saying goodbye.”</div>
+        <p class="small" style="margin:10px 0 0">4 of 7 verbatims sound like this. In 4 of 5 calls, Dana talks over the member during the first explanation.</p>
+      </div>
+      <div class="tree sec" style="margin-top:16px">
+        <div class="node kpi"><span class="nlvl">Outcome · KPI</span><span class="ntext">Low CSAT (81%)</span></div>
+        <div class="node locked" data-bt="d"><span class="nlvl">Driver</span><span class="ntext"></span></div>
+        <div class="node locked" data-bt="b"><span class="nlvl">Behavior</span><span class="ntext"></span></div>
+      </div>
+    </div>
+    <div>
+      ${mcq('Step 1. Which driver is moving Dana’s CSAT?', ['Inconsistent information', 'Long holds and dead air', 'Feeling rushed', 'Broken callback promises'], 2,
+        'The verbatims say it in the member’s own words: rushed, not heard, cut off before the second question.', 'bt1')}
+      <div data-bt-step2 hidden style="margin-top:14px">
+      ${mcq('Step 2. Which behavior would you coach?', ['Is impatient with members.', 'Interrupts the member before they finish describing the issue, and closes without asking about other questions.', 'Has low CSAT on long calls.', 'Needs more empathy.'], 1,
+        'B passes the test: you can hear it, count it (4 of 5 calls) and Dana controls it. A and D are labels; C is the outcome again.', 'bt2')}
+      </div>
+    </div>
+  </div>` });
+
+/* 8 Sort behavior → driver */
+add({ nav: 'Map behaviors to drivers', practice: true, html: () => `
+  ${head(8, 'Activity', 'Which driver does each behavior push?', 'Sort each behavior into the satisfier or dissatisfier it drives. Some help, some hurt.')}
+  ${sorter([
+    { name: 'Had to call again', kind: 'd' }, { name: 'Long holds / dead air', kind: 'd' },
+    { name: 'Plain-language explanation', kind: 's' }, { name: 'Clear expectations', kind: 's' }], [
+    { t: 'Closes without confirming the claim was reprocessed', b: 0 },
+    { t: 'Doesn’t check for other open items on the account', b: 0 },
+    { t: 'Searches the system for 40 seconds without speaking', b: 1 },
+    { t: 'Puts the member on hold with no time estimate or check-back', b: 1 },
+    { t: 'Explains coinsurance as “you pay 20%, the plan pays 80%”', b: 2 },
+    { t: 'Walks through the EOB line by line in dollars', b: 2 },
+    { t: 'Tells the member which letter they’ll get and when', b: 3 },
+    { t: 'Gives a reference number and what to do if nothing arrives', b: 3 }])}` });
+
+/* 9 Ordering */
+add({ nav: 'Steps to identify the behavior', practice: true, html: () => `
+  ${head(9, 'Activity', 'Put the steps in order.', 'This is the path from “the number is low” to a behavior you can write on the coaching form. A wrong tap makes the step shake.')}
+  ${ordering([
+    'Review the agent’s data and survey verbatims',
+    'Listen to 3–5 calls (not just one)',
+    'Find the pattern that repeats across calls',
+    'Tie it to a satisfier or dissatisfier',
+    'Pick ONE behavior',
+    'Define it in one observable sentence'])}` });
+
+/* 10 Matrix */
+add({ nav: 'Prioritize: impact vs. frequency', practice: true, html: () => `
+  ${head(10, 'Activity', 'One behavior at a time. Which one first?', 'Plot each behavior by how often it happens and how much it moves the KPI. Coach the top-right one. Everything else waits.')}
+  <div class="mx-wrap">
+    <div>
+      <div class="mx" aria-label="Impact versus frequency matrix">
+        <div class="qd">Quick fix / refresher</div><div class="qd hot tr">Coach first</div>
+        <div class="qd">Let it go for now</div><div class="qd tr">Mention it, don’t make it the focus</div>
+        <span class="ax-y">Impact on KPI &rarr;</span>
+        <span class="dot" data-dot="A" style="left:78%;bottom:80%">A</span>
+        <span class="dot" data-dot="B" style="left:90%;bottom:20%">B</span>
+        <span class="dot" data-dot="C" style="left:20%;bottom:86%">C</span>
+        <span class="dot" data-dot="D" style="left:16%;bottom:16%">D</span>
+      </div>
+      <div class="ax-x">Frequency in reviewed calls &rarr;</div>
+    </div>
+    <div>
+      <div class="lbl">Agent Luis (fictional), BVA · 5 calls reviewed</div>
+      <div class="blist">
+        <div class="bi"><span class="letter">A</span><span>Uses “deductible” and “EOB” without explaining them<small>4 of 5 calls · 5 detractor verbatims mention confusion</small></span></div>
+        <div class="bi"><span class="letter">B</span><span>Doesn’t use the member’s name<small>5 of 5 calls · not mentioned in any verbatim</small></span></div>
+        <div class="bi"><span class="letter">C</span><span>Gave outdated info on a plan benefit<small>1 of 5 calls · caused a repeat call</small></span></div>
+        <div class="bi"><span class="letter">D</span><span>Greeting runs a few seconds long<small>1 of 5 calls · no survey impact</small></span></div>
+      </div>
+      ${mcq('Which behavior is Luis’s coaching focus?', ['A · jargon without explanation', 'B · not using the name', 'C · outdated benefit info', 'D · long greeting'], 0,
+        'A is frequent AND it’s what detractors are complaining about. One exception: C is an accuracy error, so correct it the same day as a quick knowledge fix. That’s a must, not a coaching-priority choice. B and D wait.', 'mx')}
+    </div>
+  </div>` });
+
+/* 11 DIRECT */
+const drow = (l, n, sub, s1, s2, s3, chg) => `<div class="drow${chg ? ' chg' : ''}"><div class="dl">${l}</div><div class="dn">${n}<small>${sub}</small></div>
+  <div class="dt"><span class="chg-tag">What changes</span><span class="s s1">${s1}</span><span class="s s2">${s2}</span><span class="s s3">${s3}</span></div></div>`;
+add({ nav: 'Following up with DIRECT', html: () => `
+  ${head(11, 'Concept', 'DIRECT doesn’t reset every session.', 'Session 1 picks the behavior. Sessions 2 and 3 build on it. Switch tabs to see how each step changes.')}
+  <div class="direct" data-direct data-session="1">
+    <div class="tabs" role="tablist" aria-label="Session">
+      <button class="tab" type="button" role="tab" data-sess="1" aria-selected="true">Session 1 · Initial</button>
+      <button class="tab" type="button" role="tab" data-sess="2" aria-selected="false">Session 2 · Follow-up</button>
+      <button class="tab" type="button" role="tab" data-sess="3" aria-selected="false">Session 3 · Lock it in</button>
+    </div>
+    <div class="drows">
+      ${drow('D', 'Develop Rapport', 'Build trust first', 'A short, real check-in before any numbers.', 'Pick up from last week: “How did the new close feel on your calls?”', 'Keep it brief. The trust is built; one personal touch, then focus.', true)}
+      ${drow('I', 'Indicate Focus', 'Set the focus', 'One behavior, why it matters to the member, plus a verbatim and the KPI.', 'Recall the last commitment in the agent’s words: “What did we agree you’d try?” Then the count from new calls (“4 of 5”).', 'Recall the commitment and the session 2 adjustment. Show the trend across sessions.', true)}
+      ${drow('R', 'Reinforce / Recognize', 'Name what worked', 'Recognize a real strength you heard in the calls.', 'Recognize concrete progress on THAT behavior: “In 3 of 4 calls you narrated your search.”', 'Recognize consistency. Name it as a habit, not a good day.', true)}
+      ${drow('E', 'Engage in Self-Discovery', 'Ask, don’t tell', 'Play a call and ask open questions so the agent spots the moment.', 'Play a new call: does the behavior show up without prompting? Let the agent judge it first.', 'Try a harder call type (a denial, an upset member). Ask: “What would you do here?”', true)}
+      ${drow('C', 'Cause of Gap', 'Find the why', 'Why does it happen: knowledge, skill, will, or tool/process?', 'If it didn’t improve: did the cause change, or did we misread it?', 'If it slipped: what triggered the relapse?', true)}
+      ${drow('T', 'Tweak & Timeline', 'Commit and date it', 'SMART commitment plus a follow-up date.', 'Adjust the plan: keep it, raise the bar, or change the tactic.', 'Close the loop, or set a light maintenance check.', true)}
+    </div>
+  </div>
+  <p class="small" style="margin-top:10px">Same six DIRECT steps as the Coaching with DIRECT deck.</p>
+  <div class="sec">${mcq('Session 2: the agent narrated system searches in only 1 of 4 calls. What does the C step look like?', [
+    'Repeat the same plan, just push harder.',
+    'Drop it and pick a new behavior.',
+    'Ask whether the cause changed. Maybe she doesn’t know what to say while searching.',
+    'Escalate to a formal warning.'], 2,
+    'No progress is data. If the cause is “I don’t know what to say,” the fix is a script she can use, not more pressure.')}</div>` });
+
+/* 12 Cadence */
+const tl = (when, t, d, docs) => `<button class="tl-step" type="button" aria-expanded="false"><span class="when">${when}</span><b>${t}</b><span class="small">${d}</span><span class="more">Tap: what to document</span><span class="doc"><b style="font-size:13px">Document</b><ul>${docs.map(x => `<li>${x}</li>`).join('')}</ul></span></button>`;
+add({ nav: 'Follow-up cadence', html: () => `
+  ${head(12, 'Concept', 'The weekly follow-up rhythm.', 'Coaching isn’t a meeting. It’s a weekly loop. Tap each step to see what goes in the log.')}
+  <div class="tl">
+    ${tl('Mon – Tue', 'Setting Goals + Skill Transfer', 'Full DIRECT. Agree on ONE behavior, then practice the on-call action.', ['Core behavior (1 of 7) and the behavior in one sentence', 'Root cause: knowledge, skill, will or tool/process', 'Evidence: call IDs + verbatims', 'SMART commitment in the agent’s words', 'Coaching tool used for each session'])}
+    ${tl('Wed – Thu', 'Monitor', 'Listen to 3–5 new calls. Count only the committed action.', ['Behavior count (e.g., 4 of 5)', 'Call IDs listened', 'Coaching tool (Remote Call Listening or SBS)'])}
+    ${tl('Fri', 'Kudos / Accountability', 'Recognize it if it was met. If not, hold the line and adjust the plan.', ['Result: Met, Partially met or Not met', 'Recognition given, or the adjustment agreed', 'Sessions held vs. planned'])}
+    ${tl('When it holds', 'Close the loop', 'The behavior shows up across two Fridays in a row.', ['Result: behavior + KPI movement', 'Next core behavior, or a maintenance check'])}
+  </div>
+  <div class="sec">${mcq('When do you close a coaching loop?', [
+    'After the first session, if the agent agrees.',
+    'The first time the KPI hits goal.',
+    'When the behavior shows up consistently across verification listens.',
+    'After 30 days, no matter what.'], 2,
+    'You close on the behavior, not the calendar or one good KPI week. The KPI follows, often with a lag.')}</div>` });
+
+/* 13-15 Scenarios */
+const scen = (n, title, caseHTML, q, opts, c, e) => ({ nav: 'Scenario: ' + title.replace(/[“”.]/g, ''), practice: true, html: () => `
+  ${head(n, 'Scenario', title, '')}
+  <div class="scn"><div class="case">${caseHTML}</div><div>${mcq(q, opts, c, e)}</div></div>` });
+add(scen(13, '“The behavior improved but the KPI didn’t move.”',
+  `<span class="lbl">Agent Marisol (fictional), NPG</span><dl><dt>Behavior</dt><dd>Explain denials in plain language</dd><dt>Before</dt><dd>1 of 5 calls</dd><dt>Now</dt><dd>5 of 5 calls, two checks in a row</dd><dt>MES NPS</dt><dd>Flat after 2 weeks · 6 surveys</dd></dl>
+   <div class="verb">Newest detractor: “I was on hold forever before anyone picked up.”</div>`,
+  'What’s the best read?', [
+    'The coaching failed. Switch behaviors.',
+    'Coach her on NPS directly.',
+    'Check the survey lag and sample size, re-read the verbatims, and keep tracking.',
+    'Close it. The behavior is done.'], 2,
+  'Six surveys in two weeks is noise, and surveys lag. The newest detractor is about queue wait, which she doesn’t control. Keep the behavior, keep counting, and look for the next dissatisfier she does control.'));
+add(scen(14, '“Two good weeks, then a relapse.”',
+  `<span class="lbl">Agent Kevin (fictional), IFM</span><dl><dt>Behavior</dt><dd>Narrate while searching systems</dd><dt>Weeks 1–2</dt><dd>4 of 5, then 5 of 5 calls</dd><dt>Week 3</dt><dd>1 of 5 calls · high-volume week</dd></dl>
+   <div class="verb">Kevin: “It was crazy busy. I just went into autopilot.”</div>`,
+  'What do you do?', [
+    'Start over with a different behavior.',
+    'Treat it as normal: recall the commitment, find the trigger (volume), and reset a short check-in.',
+    'Log it as a coaching failure.',
+    'Wait. It’ll come back on its own.'], 1,
+  'Relapse under pressure is how habits form, not proof they failed. Name the trigger, plan for it (“when the queue is red, I still say one line”), and check again in a few days.'));
+add(scen(15, '“The agent has 4 issues. Which first?”',
+  `<span class="lbl">Agent Priya (fictional), MedSupp · 5 calls</span><dl>
+   <dt>(a)</dt><dd>Holds with no check-back · 4 of 5 · verbatims: “left on hold forever”</dd>
+   <dt>(b)</dt><dd>Skips the member’s name at closing · 5 of 5 · no verbatims</dd>
+   <dt>(c)</dt><dd>Wrong info on a plan benefit · 1 of 5</dd>
+   <dt>(d)</dt><dd>“Sounds flat”</dd></dl>`,
+  'What’s your plan?', [
+    'Coach all four this week while you have her attention.',
+    'Start with (b). It’s the most frequent.',
+    'Start with (d). Tone affects everything.',
+    'Correct (c) today as a knowledge fix, then coach (a) as the ONE behavior.'], 3,
+  '(c) is an accuracy error: fix it the same day, no debate. (a) is frequent and members are complaining about it, so it’s the focus. (b) waits. (d) is a judgment; define it as a behavior before it can be coached.'));
+
+/* 16 Mistakes */
+add({ nav: 'Common mistakes', practice: true, html: () => `
+  ${head(16, 'Concept', 'Five mistakes that kill coaching.', 'Flip each one to see what to do instead.')}
+  <div class="g g3">
+    ${flip('Coaching the KPI', bk('Sounds like', '“Your CSAT has to go up.”', 'Instead', 'Name the behavior: “Let’s confirm the fix before you close.”'), { tag: 'Mistake 1', h: 200 })}
+    ${flip('Fixing three things at once', bk('Sounds like', '“Holds, jargon and your closing this week.”', 'Instead', 'One behavior. The next one starts when this one holds.'), { tag: 'Mistake 2', h: 200 })}
+    ${flip('Coaching without listening', bk('Sounds like', '“I saw your numbers, so…”', 'Instead', '3–5 calls minimum. One call is an anecdote.'), { tag: 'Mistake 3', h: 200 })}
+    ${flip('Ignoring survey verbatims', bk('Sounds like', '“I just looked at the score.”', 'Instead', 'Verbatims tell you which driver. Read them before you listen.'), { tag: 'Mistake 4', h: 200 })}
+    ${flip('No follow-up', bk('Sounds like', '“We talked about it last month.”', 'Instead', 'Put the follow-up date in the commitment. No date, no coaching.'), { tag: 'Mistake 5', h: 200 })}
+  </div>
+  <div class="sec">${mcq('A supervisor opens with: “This week let’s work on your holds, your jargon and your closing.” Which mistake is it?', [
+    'Coaching the KPI', 'Fixing three things at once', 'No follow-up', 'Ignoring verbatims'], 1,
+    'Three behaviors means none gets enough practice to stick. Pick the one with the highest impact and frequency.')}</div>` });
+
+/* 17 Exam */
+add({ nav: 'Final exam', practice: true, exam: true, html: () => `
+  ${head(17, 'Exam', 'Final exam.', '10 random questions from a bank of 24. Answers count toward your score in the top bar. Retake as many times as you like; you’ll get a new mix.')}
+  <div class="mcq" id="exam-box">
+    <div class="row" style="justify-content:space-between">
+      <div><b>Ready?</b><p class="small" style="margin:0">About 5 minutes. You’ll see the explanation after each answer.</p></div>
+      <button class="btn primary" type="button" data-exstart>Start exam</button>
+    </div>
+  </div>` });
+
+/* 18 Template */
+add({ nav: 'Template: one-behavior coaching plan', exam: true, html: () => `
+  ${head(18, 'Tool', 'One-behavior coaching plan.', 'Use one per agent, per behavior. Type straight into the fields and print, or print it blank for your next session.')}
+  <div class="tpl" id="tpl">
+    <div class="tpl-head">
+      <label>Agent<input type="text" placeholder="Name"></label>
+      <label>Supervisor<input type="text" placeholder="Name"></label>
+      <label>LOB<select><option>MedSupp</option><option>BVA</option><option>IFM</option><option>NPG</option></select></label>
+      <label>Session date<input type="date"></label>
+    </div>
+    <div class="tpl-body">
+      <div class="fld"><span class="fl"><span class="num">01</span>Core behavior</span><span class="help">One of the 7 core behaviors.</span><select data-s="core" aria-label="Core behavior"><option value=""></option><option>LARA</option><option>Take Ownership</option><option>Set Clear Expectations</option><option>Discover Needs</option><option>Be Warm &amp; Friendly</option><option>Show Appreciation</option><option>Demonstrate Empathy</option></select></div>
+      <div class="fld"><span class="fl"><span class="num">02</span>Root cause</span><span class="help">Why this behavior was selected.</span><select data-s="rc" aria-label="Root cause"><option value=""></option><option>Knowledge</option><option>Skill</option><option>Will</option><option>Tool/Process</option></select></div>
+      <div class="fld"><span class="fl"><span class="num">03</span>Behavior to coach</span><span class="help">One observable sentence. Passes see / count / control.</span><textarea data-f="beh"></textarea></div>
+      <div class="fld"><span class="fl"><span class="num">04</span>Satisfier or dissatisfier it drives</span><span class="help">What the member feels when this happens.</span><textarea data-f="drv"></textarea></div>
+      <div class="fld full"><span class="fl"><span class="num">05</span>Evidence (calls + verbatims)</span><span class="help">Call IDs, the count (e.g., 4 of 5), and 1–2 verbatims.</span><textarea data-f="evd"></textarea></div>
+      <div class="fld full"><span class="fl"><span class="num">06</span>SMART commitment</span><span class="help">Specific, measurable, achievable, relevant, time-bound. In the agent’s words.</span><textarea data-f="smt"></textarea></div>
+      <div class="fld"><span class="fl"><span class="num">07</span>Follow-up date</span><span class="help">Monitor (Wed–Thu) and Kudos/Accountability (Fri).</span><textarea data-f="fup"></textarea></div>
+      <div class="fld"><span class="fl"><span class="num">08</span>Result</span><span class="help">Behavior count, KPI movement, next step.</span><textarea data-f="res"></textarea></div>
+    </div>
+  </div>
+  <div class="row no-print" style="margin-top:14px">
+    <button class="btn" type="button" data-tpl="example">Fill with example</button>
+    <button class="btn" type="button" data-tpl="clear">Clear</button>
+    <button class="btn primary" type="button" data-tpl="print">Print</button>
+  </div>` });
+
+/* ================= exam bank (correct answer first; shuffled at render) ================= */
+const BANK = [
+  { q: 'Which of these is an outcome?', o: ['MES NPS', 'The member felt rushed', 'Interrupts the member', 'Explains benefits in plain language'], e: 'Outcomes are the KPIs: MES NPS, CSAT, FCR, AHT, quality.' },
+  { q: 'Which of these is a driver?', o: ['The member had to call again', 'FCR 84%', 'Doesn’t verify resolution', 'AHT 9:30'], e: 'Drivers are what the member feels: satisfiers and dissatisfiers.' },
+  { q: 'Which is an observable behavior?', o: ['Places the member on hold without saying why', 'Is lazy', 'Doesn’t care', 'Has low quality'], e: 'You can hear it, count it, and the agent controls it.' },
+  { q: 'Removing a dissatisfier usually…', o: ['Prevents detractors but doesn’t create promoters', 'Creates promoters', 'Has no effect on surveys', 'Raises AHT'], e: 'Fixing what went wrong gets you to neutral. “Not bad” isn’t “great.”' },
+  { q: 'To move passives to promoters, you need to…', o: ['Add satisfiers', 'Only remove transfers', 'Shorten calls', 'Read the script word for word'], e: 'Satisfiers like ownership and clear expectations create the 9s and 10s.' },
+  { q: 'How many calls should you listen to before choosing a behavior?', o: ['3–5', '1', 'None, the data is enough', '20 or more, every time'], e: 'One call is an anecdote. 3–5 shows the pattern.' },
+  { q: 'A behavior passes the observable test when…', o: ['You can see or hear it, count it, and the agent controls it', 'The agent agrees with it', 'It shows up in the KPI', 'QA flagged it once'], e: 'All three checks, or you are coaching a label.' },
+  { q: 'Low FCR, and verbatims say “I had to call back.” The likely behavior is…', o: ['Closes without verifying resolution or explaining next steps', 'Long greeting', 'Uses the member’s name too often', 'Speaks fast in the opening'], e: 'Repeat calls come from unverified fixes and unclear next steps.' },
+  { q: 'Verbatim: “Nobody explained my denial.” The likely behavior is…', o: ['Reads the denial code without translating it', 'Transfers too quickly', 'Long hold times', 'Forgets the closing script'], e: 'The fix is the reason in plain words, plus the member’s options.' },
+  { q: 'High AHT caused by dead air. What do you coach?', o: ['Narrate while navigating systems', 'Rush the member', 'Skip verification', 'Transfer sooner'], e: 'Narration keeps the member engaged and cuts “are you still there?” loops.' },
+  { q: 'How many behaviors should you coach at a time?', o: ['One', 'Three', 'Every QA miss', 'As many as the agent will accept'], e: 'One behavior at a time, until it holds.' },
+  { q: 'On the impact vs. frequency matrix, you coach first the behavior that is…', o: ['High impact, high frequency', 'Low impact, high frequency', 'High impact, low frequency', 'Low impact, low frequency'], e: 'Top-right: it happens a lot and it moves the KPI.' },
+  { q: 'A rare but high-impact accuracy error (wrong benefit info) should be…', o: ['Corrected right away as a knowledge fix', 'Ignored because it’s rare', 'The main coaching focus for a month', 'Left for QA to catch'], e: 'Accuracy errors get fixed the same day, outside the coaching-priority choice.' },
+  { q: 'In a follow-up session, the I (Indicate Focus) step is used to…', o: ['Recall the last commitment', 'Introduce a brand-new behavior', 'Share team rankings', 'Skip straight to the plan'], e: 'Have the agent say the commitment in their own words.' },
+  { q: 'In session 2, R (Reinforce / Recognize) focuses on…', o: ['Concrete progress on the coached behavior', 'General praise', 'The KPI only', 'Other agents’ results'], e: '“In 3 of 4 calls you narrated your search.” Specific beats general.' },
+  { q: 'Session 2, no improvement. The C (Cause of Gap) step asks…', o: ['Did the cause change, or did we misread it?', 'Who is to blame?', 'Should we escalate?', 'Can we skip this behavior?'], e: 'No progress is information about the cause.' },
+  { q: 'In follow-up sessions, the T (Tweak & Timeline) step means…', o: ['Adjust the plan: keep it, raise the bar, or change the tactic', 'Start a new plan from scratch', 'Close the loop no matter what', 'Write a warning'], e: 'The plan evolves with what you see in the calls.' },
+  { q: 'When do you check whether the coached behavior is showing up on calls?', o: ['Wednesday–Thursday, in Monitor', 'Next month', 'At the next MBR', 'Only if the agent asks'], e: 'Monitor comes right after Setting Goals and Skill Transfer, so Friday’s Kudos/Accountability is based on evidence.' },
+  { q: 'You close the coaching loop when…', o: ['The behavior holds across verification listens', 'The agent signs the form', 'The KPI hits goal once', '30 days have passed'], e: 'Close on the behavior, not the calendar.' },
+  { q: 'The behavior improved, but the KPI is flat after two weeks. You…', o: ['Check lag, sample size and verbatims, and keep tracking', 'Switch behaviors right away', 'Coach the KPI directly', 'Stop the follow-up'], e: 'Surveys lag and small samples are noisy.' },
+  { q: 'Two good weeks, then a relapse in a high-volume week. You…', o: ['Find the trigger and reset a short check-in', 'Start a different behavior', 'Log it as a failure', 'Wait for it to fix itself'], e: 'Relapse under pressure is part of building the habit.' },
+  { q: 'Which is a SMART commitment?', o: ['In my next 20 calls, I’ll confirm the fix and state the next step before closing. We review 5 calls Thursday.', 'I’ll try to do better.', 'I’ll improve my CSAT.', 'I’ll be more empathetic.'], e: 'Specific behavior, a number, and a date.' },
+  { q: 'Which line is an example of “proactively addressing related issues”?', o: ['“While I have you, your other claim is pending. Let me check it.”', '“Is there anything else?”', '“Please hold.”', '“That’s a different department.”'], e: 'The agent raises the related item before the member has to.' },
+  { q: 'Where do you find which driver matters most to members?', o: ['Survey verbatims', 'The AHT report', 'Schedule adherence', 'The agent’s opinion'], e: 'Verbatims are the member’s words. Read them before you listen.' }
+];
+
+/* ================= render ================= */
+const deck = document.getElementById('deck');
+deck.innerHTML = S.map((s, i) => `<section class="slide" data-i="${i}" aria-label="${s.nav}">${s.html()}</section>`).join('');
+const slides = [...deck.querySelectorAll('.slide')];
+
+const MODES = {
+  full: S.map((s, i) => i),
+  practice: [0, ...S.map((s, i) => s.practice ? i : -1).filter(i => i > 0)],
+  exam: [0, ...S.map((s, i) => s.exam ? i : -1).filter(i => i > 0)]
+};
+let seq = MODES.full, pos = 0;
+const jump = document.getElementById('jump');
+function buildJump(){
+  jump.innerHTML = seq.map((si, k) => `<option value="${k}">${String(k + 1).padStart(2, '0')} · ${S[si].nav}</option>`).join('');
+}
+function go(k){
+  pos = Math.max(0, Math.min(seq.length - 1, k));
+  slides.forEach(el => el.classList.remove('active'));
+  slides[seq[pos]].classList.add('active');
+  jump.value = pos;
+  document.getElementById('bar').style.width = ((pos + 1) / seq.length * 100) + '%';
+  document.getElementById('pos').textContent = `${pos + 1} / ${seq.length}`;
+  document.getElementById('prev').disabled = pos === 0;
+  const nx = document.getElementById('next'); nx.disabled = pos === seq.length - 1;
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+buildJump(); go(0);
+jump.addEventListener('change', () => go(+jump.value));
+document.getElementById('prev').addEventListener('click', () => go(pos - 1));
+document.getElementById('next').addEventListener('click', () => go(pos + 1));
+document.addEventListener('keydown', e => {
+  const t = e.target.tagName;
+  if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT') return;
+  if (e.key === 'ArrowRight') { go(pos + 1); }
+  else if (e.key === 'ArrowLeft') { go(pos - 1); }
+});
+document.getElementById('theme').addEventListener('click', () => {
+  const root = document.documentElement;
+  const cur = root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  root.dataset.theme = cur === 'dark' ? 'light' : 'dark';
+});
+
+/* ================= interactions ================= */
+function answerMCQ(btn){
+  const box = btn.closest('[data-mcq]'); const st = REG[box.dataset.mcq];
+  if (st.done) return; st.done = true;
+  const i = +btn.dataset.opt, ok = i === st.correct;
+  const opts = box.querySelectorAll('.opt');
+  opts.forEach((o, k) => { o.disabled = true; if (k === st.correct) o.classList.add('right'); });
+  if (!ok) btn.classList.add('wrong');
+  box.querySelector('.fb').innerHTML = `<strong>${ok ? 'Correct.' : 'Not quite.'}</strong> ${st.explain}`;
+  addScore(ok);
+  if (st.cb && HOOKS[st.cb]) HOOKS[st.cb](box);
+}
+const HOOKS = {
+  bt1(box){
+    const sl = box.closest('.slide');
+    const n = sl.querySelector('[data-bt="d"]'); n.querySelector('.ntext').textContent = '“I felt rushed.”'; n.classList.replace('locked', 'shown');
+    const s2 = sl.querySelector('[data-bt-step2]'); s2.hidden = false;
+  },
+  bt2(box){
+    const n = box.closest('.slide').querySelector('[data-bt="b"]');
+    n.querySelector('.ntext').textContent = 'Interrupts before the member finishes; closes without asking about other questions.';
+    n.classList.replace('locked', 'shown');
+  },
+  mx(box){ box.closest('.slide').querySelector('[data-dot="A"]').classList.add('win'); }
+};
+
+function orderTap(btn){
+  const box = btn.closest('[data-order]'); const st = REG[box.dataset.order];
+  const i = +btn.dataset.step;
+  if (i === st.next){
+    const li = document.createElement('li'); li.textContent = st.steps[i];
+    box.querySelector('.placed').appendChild(li); btn.remove(); st.next++;
+    if (st.next === st.steps.length){
+      if (!st.scored){ st.scored = true; addScore(st.miss === 0); }
+      box.querySelector('.fb').innerHTML = st.miss === 0
+        ? '<strong>Perfect order.</strong> Data and verbatims first, then calls, then the pattern. You only pick a behavior once you can tie it to what members feel.'
+        : `<strong>Done, with ${st.miss} wrong tap${st.miss > 1 ? 's' : ''}.</strong> The trap is jumping to a behavior after one call. Data and verbatims first, then 3–5 calls, then the pattern.`;
+    }
+  } else {
+    st.miss++; box.querySelector('.miss b').textContent = st.miss; shake(btn);
+  }
+}
+function orderReset(box){
+  const st = REG[box.dataset.order]; st.next = 0; st.miss = 0;
+  box.querySelector('.pool').innerHTML = poolHTML(st.steps);
+  box.querySelector('.placed').innerHTML = ''; box.querySelector('.miss b').textContent = '0';
+  box.querySelector('.fb').innerHTML = '';
+}
+
+function sortSelect(note){
+  const box = note.closest('[data-sort]'); const st = REG[box.dataset.sort];
+  box.querySelectorAll('.note.sel').forEach(n => n !== note && n.classList.remove('sel'));
+  note.classList.toggle('sel');
+  st.sel = note.classList.contains('sel') ? +note.dataset.note : null;
+  box.querySelectorAll('.bucket').forEach(b => b.classList.toggle('ready', st.sel !== null));
+}
+function sortPlace(box, j){
+  const st = REG[box.dataset.sort]; if (st.sel === null) return;
+  const i = st.sel, note = box.querySelector(`.note[data-note="${i}"]`); if (!note) return;
+  const n = st.notes[i], ok = n.b === j, log = box.querySelector('.log');
+  const first = !st.tried[i]; st.tried[i] = true;
+  if (first) addScore(ok);
+  const li = document.createElement('li');
+  if (ok){
+    if (first) st.right++;
+    note.classList.remove('sel'); note.classList.add('placed-n'); note.disabled = true; note.draggable = false;
+    box.querySelector(`.bucket[data-bucket="${j}"] .drop`).appendChild(note);
+    st.placed++; st.sel = null;
+    box.querySelectorAll('.bucket').forEach(b => b.classList.remove('ready'));
+    li.className = 'ok'; li.innerHTML = `<span class="tag">Correct</span><span>${n.t} &rarr; ${st.buckets[j].name}</span>`;
+  } else {
+    shake(note);
+    li.className = 'no'; li.innerHTML = `<span class="tag">Try again</span><span>${n.t} isn’t “${st.buckets[j].name}”</span>`;
+  }
+  log.prepend(li);
+  if (st.placed === st.notes.length){
+    box.querySelector('.fb').innerHTML = `<strong>${st.right} of ${st.notes.length} on the first try.</strong> ${st.right === st.notes.length ? 'Clean sort.' : 'Check the log for the ones that bounced.'}`;
+  }
+}
+
+function hzUpdate(box){
+  const dis = box.querySelector('[data-hz-btn="dis"]').getAttribute('aria-pressed') === 'true';
+  const sat = box.querySelector('[data-hz-btn="sat"]').getAttribute('aria-pressed') === 'true';
+  const map = {
+    'false-false': [18, 'Long hold, a transfer, and a denial nobody explained. This member is a detractor.'],
+    'true-false': [55, 'No hold, no transfer, correct info. Nothing went wrong… and nothing stood out. Passive.'],
+    'false-true': [32, 'The agent was warm and proactive, but the member still had to call twice. Satisfiers don’t cancel out a dissatisfier.'],
+    'true-true': [87, 'Nothing went wrong, AND the agent owned it, explained it plainly and set expectations. Promoter.']
+  }[dis + '-' + sat];
+  box.querySelector('.marker').style.left = map[0] + '%';
+  box.querySelector('.hz-note').textContent = map[1];
+}
+
+/* exam */
+let EX = null;
+function examStart(){
+  const qs = shuffle(BANK).slice(0, 10).map(b => { const idx = shuffle([0, 1, 2, 3]); return { q: b.q, o: idx.map(k => b.o[k]), c: idx.indexOf(0), e: b.e }; });
+  EX = { qs, i: 0, right: 0, missed: [], answered: false };
+  examRender();
+}
+function examRender(){
+  const box = document.getElementById('exam-box');
+  if (EX.i >= EX.qs.length){
+    const r = EX.right, msg = r >= 9 ? 'Ready to coach. Share this with a peer who’s still working on it.' : r >= 7 ? 'Solid. Review the ones you missed and retake.' : 'Go back through the activity slides, then retake. You’ll get a new mix.';
+    box.innerHTML = `<div class="row" style="gap:20px;align-items:flex-end"><span class="big">${r}/10</span><div><b>${r >= 9 ? 'Excellent' : r >= 7 ? 'Good' : 'Keep practicing'}</b><p class="small" style="margin:0">${msg}</p></div></div>
+      ${EX.missed.length ? `<div class="review"><div class="lbl" style="margin-top:8px">Review</div>${EX.missed.map(m => `<div class="card"><b>${m.q}</b><br><span class="small">Answer:</span> ${m.a}<br><span class="small">${m.e}</span></div>`).join('')}</div>` : ''}
+      <div class="row end" style="margin-top:16px"><button class="btn primary" type="button" data-exstart>Retake with new questions</button></div>`;
+    return;
+  }
+  const x = EX.qs[EX.i]; EX.answered = false;
+  box.innerHTML = `<div class="ex-head"><span>Question ${EX.i + 1} of 10</span><span class="ex-bar"><i style="width:${EX.i * 10}%"></i></span><span>${EX.right} right</span></div>
+    <p class="q">${x.q}</p><div class="opts">${x.o.map((o, k) => `<button class="opt" type="button" data-exopt="${k}"><span class="letter">${L[k]}</span><span>${o}</span></button>`).join('')}</div>
+    <div class="fb" aria-live="polite"></div><div class="row end" style="margin-top:12px"><button class="btn primary" type="button" data-exnext hidden>${EX.i === 9 ? 'See my score' : 'Next question'}</button></div>`;
+}
+function examAnswer(btn){
+  if (!EX || EX.answered) return; EX.answered = true;
+  const x = EX.qs[EX.i], k = +btn.dataset.exopt, ok = k === x.c, box = document.getElementById('exam-box');
+  box.querySelectorAll('[data-exopt]').forEach((o, j) => { o.disabled = true; if (j === x.c) o.classList.add('right'); });
+  if (!ok){ btn.classList.add('wrong'); EX.missed.push({ q: x.q, a: x.o[x.c], e: x.e }); } else EX.right++;
+  box.querySelector('.fb').innerHTML = `<strong>${ok ? 'Correct.' : 'Not quite.'}</strong> ${x.e}`;
+  addScore(ok);
+  const nb = box.querySelector('[data-exnext]'); nb.hidden = false; nb.focus();
+}
+
+/* template */
+const EXAMPLE = {
+  beh: 'Closes the call without confirming the issue is resolved or stating what happens next.',
+  drv: 'Dissatisfier: “I had to call again.”',
+  evd: '4 of 5 calls reviewed (IDs 1042, 1057, 1063, 1071) closed with no resolution check. 3 of 7 detractor verbatims: “I had to call back about the same claim.” (Fictional example.)',
+  smt: 'On every call this week, before closing, I’ll confirm the fix in the system and tell the member the next step and timeline. We’ll listen to 5 of my calls together on Thursday.',
+  fup: 'Skill Transfer: Tuesday (Self Tape vs. Model). Monitor: Wed–Thu, 5 calls. Kudos/Accountability: Friday.',
+  res: 'Friday: 5 of 5 calls with a resolution check. Met. Keep for one more week; close if it holds.'
+};
+function tplAction(a){
+  const t = document.getElementById('tpl');
+  if (a === 'print') { window.print(); return; }
+  t.querySelectorAll('textarea').forEach(x => { x.value = a === 'example' ? EXAMPLE[x.dataset.f] : ''; });
+  t.querySelector('[data-s="core"]').value = a === 'example' ? 'Set Clear Expectations' : '';
+  t.querySelector('[data-s="rc"]').value = a === 'example' ? 'Skill' : '';
+  const ins = t.querySelectorAll('.tpl-head input');
+  if (a === 'example'){ ins[0].value = 'Dana R.'; ins[1].value = ''; t.querySelector('.tpl-head select').value = 'MedSupp'; }
+  else { ins.forEach(x => x.value = ''); }
+}
+
+/* delegation */
+document.addEventListener('click', e => {
+  const t = e.target;
+  let el;
+  if ((el = t.closest('.flip'))){ el.classList.toggle('on'); el.setAttribute('aria-pressed', el.classList.contains('on')); return; }
+  if ((el = t.closest('[data-opt]'))){ answerMCQ(el); return; }
+  if ((el = t.closest('[data-exopt]'))){ examAnswer(el); return; }
+  if ((el = t.closest('[data-exnext]'))){ EX.i++; examRender(); return; }
+  if ((el = t.closest('[data-exstart]'))){ examStart(); return; }
+  if ((el = t.closest('[data-step]'))){ orderTap(el); return; }
+  if ((el = t.closest('[data-ord-reset]'))){ orderReset(el.closest('[data-order]')); return; }
+  if ((el = t.closest('.note'))){ if (!el.disabled) sortSelect(el); return; }
+  if ((el = t.closest('.bucket'))){ sortPlace(el.closest('[data-sort]'), +el.dataset.bucket); return; }
+  if ((el = t.closest('[data-hz-btn]'))){ el.setAttribute('aria-pressed', el.getAttribute('aria-pressed') !== 'true'); hzUpdate(el.closest('[data-hz]')); return; }
+  if ((el = t.closest('[data-tree-next]'))){
+    const tr = el.closest('[data-tree]'); const n = tr.querySelector('.node.locked');
+    if (n){ n.classList.replace('locked', 'shown'); }
+    if (!tr.querySelector('.node.locked')){ el.disabled = true; el.textContent = 'All levels shown'; }
+    return;
+  }
+  if ((el = t.closest('[data-tree] .node.locked'))){
+    const tr = el.closest('[data-tree]'); const n = tr.querySelector('.node.locked'); n.classList.replace('locked', 'shown');
+    if (!tr.querySelector('.node.locked')){ const b = tr.querySelector('[data-tree-next]'); b.disabled = true; b.textContent = 'All levels shown'; }
+    return;
+  }
+  if ((el = t.closest('[data-sess]'))){
+    const d = el.closest('[data-direct]'); d.dataset.session = el.dataset.sess;
+    d.querySelectorAll('[data-sess]').forEach(b => b.setAttribute('aria-selected', b === el)); return;
+  }
+  if ((el = t.closest('.tl-step'))){ el.classList.toggle('on'); el.setAttribute('aria-expanded', el.classList.contains('on')); return; }
+  if ((el = t.closest('[data-mode]'))){
+    document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-pressed', b === el));
+    seq = MODES[el.dataset.mode]; buildJump(); go(1); return;
+  }
+  if ((el = t.closest('[data-start]'))){ go(1); return; }
+  if ((el = t.closest('[data-tpl]'))){ tplAction(el.dataset.tpl); return; }
+});
+/* drag and drop for sorting */
+document.addEventListener('dragstart', e => {
+  const n = e.target.closest && e.target.closest('.note'); if (!n || n.disabled) return;
+  const box = n.closest('[data-sort]'); const st = REG[box.dataset.sort];
+  box.querySelectorAll('.note.sel').forEach(x => x.classList.remove('sel'));
+  n.classList.add('sel'); st.sel = +n.dataset.note;
+  e.dataTransfer.setData('text/plain', n.dataset.note); e.dataTransfer.effectAllowed = 'move';
+});
+document.addEventListener('dragover', e => { const b = e.target.closest && e.target.closest('.bucket'); if (b){ e.preventDefault(); b.classList.add('over'); } });
+document.addEventListener('dragleave', e => { const b = e.target.closest && e.target.closest('.bucket'); if (b) b.classList.remove('over'); });
+document.addEventListener('drop', e => {
+  const b = e.target.closest && e.target.closest('.bucket'); if (!b) return;
+  e.preventDefault(); b.classList.remove('over'); sortPlace(b.closest('[data-sort]'), +b.dataset.bucket);
+});
+</script>
+</body>
+</html>

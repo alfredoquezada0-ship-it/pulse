@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Root Cause with the 5 Whys | DIRECT Step C</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+  --bg:#E3E9EF; --card:#FFFFFF; --ink:#15232B; --muted:#55646E; --line:#CAD4DC;
+  --teal:#0B5C61; --teal-ink:#FFFFFF; --teal-text:#0B5C61; --teal-soft:#D2E6E5;
+  --sticky:#FFE47A; --sticky-ink:#342C00; --sticky-edge:#E6C443;
+  --good:#1D7446; --good-soft:#DAEFE2; --bad:#AE3434; --bad-soft:#F6DDDD;
+  --shadow:0 1px 2px rgba(18,38,48,.07),0 6px 18px rgba(18,38,48,.06);
+  --focus:#2C8C93;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F171C; --card:#172229; --ink:#E2EBEE; --muted:#9AAAB3; --line:#2B3B44;
+    --teal:#4DB0A9; --teal-ink:#062224; --teal-text:#72CBC4; --teal-soft:#16393A;
+    --sticky:#F1D366; --sticky-ink:#2A2300; --sticky-edge:#BFA23E;
+    --good:#62C893; --good-soft:#163428; --bad:#EE8585; --bad-soft:#3B2023;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+    --focus:#7FD6CF;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F171C; --card:#172229; --ink:#E2EBEE; --muted:#9AAAB3; --line:#2B3B44;
+  --teal:#4DB0A9; --teal-ink:#062224; --teal-text:#72CBC4; --teal-soft:#16393A;
+  --sticky:#F1D366; --sticky-ink:#2A2300; --sticky-edge:#BFA23E;
+  --good:#62C893; --good-soft:#163428; --bad:#EE8585; --bad-soft:#3B2023;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
+  --focus:#7FD6CF;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.5 "Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Top bar ---------- */
+.topbar{display:flex;align-items:center;gap:10px 14px;padding:10px 16px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 240px}
+.brand .mark{flex:none;width:32px;height:32px;border-radius:8px;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;font-weight:800;font-size:17px}
+.brand h1{font-size:15px;line-height:1.2;margin:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;color:var(--muted);font-size:12.5px}
+.jump select{font:inherit;font-size:14px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:min(300px,62vw)}
+.score{font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;padding:6px 11px;border-radius:8px;background:var(--teal-soft);color:var(--teal-text);white-space:nowrap}
+.tbtn{font-size:13px;font-weight:600;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);cursor:pointer;white-space:nowrap}
+.progress{height:4px;background:var(--line);flex:none}
+.progress i{display:block;height:100%;width:0;background:var(--teal);transition:width .3s ease}
+
+main{flex:1;overflow:auto;padding:22px 14px 34px}
+.slide{display:none;max-width:1080px;margin:0 auto}
+.slide.active{display:block}
+.ticket{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:24px clamp(16px,4vw,40px) 30px}
+.slide-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.slide-head .id{font-weight:800;color:var(--teal-text);letter-spacing:.02em}
+.chip{border:1px solid var(--line);border-radius:999px;padding:1px 10px;font-weight:500}
+.chip.act{border-color:var(--teal);color:var(--teal-text)}
+h2{font-size:clamp(24px,3.3vw,34px);line-height:1.12;margin:6px 0 10px;letter-spacing:-.015em;font-weight:800}
+h2:focus{outline:none}
+h3{font-size:18px;margin:22px 0 10px;line-height:1.25}
+h4{font-size:14.5px;margin:0 0 8px;color:var(--muted);font-weight:600}
+p{margin:0 0 10px}
+.lede{color:var(--muted);max-width:66ch;margin:0 0 18px;font-size:17px}
+.muted{color:var(--muted)}
+.fine{color:var(--muted);font-size:13.5px;margin-top:14px}
+
+footer.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;background:var(--card);border-top:1px solid var(--line)}
+#pos{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.btn{font-weight:600;border-radius:10px;padding:9px 16px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.btn:hover:not(:disabled){border-color:var(--teal)}
+.btn.primary{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
+.btn:disabled{opacity:.42;cursor:default}
+.btn.sm{padding:6px 12px;font-size:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- Shared pieces ---------- */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.panel{background:var(--bg);border-radius:12px;padding:16px 18px}
+.problem{background:var(--bg);border-left:5px solid var(--teal);border-radius:10px;padding:12px 16px;margin-bottom:16px}
+.problem .k{display:block;font-size:13px;font-weight:700;color:var(--teal-text)}
+.problem p{margin:2px 0 0;font-weight:600;font-size:16.5px}
+.note-y{background:var(--sticky);color:var(--sticky-ink);border-radius:8px;padding:12px 14px}
+.note-y strong{font-weight:700}
+.sticky{background:var(--sticky);color:var(--sticky-ink);font-family:"Kalam","Segoe Print","Bradley Hand",cursive;font-size:17.5px;line-height:1.32;
+  padding:12px 15px;border-radius:2px 2px 16px 2px;box-shadow:0 2px 0 var(--sticky-edge),0 8px 16px rgba(60,48,0,.14);transform:rotate(var(--r,0deg))}
+.sticky p{margin:0}
+.ev{display:inline-block;font-family:"Schibsted Grotesk",system-ui,sans-serif;font-size:12.5px;font-weight:600;margin-top:7px;background:rgba(255,255,255,.55);padding:1px 9px;border-radius:999px}
+.pop{animation:pop .28s ease-out}
+@keyframes pop{from{transform:scale(.92) rotate(var(--r,0deg));opacity:0}to{transform:scale(1) rotate(var(--r,0deg));opacity:1}}
+.shake{animation:shake .42s ease}
+@keyframes shake{0%,100%{translate:0}20%{translate:-7px}40%{translate:7px}60%{translate:-5px}80%{translate:4px}}
+
+/* ---------- Cover ---------- */
+.cover{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:start}
+.cover h2{font-size:clamp(30px,4.6vw,50px);margin-top:10px}
+.direct{display:flex;gap:6px;margin:14px 0 6px}
+.direct span{width:44px;height:52px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-weight:800;font-size:24px;color:var(--muted);background:var(--bg)}
+.direct span.on{background:var(--teal);color:var(--teal-ink);border-color:var(--teal);transform:translateY(-6px)}
+.goals{margin:0;padding-left:20px}
+.goals li{margin:4px 0}
+.cascade{display:flex;flex-direction:column;gap:8px;padding-top:6px}
+.cascade .pc{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-weight:700;box-shadow:var(--shadow);align-self:flex-start}
+.cascade .pc small{display:block;font-weight:500;color:var(--muted);font-size:12.5px}
+.cascade .sticky{font-size:15.5px;padding:8px 13px;max-width:290px}
+.cascade .sticky b{font-family:"Schibsted Grotesk",sans-serif;font-size:12px;font-weight:700;opacity:.7;margin-right:6px}
+.cascade .rc{background:var(--teal);color:var(--teal-ink);border-radius:10px;padding:11px 15px;font-weight:700;max-width:320px}
+.cascade .rc small{display:block;font-weight:500;opacity:.85;font-size:12.5px}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.mode{text-align:left;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--bg);cursor:pointer}
+.mode:hover{border-color:var(--teal)}
+.mode[aria-pressed="true"]{border-color:var(--teal);box-shadow:inset 0 0 0 2px var(--teal)}
+.mode strong{display:block;font-size:16.5px;margin-bottom:3px}
+.mode span{color:var(--muted);font-size:14px}
+
+/* ---------- Symptom slide ---------- */
+.vs .panel h3{margin-top:0}
+.vs .say{font-size:17px;font-weight:600;margin-bottom:8px}
+.vs .root{background:var(--teal-soft)}
+.dmaic{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:6px 0 8px}
+.dmaic div{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}
+.dmaic b{display:block;font-size:15px}
+.dmaic span{font-size:13px;color:var(--muted)}
+.dmaic .on{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.dmaic .on span{color:var(--teal-ink);opacity:.9}
+
+/* ---------- Flip cards ---------- */
+.flips{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.flip{perspective:1100px;background:none;border:0;padding:0;text-align:left;cursor:pointer;display:block;width:100%}
+.flip .in{display:grid;transition:transform .5s ease;transform-style:preserve-3d;height:100%}
+.flip.on .in{transform:rotateY(180deg)}
+.flip .face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-height:168px}
+.flip .front{background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow)}
+.flip .front .big{font-size:19px;font-weight:700;line-height:1.25}
+.flip .front .tap{margin-top:auto;font-size:13px;color:var(--muted)}
+.flip .back{background:var(--sticky);color:var(--sticky-ink);transform:rotateY(180deg);font-size:15px;line-height:1.42}
+.flip .back b{font-size:15.5px}
+.flip:hover .front{border-color:var(--teal)}
+.fcount{color:var(--muted);font-size:14px;margin-left:auto}
+
+/* ---------- Chains ---------- */
+.verbatim{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:14px;box-shadow:var(--shadow)}
+.verbatim q{display:block;font-size:19px;font-weight:600;line-height:1.35}
+.verbatim small{display:block;margin-top:6px;color:var(--muted)}
+.chain{display:grid;gap:10px}
+.step{display:grid;grid-template-columns:minmax(150px,230px) 1fr;gap:14px;align-items:start}
+.step .lbl{padding-top:6px}
+.step .lbl b{display:block;color:var(--teal-text);font-size:14px}
+.step .lbl span{font-size:14.5px;line-height:1.35}
+.ph{width:100%;text-align:left;border:2px dashed var(--line);border-radius:8px;padding:13px 14px;background:transparent;color:var(--muted);cursor:pointer}
+.ph:hover{border-color:var(--teal);color:var(--teal-text)}
+.ph:disabled{cursor:default}
+.ph:disabled:hover{border-color:var(--line);color:var(--muted)}
+.branch-h{margin:14px 0 0;padding-top:12px;border-top:1px dashed var(--line);font-weight:700;color:var(--teal-text)}
+.rootcard{background:var(--sticky);color:var(--sticky-ink);border-radius:10px;padding:16px 18px;display:grid;gap:8px}
+.rootcard .rk{font-size:13px;font-weight:700;opacity:.75;display:block}
+.rootcard .cause{font-size:18px;font-weight:700;line-height:1.3}
+.rootcard .meta{display:flex;gap:18px;flex-wrap:wrap}
+.rootcard ul{margin:2px 0 0;padding-left:18px}
+.rootcard li{margin:3px 0}
+.chain-ctl{margin-top:14px}
+.lesson{margin-top:14px}
+
+/* ---------- Ordering ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg);cursor:pointer;font-weight:600;font-size:14px}
+.tab[aria-selected="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
+.tab .done{margin-left:6px}
+.ordgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.pool{display:grid;gap:8px}
+.card-btn{text-align:left;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow);cursor:pointer;line-height:1.38}
+.card-btn:hover{border-color:var(--teal)}
+.slots{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.slots li{display:grid;grid-template-columns:86px 1fr;gap:10px;align-items:start}
+.slots .sl{font-weight:700;font-size:13.5px;color:var(--teal-text);padding-top:9px}
+.slots .empty{border:2px dashed var(--line);border-radius:8px;min-height:44px}
+.slots .sticky{font-size:16px;padding:9px 12px}
+.ordmsg{margin-top:14px}
+
+/* ---------- Sorter ---------- */
+.howto{color:var(--muted);font-size:14px;margin-bottom:8px}
+.notes{display:flex;flex-wrap:wrap;gap:14px;padding:6px 2px 6px;min-height:30px}
+.note{border:0;cursor:pointer;max-width:250px;text-align:left;transition:transform .15s ease}
+.note:hover{transform:rotate(0deg) translateY(-2px)}
+.note[aria-pressed="true"]{outline:3px solid var(--teal);outline-offset:3px;transform:rotate(0deg) translateY(-3px)}
+.note:disabled{opacity:.5;cursor:default}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-top:14px}
+.bucket{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:8px;min-height:120px;display:flex;flex-direction:column;gap:8px}
+.bucket.over{border-color:var(--teal);box-shadow:inset 0 0 0 2px var(--teal)}
+.bhead{width:100%;text-align:left;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--card);cursor:pointer}
+.bhead b{display:block;font-size:15px}
+.bhead span{display:block;font-size:12.5px;color:var(--muted);line-height:1.3}
+.picking .bhead{border-color:var(--teal);box-shadow:0 0 0 2px var(--teal-soft)}
+.bitems{display:grid;gap:6px}
+.pchip{background:var(--sticky);color:var(--sticky-ink);font-size:13px;line-height:1.3;padding:6px 8px;border-radius:4px}
+.pchip i{font-style:normal;font-weight:800;margin-right:4px}
+.pchip.no{box-shadow:inset 3px 0 0 var(--bad)}
+.logwrap{margin-top:18px}
+.logwrap h4{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}
+.logwrap h4 .cnt{font-weight:500}
+.log{list-style:none;padding:0;margin:0;display:grid;gap:8px;max-height:300px;overflow:auto}
+.log li{display:grid;grid-template-columns:24px 1fr;gap:8px;background:var(--bg);padding:10px 12px;border-radius:8px;border-left:4px solid var(--good);font-size:14.5px}
+.log li.no{border-left-color:var(--bad)}
+.log .mk{font-weight:800;color:var(--good)}
+.log li.no .mk{color:var(--bad)}
+.log p{margin:0 0 3px}
+.log .lq{font-weight:600}
+.log .extra{background:var(--sticky);color:var(--sticky-ink);padding:6px 9px;border-radius:6px;margin-top:5px}
+.log-empty{color:var(--muted);font-size:14px}
+
+/* ---------- Controllable slide ---------- */
+.ctl-cols .panel ul{margin:0;padding-left:18px}
+.ctl-cols .panel li{margin:3px 0}
+.bigidea{font-size:clamp(20px,2.4vw,25px);margin:18px 0;max-width:640px;padding:16px 20px}
+.parts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.parts div{background:var(--teal-soft);border-radius:10px;padding:10px 12px}
+.parts b{display:block;color:var(--teal-text)}
+.parts span{font-size:14px}
+.sounds{margin-top:14px}
+.sounds q{display:block;font-size:16px;line-height:1.5;margin-top:4px}
+
+/* ---------- Actions slide ---------- */
+.map{display:grid;gap:8px}
+.map .mrow{display:grid;grid-template-columns:150px 170px 1fr;gap:12px;align-items:start;background:var(--bg);border-radius:10px;padding:12px 14px}
+.map .mrow b{color:var(--teal-text)}
+.map .env{background:var(--teal-soft)}
+.quizgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ---------- MCQ ---------- */
+.mcq{background:var(--bg);border-radius:12px;padding:16px}
+.mcq .q{font-weight:600;margin:0 0 10px}
+.mcq .qk{display:block;font-size:13px;font-weight:700;color:var(--teal-text);margin-bottom:3px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);cursor:pointer;line-height:1.38}
+.opt:hover:not(:disabled){border-color:var(--teal)}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt .tag{font-weight:800;margin-left:6px}
+.fb{margin-top:10px}
+
+/* ---------- Session + mistakes ---------- */
+.flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.flow li{background:var(--bg);border-radius:10px;padding:10px 12px;font-size:14.5px;border-top:4px solid var(--teal)}
+.flow b{display:block;color:var(--teal-text);font-size:13px}
+.flip .front .lbl2{font-size:13px;color:var(--muted);font-weight:600}
+.flip .front q{font-size:17px;font-weight:600;line-height:1.35}
+.mistakes{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.mist{background:var(--bg);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.mist b{font-size:16.5px}
+.mist .ex{font-size:14.5px;color:var(--muted)}
+.mist .btn{align-self:flex-start}
+
+/* ---------- Exam ---------- */
+.exhead{display:flex;justify-content:space-between;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums;margin-bottom:6px}
+.exbar{height:6px;border-radius:99px;background:var(--bg);overflow:hidden;margin-bottom:14px}
+.exbar i{display:block;height:100%;background:var(--teal);transition:width .3s}
+.result{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center;margin-bottom:14px}
+.result .num{font-size:52px;font-weight:800;color:var(--teal-text);line-height:1}
+.missed{display:grid;gap:8px;margin:10px 0 14px}
+.missed div{background:var(--bg);border-radius:8px;padding:10px 12px;font-size:14.5px;border-left:4px solid var(--bad)}
+
+/* ---------- Template ---------- */
+.tpl{border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--card)}
+.tpl-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.tpl-top h3{margin:0}
+.f{display:grid;gap:4px;margin-bottom:12px}
+.f>span{font-size:13.5px;font-weight:700;color:var(--teal-text)}
+.f input,.f textarea,.f select,.wrow input{font:inherit;font-size:15px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.f textarea{resize:vertical}
+.whys{display:grid;gap:6px;margin-bottom:12px}
+.whys .wh{display:grid;grid-template-columns:64px 1.3fr 1fr;gap:8px;font-size:13px;font-weight:700;color:var(--muted)}
+.wrow{display:grid;grid-template-columns:64px 1.3fr 1fr;gap:8px;align-items:center}
+.wrow .wn{font-weight:700;color:var(--teal-text);font-size:14px}
+.tgrid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.saved{font-size:13px;color:var(--muted)}
+
+/* ---------- Facilitator prompts ---------- */
+.fnote{display:none;margin-top:22px;border-left:4px solid var(--teal);background:var(--teal-soft);padding:12px 16px;border-radius:8px;font-size:15px}
+.fnote b{color:var(--teal-text)}
+body.fac .fnote{display:block}
+
+@media (max-width:820px){
+  .cover,.two,.ordgrid,.quizgrid{grid-template-columns:1fr}
+  .three,.modes{grid-template-columns:1fr}
+  .parts{grid-template-columns:1fr 1fr}
+  .dmaic{grid-template-columns:1fr 1fr}
+  .flow{grid-template-columns:1fr}
+  .step{grid-template-columns:1fr;gap:6px}
+  .map .mrow{grid-template-columns:1fr;gap:4px}
+  .tgrid{grid-template-columns:1fr 1fr}
+  .whys .wh{display:none}
+  .wrow{grid-template-columns:1fr}
+  .cascade{display:none}
+  .brand small{display:none}
+}
+@media (prefers-reduced-motion: reduce){
+  .flip .in,.progress i,.exbar i,.note{transition:none}
+  .pop{animation:none}
+  .shake{animation:none;outline:3px solid var(--bad);outline-offset:2px}
+}
+@media print{
+  .topbar,.progress,footer.nav,.tpl-top .row,.fnote{display:none!important}
+  main{overflow:visible;padding:0}
+  .slide{display:none!important}
+  #s-template{display:block!important}
+  .ticket{box-shadow:none;border:0}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">C</span>
+    <div style="min-width:0"><h1>Root cause with the 5 Whys</h1><small>DIRECT coaching, step C: cause of gap</small></div>
+  </div>
+  <label class="jump"><span class="sr">Jump to slide</span><select id="jump"></select></label>
+  <div class="score" id="score" aria-live="polite">Correct 0/0</div>
+  <button class="tbtn" id="theme" type="button" aria-label="Color theme">Theme: Auto</button>
+</header>
+<div class="progress" aria-hidden="true"><i id="bar"></i></div>
+<main id="main"><div id="deck"></div></main>
+<footer class="nav">
+  <button class="btn" id="prev" type="button">Previous</button>
+  <span id="pos"></span>
+  <button class="btn primary" id="next" type="button">Next</button>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= Helpers ================= */
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rot = () => (Math.random() * 4 - 2).toFixed(1);
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+function shake(node){ node.classList.remove("shake"); void node.offsetWidth; node.classList.add("shake"); }
+
+/* ================= Score ================= */
+const score = { c: 0, t: 0 }; const seen = new Set();
+function mark(key, ok){
+  if (!key || seen.has(key)) return;
+  seen.add(key); score.t++; if (ok) score.c++;
+  $("#score").textContent = "Correct " + score.c + "/" + score.t;
+}
+
+/* ================= Components ================= */
+function mcq(el, q, key, cb){
+  el.classList.add("mcq");
+  el.innerHTML = (q.k ? '<span class="qk">' + q.k + '</span>' : '') +
+    '<p class="q">' + q.q + '</p><div class="opts">' +
+    q.o.map((o, i) => '<button type="button" class="opt" data-i="' + i + '">' + o + '</button>').join("") +
+    '</div><div class="fb" aria-live="polite"></div>';
+  $$(".opt", el).forEach(b => b.addEventListener("click", () => {
+    const i = +b.dataset.i, ok = i === q.a;
+    $$(".opt", el).forEach((x, j) => {
+      x.disabled = true;
+      if (j === q.a) { x.classList.add("right"); x.insertAdjacentHTML("beforeend", '<span class="tag">✓</span>'); }
+    });
+    if (!ok) { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend", '<span class="tag">✗</span>'); shake(b); }
+    $(".fb", el).innerHTML = '<div class="note-y pop"><strong>' + (ok ? "Correct." : "Not quite.") + '</strong> ' + q.e + '</div>';
+    mark(key, ok);
+    if (cb) cb(ok);
+  }));
+}
+
+function flips(el, cards, opts){
+  opts = opts || {};
+  el.innerHTML = '<div class="row" style="margin-bottom:10px"><button type="button" class="btn sm fa">Flip all</button><span class="fcount" aria-live="polite"></span></div><div class="flips"></div>';
+  const grid = $(".flips", el), seenSet = new Set();
+  const count = () => { $(".fcount", el).textContent = "Flipped " + seenSet.size + " of " + cards.length; };
+  cards.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "flip"; b.setAttribute("aria-pressed", "false");
+    b.innerHTML = '<span class="in"><span class="face front">' + c.front + '<span class="tap">Tap to flip</span></span><span class="face back">' + c.back + '</span></span>';
+    b.addEventListener("click", () => {
+      const on = b.classList.toggle("on"); b.setAttribute("aria-pressed", on);
+      seenSet.add(i); count();
+    });
+    grid.appendChild(b);
+  });
+  $(".fa", el).addEventListener("click", e => {
+    const anyOff = $$(".flip", grid).some(f => !f.classList.contains("on"));
+    $$(".flip", grid).forEach((f, i) => { f.classList.toggle("on", anyOff); f.setAttribute("aria-pressed", anyOff); if (anyOff) seenSet.add(i); });
+    e.currentTarget.textContent = anyOff ? "Flip all back" : "Flip all";
+    count();
+  });
+  count();
+}
+
+function rootHTML(r){
+  return '<div class="rootcard pop"><div><span class="rk">Root cause</span><span class="cause">' + r.cause + '</span></div>' +
+    '<div class="meta"><div><span class="rk">Cause type</span>' + r.type + '</div><div><span class="rk">Controllable?</span>' + r.ctrl + '</div></div>' +
+    '<div><span class="rk">Action, owner</span><ul>' + r.actions.map(a => '<li><b>' + a[0] + ':</b> ' + a[1] + '</li>').join("") + '</ul></div></div>';
+}
+
+function chain(el, d){
+  function build(){
+    el.innerHTML = "";
+    const queue = [];
+    const wrap = document.createElement("div"); wrap.className = "chain";
+    const addStep = (s, label, cta) => {
+      const row = document.createElement("div"); row.className = "step";
+      row.innerHTML = '<div class="lbl"><b>' + label + '</b><span>' + s.q + '</span></div><div class="slot"><button type="button" class="ph">Reveal the answer</button></div>';
+      wrap.appendChild(row);
+      const idx = queue.length;
+      queue.push({ cta: cta, ph: $(".ph", row), reveal(){
+        $(".slot", row).innerHTML = '<div class="sticky pop" style="--r:' + rot() + 'deg"><p>' + s.a + '</p>' + (s.ev ? '<span class="ev">Evidence: ' + s.ev + '</span>' : '') + '</div>';
+      }});
+      $(".ph", row).addEventListener("click", () => revealTo(idx));
+    };
+    const addRoot = (r, cta) => {
+      const box = document.createElement("div");
+      box.innerHTML = '<button type="button" class="ph">Root cause: reveal when the chain is done</button>';
+      wrap.appendChild(box);
+      const idx = queue.length;
+      queue.push({ cta: cta, ph: $(".ph", box), reveal(){ box.innerHTML = rootHTML(r); } });
+      $(".ph", box).addEventListener("click", () => revealTo(idx));
+    };
+    d.steps.forEach((s, i) => addStep(s, "Why " + (i + 1), "Ask why " + (i + 1)));
+    addRoot(d.root, "Show the root cause");
+    if (d.branch) {
+      const h = document.createElement("p"); h.className = "branch-h"; h.textContent = d.branch.title; h.hidden = true;
+      wrap.appendChild(h);
+      const start = queue.length;
+      d.branch.steps.forEach((s, i) => addStep(s, "Branch B, why " + (i + 1), i === 0 ? "Follow branch B" : "Ask branch B why " + (i + 1)));
+      addRoot(d.branch.root, "Show the branch B cause");
+      const rows = Array.from(wrap.children).slice(-(d.branch.steps.length + 1));
+      rows.forEach(r => r.hidden = true);
+      const orig = queue[start].reveal;
+      queue[start].reveal = function(){ h.hidden = false; rows.forEach(r => r.hidden = false); orig(); };
+    }
+    el.appendChild(wrap);
+    const ctl = document.createElement("div"); ctl.className = "row chain-ctl";
+    ctl.innerHTML = '<button type="button" class="btn primary nx"></button><button type="button" class="btn sm rs">Start over</button>';
+    el.appendChild(ctl);
+    const lesson = document.createElement("div"); lesson.className = "note-y lesson pop"; lesson.innerHTML = "<strong>Takeaway.</strong> " + d.lesson; lesson.hidden = true;
+    el.appendChild(lesson);
+    let p = 0;
+    const nx = $(".nx", ctl);
+    function update(){
+      queue.forEach((q, i) => { if (q.ph && q.ph.isConnected) q.ph.disabled = i > p; });
+      if (p < queue.length) { nx.textContent = queue[p].cta; nx.disabled = false; }
+      else { nx.textContent = "Chain complete"; nx.disabled = true; lesson.hidden = false; }
+    }
+    function revealTo(i){ while (p <= i && p < queue.length) { queue[p].reveal(); p++; } update(); }
+    nx.addEventListener("click", () => revealTo(p));
+    $(".rs", ctl).addEventListener("click", build);
+    update();
+  }
+  build();
+}
+
+function ordering(el, cases, key){
+  let ci = 0;
+  const st = cases.map(c => ({ placed: 0, err: 0, done: false, order: shuffle(c.items.map((_, i) => i)) }));
+  el.innerHTML = '<div class="tabs" role="tablist">' + cases.map((c, i) => '<button type="button" role="tab" class="tab" data-i="' + i + '">' + c.name + '<span class="done"></span></button>').join("") + '</div><div class="ob"></div>';
+  $$(".tab", el).forEach(t => t.addEventListener("click", () => { ci = +t.dataset.i; render(); }));
+  function render(){
+    $$(".tab", el).forEach((t, i) => { t.setAttribute("aria-selected", i === ci); $(".done", t).textContent = st[i].done ? " ✓" : ""; });
+    const c = cases[ci], s = st[ci], n = c.items.length;
+    const ob = $(".ob", el);
+    ob.innerHTML = '<div class="problem"><span class="k">Problem, ' + c.lob + '</span><p>' + c.problem + '</p></div>' +
+      '<div class="ordgrid"><div><h4>Scrambled. Tap the next link in the chain.</h4><div class="pool">' +
+      s.order.filter(i => i >= s.placed).map(i => '<button type="button" class="card-btn" data-i="' + i + '">' + c.items[i] + '</button>').join("") +
+      (s.done ? '<p class="muted">All links placed.</p>' : '') +
+      '</div></div><div><h4>Your chain</h4><ol class="slots">' +
+      c.items.map((t, i) => '<li><span class="sl">' + (i < n - 1 ? "Why " + (i + 1) : "Root cause") + '</span>' + (i < s.placed ? '<div class="sticky' + (i === s.placed - 1 ? ' pop' : '') + '" style="--r:' + (i % 2 ? .8 : -.8) + 'deg">' + t + '</div>' : '<div class="empty"></div>') + '</li>').join("") +
+      '</ol></div></div><div class="ordmsg" aria-live="polite"></div>';
+    const msg = $(".ordmsg", ob);
+    if (s.done) {
+      msg.innerHTML = '<div class="note-y pop"><strong>' + (s.err === 0 ? "Clean chain, no wrong taps." : "Chain complete with " + s.err + " wrong tap" + (s.err > 1 ? "s" : "") + ".") + '</strong> ' + c.lesson + '</div>' +
+        '<div class="row" style="margin-top:10px">' + (ci < cases.length - 1 ? '<button type="button" class="btn primary nc">Next case</button>' : '') + '<button type="button" class="btn sm rc">Shuffle and retry (not scored)</button></div>';
+      const nc = $(".nc", msg); if (nc) nc.addEventListener("click", () => { ci++; render(); });
+      $(".rc", msg).addEventListener("click", () => { st[ci] = { placed: 0, err: 0, done: false, retry: true, order: shuffle(c.items.map((_, i) => i)) }; render(); });
+    } else {
+      msg.innerHTML = '<span class="muted">Wrong taps on this case: ' + s.err + '</span>';
+    }
+    $$(".card-btn", ob).forEach(b => b.addEventListener("click", () => {
+      const i = +b.dataset.i;
+      if (i === s.placed) {
+        s.placed++;
+        if (s.placed === n) { s.done = true; if (!s.retry) mark(key + "-" + ci, s.err === 0); }
+        render();
+      } else { s.err++; shake(b); $(".ordmsg span", ob).textContent = "Wrong taps on this case: " + s.err + ". That’s not the next link."; }
+    }));
+  }
+  render();
+}
+
+function sorter(el, cfg){
+  function build(retry){
+    const items = cfg.items, n = items.length;
+    let sel = null, placed = 0, first = 0;
+    el.innerHTML = (cfg.context ? '<div class="problem"><span class="k">' + cfg.contextLabel + '</span><p>' + cfg.context + '</p></div>' : '') +
+      '<p class="howto">Tap a note, then tap a bucket. On a computer you can also drag it.</p>' +
+      '<div class="notes"></div><div class="buckets"></div>' +
+      '<div class="logwrap"><h4>Results log <span class="cnt"></span></h4><ol class="log"><li class="log-empty" style="border:0;background:none;display:block;padding:0">Nothing placed yet.</li></ol></div>';
+    const notes = $(".notes", el), bucketsEl = $(".buckets", el), log = $(".log", el), cnt = $(".cnt", el);
+    const noteEls = [];
+    shuffle(items.map((_, i) => i)).forEach(i => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "sticky note"; b.style.setProperty("--r", rot() + "deg");
+      b.setAttribute("aria-pressed", "false"); b.draggable = true; b.textContent = items[i].t;
+      b.addEventListener("click", () => select(sel === i ? null : i));
+      b.addEventListener("dragstart", e => { e.dataTransfer.setData("text/plain", String(i)); select(i); });
+      noteEls[i] = b; notes.appendChild(b);
+    });
+    const bucketItems = cfg.buckets.map((bk, bi) => {
+      const d = document.createElement("div"); d.className = "bucket";
+      d.innerHTML = '<button type="button" class="bhead"><b>' + bk.n + '</b>' + (bk.d ? '<span>' + bk.d + '</span>' : '') + '</button><div class="bitems"></div>';
+      $(".bhead", d).addEventListener("click", () => { if (sel !== null) place(sel, bi); else { cnt.textContent = "Pick a note first, then a bucket."; } });
+      d.addEventListener("dragover", e => { e.preventDefault(); d.classList.add("over"); });
+      d.addEventListener("dragleave", () => d.classList.remove("over"));
+      d.addEventListener("drop", e => { e.preventDefault(); d.classList.remove("over"); const i = +e.dataTransfer.getData("text/plain"); if (!isNaN(i)) place(i, bi); });
+      bucketsEl.appendChild(d);
+      return $(".bitems", d);
+    });
+    function select(i){
+      sel = i;
+      noteEls.forEach((b, j) => b && b.setAttribute("aria-pressed", j === i));
+      el.classList.toggle("picking", i !== null);
+    }
+    function place(i, bi){
+      const it = items[i], nb = noteEls[i];
+      if (!nb || nb.disabled) return;
+      const ok = it.b === bi;
+      nb.disabled = true; select(null);
+      if (!retry) mark(cfg.key + "-" + i, ok);
+      if (ok) first++;
+      placed++;
+      const finish = () => {
+        nb.remove();
+        const chip = document.createElement("div"); chip.className = "pchip pop" + (ok ? "" : " no");
+        chip.innerHTML = '<i>' + (ok ? "✓" : "✗") + '</i>' + it.t;
+        bucketItems[it.b].appendChild(chip);
+      };
+      if (ok) finish(); else { shake(nb); setTimeout(finish, 450); }
+      const empty = $(".log-empty", log); if (empty) empty.remove();
+      const li = document.createElement("li"); li.className = ok ? "ok" : "no";
+      li.innerHTML = '<span class="mk">' + (ok ? "✓" : "✗") + '</span><div><p class="lq">“' + it.t + '”</p><p>' +
+        (ok ? 'Placed in <b>' + cfg.buckets[bi].n + '</b>. ' : 'You chose <b>' + cfg.buckets[bi].n + '</b>; it belongs in <b>' + cfg.buckets[it.b].n + '</b>. ') + it.w + '</p>' +
+        (it.x ? '<p class="extra"><b>' + cfg.extraLabel + '</b> ' + it.x + '</p>' : '') + '</div>';
+      log.prepend(li);
+      cnt.textContent = placed + " of " + n + " placed, " + first + " right on first try";
+      if (placed === n) {
+        const end = document.createElement("div"); end.className = "row"; end.style.marginTop = "10px";
+        end.innerHTML = '<div class="note-y pop" style="flex:1 1 300px"><strong>Done: ' + first + " of " + n + ' right.</strong> ' + cfg.done + '</div><button type="button" class="btn sm">Shuffle and retry (not scored)</button>';
+        $("button", end).addEventListener("click", () => build(true));
+        $(".logwrap", el).before(end);
+      }
+    }
+    cnt.textContent = "0 of " + n + " placed";
+  }
+  build(false);
+}
+
+/* ================= Content data ================= */
+const RULES = [
+  { front: '<span class="big">Start with a specific, measurable problem</span>', back: '<b>Not</b> “Ana’s calls are bad.” <b>Try</b> “Ana’s DD FCR is 78% vs. a 92% goal, last 4 weeks.” A vague problem gives you vague whys.' },
+  { front: '<span class="big">Every why rests on facts</span>', back: 'Calls, reports, verbatims, screen captures. If you can’t point to it, it’s a guess. Go check before you write it down.' },
+  { front: '<span class="big">Five is a guide, not a rule</span>', back: 'Sometimes you reach the cause at why 3. Sometimes it takes 6. Judge the quality of the answer, not the count.' },
+  { front: '<span class="big">Stop when the cause is actionable and ours</span>', back: 'Stop when someone on our side can fix it. “Because of Medicare rules” is a wall, not a root cause. Step back and ask what part we control.' },
+  { front: '<span class="big">Find the failure, not someone to blame</span>', back: '“She doesn’t care” ends the conversation. “She skips the recap when the queue is long” starts it. Ask what failed, not who.' },
+  { front: '<span class="big">There can be more than one branch</span>', back: 'One detractor can carry two causes: an unnecessary transfer AND no next steps. Follow each branch on its own.' }
+];
+
+const EX1 = {
+  problem: "Dana’s DD FCR is 78% vs. a 92% goal over the last 4 weeks (212 calls).",
+  steps: [
+    { q: "Why are members calling back within 7 days?", a: "6 of every 10 repeat calls are follow-ups on claim status.", ev: "repeat-call report" },
+    { q: "Why do claim-status members call back?", a: "On the first call she says “it’s in process” with no expected date and no next step.", ev: "7 of 8 recordings reviewed" },
+    { q: "Why doesn’t she give an expected date?", a: "She reads only the claim summary. The expected date lives in the claim detail view.", ev: "screen capture on 3 calls" },
+    { q: "Why only the summary?", a: "She didn’t know the detail view existed. It was added in the June system update.", ev: "she confirmed it in session" },
+    { q: "Why didn’t she learn about it?", a: "The update job aid went out by email during her PTO, and nobody checks who has read it.", ev: "email date vs. PTO calendar" }
+  ],
+  root: { cause: "A knowledge gap on the claim detail view, created by a job aid process that never confirms who got the update.",
+    type: "Knowledge (Dana) + Environment (process)", ctrl: "Yes. Both parts are ours to fix.",
+    actions: [["Supervisor, this week", "15-minute walkthrough of the detail view, then 3 side-by-side calls to confirm she gives dates and next steps."],
+              ["Ops manager, with evidence", "Add an acknowledgment step to job aid releases so missed updates get caught. Bring the repeat-call data."]] },
+  lesson: "At why 4 it was tempting to write “she’s careless.” The evidence pointed to a missed update, and a process that let it slip."
+};
+
+const EX2 = {
+  problem: "A member called for a prior authorization (PA) status, was transferred twice, and hung up without an answer.",
+  steps: [
+    { q: "Why was the member transferred?", a: "The first agent sent the call to Utilization Management (UM) to check the PA status.", ev: "call recording" },
+    { q: "Why did UM send the member back?", a: "PA status is visible to front-line agents in the Authorizations tab. UM only takes clinical questions.", ev: "UM notes and access list" },
+    { q: "Why did the agent transfer instead of checking?", a: "She didn’t know front line has access to the Authorizations tab.", ev: "she said so in session" },
+    { q: "Why didn’t she know?", a: "The call flow still says “transfer PA status calls to UM.” Nobody updated it when access changed last quarter.", ev: "current call flow document" }
+  ],
+  root: { cause: "An outdated call flow, and an agent who followed it.", type: "Environment (call flow) + Knowledge",
+    ctrl: "Partly. We can’t edit the call flow ourselves, but we can escalate it and close the knowledge gap today.",
+    actions: [["Process owner, escalated with evidence", "Update the call flow. Bring last month’s 23 PA-status transfers as the case."],
+              ["Supervisor, today", "5-minute huddle on the Authorizations tab for the whole team. If the flow is wrong for one agent, it’s wrong for all of them."]] },
+  branch: { title: "Branch B: the call came back to us. Why did the member still not know?",
+    steps: [
+      { q: "Why didn’t the member understand the status?", a: "The second agent read “pended” off the screen without saying what it means or when a decision comes.", ev: "call recording" },
+      { q: "Why didn’t he explain it?", a: "He knows what pended means, but struggles to put status codes into plain words when a member is upset.", ev: "passed the status quiz; same pattern in 4 of 5 calls" }
+    ],
+    root: { cause: "He can’t yet turn system statuses into plain language under pressure.", type: "Skill", ctrl: "Yes",
+      actions: [["Supervisor", "Model one call, then role play three status scenarios (pended, approved, denied) with an upset member."]] } },
+  lesson: "One verbatim, two branches, two owners, two different actions."
+};
+
+const ORDER_CASES = [
+  { name: "Case 1: AHT", lob: "MedSupp", problem: "Luis’s AHT on benefit calls is 9:40 vs. a 7:30 goal.",
+    items: ["His holds average 2:10 on benefit questions; the team averages 0:55.",
+            "During holds he scrolls the full plan PDF looking for the benefit.",
+            "He doesn’t use the search filter in the benefits lookup tool.",
+            "The filter wasn’t covered in his nesting; it isn’t on the nesting checklist.",
+            "Nesting checklist is missing the benefits tool filter: show Luis now, fix the checklist for the next class."],
+    lesson: "The fix has two parts: a Knowledge fix for Luis and a process fix so the next class doesn’t repeat it." },
+  { name: "Case 2: CSAT on ID cards", lob: "IFM", problem: "CSAT on ID card calls is 81% vs. a 90% goal.",
+    items: ["Low scores follow calls where the member only hears “your card arrives in 7–10 business days.”",
+            "These members have a provider visit before the card arrives and leave with no alternative.",
+            "Agents don’t offer the digital temporary ID card from the member portal.",
+            "The ID card job aid only lists the mail timeline.",
+            "The job aid leaves out the digital ID option: update it, then a quick team huddle."],
+    lesson: "The card delay isn’t ours to fix. What the agent offers during the delay is." },
+  { name: "Case 3: Callbacks", lob: "NPG", problem: "9 detractor verbatims in September say “nobody called me back.”",
+    items: ["3 of every 10 promised callbacks weren’t made.",
+            "The missed callbacks were promised near the end of a shift.",
+            "Agents track callbacks on personal notes, which get lost at shift change.",
+            "The team has no shared callback tracker or handoff step.",
+            "No callback handoff process: build a shared tracker and a shift-change check."],
+    lesson: "Looks like a Will problem at first. It’s an Environment problem: the process lets callbacks fall through." }
+];
+
+const BAD_WHY = {
+  key: "bad", contextLabel: "Problem", context: "Kevin’s MES NPS is 18 vs. a goal of 36. A supervisor wrote down these whys. Which ones hold up?",
+  buckets: [{ n: "Valid", d: "Specific, factual, actionable" }, { n: "Blame", d: "Judges the person" }, { n: "Assumption", d: "No evidence behind it" }, { n: "Too vague", d: "Can’t act on it" }, { n: "Outside our control", d: "Stops at a wall" }],
+  items: [
+    { t: "In 7 of 10 detractor calls, Kevin ended without telling the member what happens next.", b: 0, w: "Specific, observed in calls, and something Kevin controls." },
+    { t: "Kevin just doesn’t care about members.", b: 1, w: "A judgment about the person. It gives you nothing to coach." },
+    { t: "He probably rushes because he wants to leave early.", b: 2, w: "“Probably” means no evidence. Pull his calls by time of day before you believe it." },
+    { t: "Communication problems.", b: 3, w: "Which calls? Which behavior? Name what actually happens." },
+    { t: "Members are upset because Medicare changed the rules.", b: 4, w: "Maybe true, but it stops at a wall. Ask how Kevin explains the change." },
+    { t: "His dead air averages 38 seconds per call vs. 12 for the team (speech analytics).", b: 0, w: "Measured, compared with the team, and actionable." },
+    { t: "Kevin isn’t a good fit for this role.", b: 1, w: "A verdict, not a cause. Look for the behavior behind the score." },
+    { t: "New hires are always like this.", b: 2, w: "A generalization with no data. Compare Kevin with the rest of his class." },
+    { t: "Bad attitude on calls.", b: 3, w: "Vague, and it leans toward blame. What does the member hear?" },
+    { t: "The client’s premium increase made members angry.", b: 4, w: "Not ours to change. The explanation of the increase is." },
+    { t: "On denial calls he reads the denial code instead of the reason (5 of 6 calls).", b: 0, w: "Observed pattern, clear behavior, coachable." },
+    { t: "Training issue.", b: 3, w: "Which training? What did he miss? Too broad to act on." }
+  ],
+  done: "Rewrite each invalid one as a valid why: one behavior, one piece of evidence."
+};
+
+const CTRL_SORT = {
+  key: "ctrl", extraLabel: "What the agent can still control:", contextLabel: "Fictional verbatims",
+  context: "Each note is a detractor comment. Sort it by what caused the dissatisfaction.",
+  buckets: [{ n: "Controllable", d: "The agent caused it or could have prevented it" }, { n: "Non-controllable", d: "Policy, plan design or process" }],
+  items: [
+    { t: "She explained my denial with codes I didn’t understand.", b: 0, w: "Unclear explanation. Fully in the agent’s hands." },
+    { t: "The call ended and I had no idea what to do next.", b: 0, w: "No next steps. A recap fixes it." },
+    { t: "They sent me to another department that sent me right back.", b: 0, w: "Unnecessary transfer." },
+    { t: "Long silences while he looked things up.", b: 0, w: "Dead air. The agent can narrate what they’re doing." },
+    { t: "He said he’d call me back. Nobody did.", b: 0, w: "Broken callback." },
+    { t: "My claim for the specialist visit was denied.", b: 1, w: "Claim denial is a plan or policy decision.", x: "Give the reason in plain words, explain appeal rights and steps, and say when they’ll hear back." },
+    { t: "My plan only covers 20 physical therapy visits.", b: 1, w: "Coverage limit set by plan design.", x: "Confirm how many visits are left, explain any exception or appeal path, and acknowledge the frustration." },
+    { t: "My premium went up again this year.", b: 1, w: "Premium changes aren’t set by the agent.", x: "Explain why in plain language, mention when they can review plan options, and acknowledge the impact on their budget." },
+    { t: "My doctor isn’t in your network.", b: 1, w: "Provider network decisions belong to the plan.", x: "Help find in-network providers nearby, explain out-of-network costs, and give next steps." },
+    { t: "I still don’t have my ID card.", b: 1, w: "Card production and mail time are a process issue.", x: "Offer the digital temporary card, confirm the mailing address, and give a realistic delivery window." },
+    { t: "I waited 15 minutes in the phone menu before reaching anyone.", b: 1, w: "IVR and queue wait times are an operations issue.", x: "Acknowledge the wait sincerely, resolve fully so they don’t call back, and mention the portal for simple tasks." }
+  ],
+  done: "Every non-controllable note had a controllable part. That part is what you coach."
+};
+
+const TYPES = [
+  { front: '<span class="big">Knowledge</span><span>Doesn’t know.</span>', back: '<b>Signs:</b> wrong information, can’t find the answer, was never shown or missed the update.<br><b>Test:</b> could they do it if their job depended on it? No.' },
+  { front: '<span class="big">Skill</span><span>Knows, but can’t execute.</span>', back: '<b>Signs:</b> passes the quiz, struggles on live calls. Slow, awkward or inconsistent, especially under pressure.<br><b>Test:</b> they can explain it but not do it well yet.' },
+  { front: '<span class="big">Will / Motivation</span><span>Can, but doesn’t.</span>', back: '<b>Signs:</b> does it in side-by-sides, skips it otherwise.<br><b>Test:</b> you need evidence they CAN do it before you call it Will.' },
+  { front: '<span class="big">Environment</span><span>Something blocks them.</span>', back: '<b>Signs:</b> tools, process, systems or policy get in the way. Often the whole team shows the same gap.<br><b>Test:</b> would a top performer in the same seat have the same problem?' }
+];
+
+const TYPE_SORT = {
+  key: "type", contextLabel: "Your task", context: "Each note is a root cause someone reached with the 5 Whys. Classify it.",
+  buckets: [{ n: "Knowledge", d: "Doesn’t know" }, { n: "Skill", d: "Knows, can’t execute" }, { n: "Will", d: "Can, but doesn’t" }, { n: "Environment", d: "Tools, process, systems, policy" }],
+  items: [
+    { t: "Agent didn’t know the temporary ID card can be sent from the member portal.", b: 0, w: "Never learned it. A job aid or a 2-minute show-me fixes it." },
+    { t: "New BVA agent quotes the wrong deductible because he doesn’t know where accumulators show in the tool.", b: 0, w: "Missing information, not missing practice." },
+    { t: "Agent thought PA status could only be checked by UM.", b: 0, w: "A wrong belief about the process. Teach the right one." },
+    { t: "Agent knows the empathy statements but they come out flat and scripted when a member raises their voice.", b: 1, w: "Knows what to say, can’t deliver it under pressure. Practice it." },
+    { t: "Agent knows the recap step, but it comes out so rushed that members miss it.", b: 1, w: "Execution, not knowledge. Model calls and role play." },
+    { t: "Agent knows the navigation path but takes 3 minutes to find a benefit, leaving dead air.", b: 1, w: "Fluency builds with repetition, not another explanation." },
+    { t: "Agent did perfect recaps in every side-by-side, then skips them on regular calls.", b: 2, w: "Evidence shows she CAN. That makes it an expectations conversation." },
+    { t: "Agent knows how to schedule callbacks and has done it right, but avoids them because “they hurt my AHT.”", b: 2, w: "Able, but choosing not to. Clarify the expectation and why it matters." },
+    { t: "Agent used warm transfers all last month; this week he cold-transfers to reach the next call faster.", b: 2, w: "Proven ability, changed choice. Talk about it and follow up." },
+    { t: "The benefits tool times out 3 to 4 times per shift for the whole team.", b: 3, w: "Whole-team gap, tool problem. Escalate with the data." },
+    { t: "The call flow tells agents to transfer PA status calls even though front line has access.", b: 3, w: "The process is wrong. Coaching won’t fix a document." },
+    { t: "Premium change letters reach members after the new premium is already billed.", b: 3, w: "A client process issue. Escalate with examples and volume." },
+    { t: "There’s no shared callback tracker, so callbacks get lost at shift change.", b: 3, w: "A missing process step, not a lazy agent." }
+  ],
+  done: "Most teams over-diagnose Will and under-diagnose Environment. Which did you mix up?"
+};
+
+const ACTION_Q = [
+  { k: "Scenario 1", q: "Agent knows the recap steps and nails them in role play, but rushes through them on live calls when members interrupt. Best action?",
+    o: ["Send the recap job aid again", "Role play recaps with interruptions, then a model call", "Have an expectations conversation", "Escalate to the training team"], a: 1,
+    e: "She knows it and has done it in practice, but can’t execute it under live conditions. That’s Skill: practice in realistic conditions." },
+  { k: "Scenario 2", q: "The whole team has 40+ seconds of dead air on benefit calls because the benefits tool takes about 35 seconds to load each plan. Best action?",
+    o: ["Coach each agent on dead air", "Escalate to ops/IT with load-time data, and coach agents to narrate the wait", "Expectations conversation with the team", "Retrain the team on the tool"], a: 1,
+    e: "Environment cause: escalate with evidence. The controllable part (telling the member what’s happening) is still coachable." },
+  { k: "Scenario 3", q: "Agent did warm transfers correctly all last month and in your side-by-side, but this week does cold transfers to get to the next call faster. Best action?",
+    o: ["Retrain on warm transfers", "Expectations conversation, agreed follow-up, recognition when it’s back", "Escalate to ops", "Role play warm transfers"], a: 1,
+    e: "He has shown he can. That’s Will: clarify the expectation and the why, follow up, and recognize the change." },
+  { k: "Scenario 4", q: "New BVA agent gives wrong deductible information because he doesn’t know where accumulators appear. Best action?",
+    o: ["Show him where they are, give him the job aid, check understanding", "Expectations conversation", "Escalate the tool layout to the client", "Put him on a performance plan"], a: 0,
+    e: "He doesn’t know. Knowledge gaps close with training or a job aid, then a quick check that it stuck." }
+];
+
+const PAIRS = [
+  { front: '<span class="lbl2">Instead of</span><q>Why didn’t you give next steps?</q>', back: '<b>Try:</b> “What did the member need to know before hanging up?”' },
+  { front: '<span class="lbl2">Instead of</span><q>Why did you transfer her?</q>', back: '<b>Try:</b> “Walk me through what you were looking for when you decided to transfer.”' },
+  { front: '<span class="lbl2">Instead of</span><q>Didn’t you read the job aid?</q>', back: '<b>Try:</b> “Where would you normally look for that answer?”' },
+  { front: '<span class="lbl2">Instead of</span><q>You know you need to recap, right?</q>', back: '<b>Try:</b> “What makes the recap hard to fit in on calls like this one?”' },
+  { front: '<span class="lbl2">Instead of</span><q>Why is your AHT so high?</q>', back: '<b>Try:</b> “Let’s listen to this hold together. What’s on your screen here?”' }
+];
+
+const MISTAKES = [
+  { m: "Stopping at the first why", ex: "“FCR is low because members call back.” That’s the symptom said twice.", fix: "Keep asking until you reach something someone can act on this week." },
+  { m: "Concluding “the agent doesn’t care”", ex: "No side-by-side, no data. Just a feeling.", fix: "Will needs proof the agent CAN do it. Check side-by-sides and past calls first." },
+  { m: "Using one call as evidence", ex: "One rough call becomes the whole diagnosis.", fix: "Look for a pattern: several calls plus the report data." },
+  { m: "Ignoring environment causes", ex: "Coaching five agents one by one on the same gap.", fix: "If the whole team has it, check tools, process and policy before coaching individuals." },
+  { m: "Coaching on what the policy causes", ex: "Writing up an agent because members hate the premium increase.", fix: "Coach the controllable part (explanation, empathy, next steps). Escalate the policy part with data." }
+];
+
+const BANK = [
+  { q: "In Lean Six Sigma’s DMAIC, the 5 Whys mainly belongs to which phase?", o: ["Define", "Measure", "Analyze", "Control"], a: 2, e: "Analyze is where you find what drives the gap, before choosing an improvement." },
+  { q: "Which is the best problem statement to start a 5 Whys?", o: ["Dana’s FCR needs work", "Dana’s DD FCR is 78% vs. a 92% goal over the last 4 weeks", "Dana isn’t resolving calls", "Members don’t like Dana’s calls"], a: 1, e: "Specific and measurable: a number, a goal and a time frame." },
+  { q: "When should you stop asking why?", o: ["After exactly five", "When the agent agrees with you", "When the cause is actionable and someone on our side can fix it", "When you reach a policy"], a: 2, e: "Five is a guide. Stop at a cause that is actionable and within our control." },
+  { q: "“He probably doesn’t read his emails.” What’s wrong with this why?", o: ["It’s too specific", "It’s an assumption with no evidence", "It’s outside our control", "Nothing, it’s valid"], a: 1, e: "“Probably” signals a guess. Check before you write it down." },
+  { q: "An agent quotes wrong copays because she never learned where copays appear in the tool. Cause type?", o: ["Knowledge", "Skill", "Will", "Environment"], a: 0, e: "She doesn’t know. That’s Knowledge." },
+  { q: "An agent knows the de-escalation steps but sounds robotic under pressure and members escalate. Cause type?", o: ["Knowledge", "Skill", "Will", "Environment"], a: 1, e: "Knows it, can’t execute it under pressure: Skill." },
+  { q: "An agent did callbacks perfectly in your side-by-sides but skipped four this week. Cause type?", o: ["Knowledge", "Skill", "Will", "Environment"], a: 2, e: "Evidence shows they can. Not doing it points to Will." },
+  { q: "After a CRM update, the benefits screen takes 30+ seconds to load and the whole team’s holds jumped. Cause type?", o: ["Knowledge", "Skill", "Will", "Environment"], a: 3, e: "A tool problem affecting everyone: Environment." },
+  { q: "Best action for a Skill cause?", o: ["Send a job aid", "Practice: role play, model calls, side-by-sides", "Expectations conversation", "Escalate to the client"], a: 1, e: "Skill builds through practice with feedback." },
+  { q: "Best action for an Environment cause?", o: ["Coach the agent harder", "Escalate to process, ops or client with evidence", "Retrain the agent", "Ignore it, it’s not ours"], a: 1, e: "It’s not a coaching issue. Escalate with data, and coach only the controllable part." },
+  { q: "Which dissatisfier is agent-controllable?", o: ["Premium increase", "Provider not in network", "Dead air while navigating screens", "IVR wait time"], a: 2, e: "Dead air is in the agent’s hands; they can narrate what they’re doing." },
+  { q: "Which dissatisfier is non-controllable for the agent?", o: ["No next steps given", "A coverage limit in the plan", "An unnecessary transfer", "A broken callback"], a: 1, e: "Coverage limits come from plan design." },
+  { q: "A member is upset about a claim denial. What can the agent still control?", o: ["Overturn the denial", "Plain-language reason, empathy, appeal steps and timeline", "Nothing", "Promise the appeal will be approved"], a: 1, e: "The policy stays. The explanation and next steps are fully controllable." },
+  { q: "Which question best fits running the 5 Whys WITH the agent?", o: ["Why didn’t you do the recap?", "You know the rule, right?", "Walk me through what you were looking for when you transferred.", "Why is your AHT so bad?"], a: 2, e: "Open, non-accusing, and it lets the agent discover the cause." },
+  { q: "How many whys should you ask?", o: ["Always five", "Always three", "As many as it takes to reach an actionable cause", "One, then decide"], a: 2, e: "Five is a guide, not a rule." },
+  { q: "A detractor mentions an unnecessary transfer AND no next steps. What do you do?", o: ["Pick the bigger one", "Follow two separate branches", "Average them", "Coach only the transfer"], a: 1, e: "Different causes can need different actions. Follow each branch." },
+  { q: "You reviewed one call where the agent was abrupt. Best next step?", o: ["Coach empathy immediately", "Check more calls and the data for a pattern", "Label it Will", "Escalate to HR"], a: 1, e: "One call is an example, not evidence of a pattern." },
+  { q: "Why not coach an agent on long IVR wait times?", o: ["Because it doesn’t matter", "It’s outside their control; escalate with data and coach acknowledging the wait", "Because members won’t notice", "Because IVR is the client’s job, so ignore it"], a: 1, e: "Escalate the non-controllable part. Coach the controllable part." },
+  { q: "Which of these is a symptom, not a root cause?", o: ["CSAT is 84% vs. a 90% goal", "Job aid leaves out the digital ID option", "Agent was never shown the tool’s search filter", "No shared callback tracker exists"], a: 0, e: "A KPI result is the symptom. The others explain why it happens." },
+  { q: "Before calling a cause Will, what do you need?", o: ["A gut feeling", "Evidence the agent can do it, like a good side-by-side", "A complaint from a member", "Approval from HR"], a: 1, e: "Will means “can, but doesn’t.” Prove the “can” first." },
+  { q: "If the whole team shows the same gap, the cause is most likely:", o: ["Knowledge for each agent", "Environment: process, tools or job aids", "Will for each agent", "Random"], a: 1, e: "A shared gap usually points to something shared. Check the environment first." },
+  { q: "Best action for a Knowledge cause?", o: ["Expectations conversation", "Short training or a job aid, then check understanding", "Escalate to the client", "Performance plan"], a: 1, e: "Teach it, give the reference, confirm it stuck." },
+  { q: "What happens when you only fix the symptom?", o: ["The KPI stays fixed", "It usually comes back", "The agent learns faster", "Nothing changes either way"], a: 1, e: "The cause is still there, so the gap returns." },
+  { q: "The agent says, “I don’t know, the tool is just slow.” Best response?", o: ["“So you’re blaming the tool?”", "“Let’s time it on the next call and compare with the team.”", "“Okay, I’ll escalate it.”", "“Everyone uses the same tool.”"], a: 1, e: "Turn the claim into evidence together before deciding Skill or Environment." }
+];
+
+/* ================= Slides ================= */
+const SLIDES = [
+{ id: "cover", title: "Find the cause, not the symptom", tag: "Start",
+  note: "Open with: think of the last gap you coached. Did it come back? Why do you think so?",
+  build(b){
+    b.innerHTML =
+    '<div class="cover"><div>' +
+      '<p class="lede">Most coaching stops at the symptom. This session is about the questions that come after it.</p>' +
+      '<div class="direct" aria-label="DIRECT coaching model, step C highlighted"><span>D</span><span>I</span><span>R</span><span>E</span><span class="on">C</span><span>T</span></div>' +
+      '<p class="muted" style="margin-bottom:18px">You are here: <strong style="color:var(--teal-text)">C, cause of gap.</strong> For supervisors on MedSupp, BVA, IFM and NPG.</p>' +
+      '<h3 style="margin-top:0">By the end you’ll</h3><ul class="goals"><li>Stop at the symptom less often</li><li>Reach a root cause you can act on</li><li>Pick the action that fits the cause type</li><li>Separate what the agent controls from what they don’t</li></ul>' +
+    '</div><div class="cascade" aria-hidden="true">' +
+      '<div class="pc"><small>Problem</small>DD FCR 78% vs. 92% goal</div>' +
+      '<div class="sticky" style="--r:-1.5deg;margin-left:14px"><b>Why?</b>Members call back about claim status</div>' +
+      '<div class="sticky" style="--r:1.2deg;margin-left:34px"><b>Why?</b>No expected date on the first call</div>' +
+      '<div class="sticky" style="--r:-.8deg;margin-left:54px"><b>Why?</b>She reads the summary, not the detail view</div>' +
+      '<div class="sticky" style="--r:1.6deg;margin-left:74px"><b>Why?</b>Detail view came in the June update</div>' +
+      '<div class="sticky" style="--r:-1.2deg;margin-left:94px"><b>Why?</b>Job aid email landed during her PTO</div>' +
+      '<div class="rc" style="margin-left:114px"><small>Root cause</small>Nobody confirms who read updates</div>' +
+    '</div></div>' +
+    '<h3>Pick a study mode</h3><div class="modes">' +
+      '<button type="button" class="mode" data-mode="self" aria-pressed="false"><strong>Self-study</strong><span>Every activity, at your own pace. About 30 minutes.</span></button>' +
+      '<button type="button" class="mode" data-mode="fac" aria-pressed="false"><strong>Lead a huddle</strong><span>Same slides, plus a discussion prompt on each one for your team.</span></button>' +
+      '<button type="button" class="mode" data-mode="exam" aria-pressed="false"><strong>Test yourself</strong><span>Go straight to the final exam: 10 random questions.</span></button>' +
+    '</div><p class="fine">Every name, call and verbatim in this deck is fictional. No member data. Use ← → keys or the buttons below to move.</p>';
+    $$(".mode", b).forEach(m => m.addEventListener("click", () => setMode(m.dataset.mode, true)));
+  } },
+
+{ id: "symptom", title: "Symptom vs. root cause", tag: "Concept",
+  note: "Ask the team for one KPI they coached last month. Was the action aimed at the symptom or the cause? Did the number come back?",
+  build(b){
+    b.innerHTML =
+    '<p class="lede">A symptom is what shows up in the report or the survey. A root cause is the reason it keeps showing up. Fix only the symptom and it comes back.</p>' +
+    '<div class="two vs"><div class="panel"><h3>Coaching the symptom</h3><p class="say">“Your FCR is 78%. Let’s get it up.”</p><p class="muted">The agent tries harder for a week. Same habit, same callbacks. Back to 78% next month.</p></div>' +
+    '<div class="panel root"><h3>Coaching the root cause</h3><p class="say">“Members call back because the expected date is in a view you weren’t shown.”</p><p class="muted">One screen, one habit. Callbacks drop and stay down.</p></div></div>' +
+    '<h3>Where this lives in Lean Six Sigma</h3>' +
+    '<div class="dmaic"><div><b>Define</b><span>What’s the gap?</span></div><div><b>Measure</b><span>How big? Since when?</span></div><div class="on"><b>Analyze</b><span>Why is it happening? The 5 Whys lives here.</span></div><div><b>Improve</b><span>Fix the cause</span></div><div><b>Control</b><span>Make it stick</span></div></div>' +
+    '<p class="muted" style="margin-bottom:16px">Jump from Measure straight to Improve and you’re guessing. The C in DIRECT is your Analyze step.</p>' +
+    '<div class="q1"></div>';
+    mcq($(".q1", b), { k: "Quick check", q: "Which of these is a root cause, not a symptom?",
+      o: ["CSAT dropped 6 points in September", "Members say they were on hold too long", "Agent holds to search the plan PDF because she was never shown the tool’s search filter", "Agent’s AHT is 9:40"], a: 2,
+      e: "The other three describe what you see. This one explains why it happens, and you can act on it." }, "s2");
+  } },
+
+{ id: "rules", title: "The rules of the 5 Whys", tag: "Flip cards",
+  note: "Have each supervisor name the rule they break most often. No judgment, just honesty.",
+  build(b){
+    b.innerHTML = '<p class="lede">Six rules keep the chain honest. Flip each card.</p><div class="fl"></div>';
+    flips($(".fl", b), RULES);
+  } },
+
+{ id: "ex1", title: "Worked example: an FCR gap", tag: "Example",
+  note: "Before each reveal, ask the room to predict the next why. Compare their guess with the evidence.",
+  build(b){
+    b.innerHTML = '<p class="lede">NPG, fictional agent. Reveal one why at a time and notice the evidence behind each.</p><div class="problem"><span class="k">Problem</span><p>' + EX1.problem + '</p></div><div class="ch"></div>';
+    chain($(".ch", b), EX1);
+  } },
+
+{ id: "ex2", title: "Worked example: a detractor verbatim", tag: "Example",
+  note: "Ask: who owns branch A, and who owns branch B? Why does that matter for your coaching log?",
+  build(b){
+    b.innerHTML = '<div class="verbatim"><q>I was transferred twice and still don’t know if my prior authorization was approved.</q><small>Survey score 2 (detractor). IFM, fictional member.</small></div>' +
+      '<div class="problem"><span class="k">Problem</span><p>' + EX2.problem + '</p></div><div class="ch"></div>';
+    chain($(".ch", b), EX2);
+  } },
+
+{ id: "order", title: "Put the chain in order", tag: "Activity",
+  note: "Do case 1 together on screen, then have pairs do cases 2 and 3 and compare.",
+  build(b){
+    b.innerHTML = '<p class="lede">Each chain is scrambled. Tap the links in order, from Why 1 to the root cause. A wrong tap shakes. A case scores as correct if you finish it without wrong taps.</p><div class="ord"></div>';
+    ordering($(".ord", b), ORDER_CASES, "ord");
+  } },
+
+{ id: "badwhy", title: "Spot the bad why", tag: "Activity",
+  note: "For each invalid why, ask the room to rewrite it as a valid one: one behavior, one piece of evidence.",
+  build(b){
+    b.innerHTML = '<p class="lede">A chain is only as strong as its weakest why. Sort each answer: valid, or invalid for one of four reasons.</p><div class="srt"></div>';
+    sorter($(".srt", b), BAD_WHY);
+  } },
+
+{ id: "control", title: "Controllable vs. non-controllable dissatisfiers", tag: "Concept",
+  note: "Pick one non-controllable dissatisfier from this week’s detractors. Script the controllable part together, out loud.",
+  build(b){
+    b.innerHTML =
+    '<div class="two ctl-cols"><div class="panel"><h3 style="margin-top:0">Agent-controllable</h3><ul><li>Unclear explanation</li><li>No next steps</li><li>Unnecessary transfer</li><li>Dead air</li><li>Broken callback</li></ul></div>' +
+    '<div class="panel"><h3 style="margin-top:0">Non-controllable (policy or process)</h3><ul><li>Claim denial</li><li>Coverage limits</li><li>Premium changes</li><li>Provider network</li><li>ID card delays</li><li>IVR wait times</li></ul></div></div>' +
+    '<div class="sticky bigidea" style="--r:-1deg">The agent can’t change the policy. They can change how it’s explained.</div>' +
+    '<h3>Every non-controllable dissatisfier has a controllable part</h3>' +
+    '<div class="parts"><div><b>Empathy</b><span>Acknowledge the impact before the explanation.</span></div><div><b>Plain-language reason</b><span>The why, without codes or jargon.</span></div><div><b>Alternatives</b><span>Appeal, exception, other providers, digital options.</span></div><div><b>Next steps</b><span>What happens now, who does it, and when.</span></div></div>' +
+    '<div class="panel sounds"><b>What it sounds like on a claim denial</b><q>“I’m sorry, I know that’s frustrating. It was denied because this test needs approval from the plan first. Your doctor can request it, and if you’d like, I can walk you through the appeal. Either way, you’ll get the decision in writing.”</q></div>' +
+    '<p class="fine">Coaching rule: coach the controllable part, escalate the policy part with data.</p>';
+  } },
+
+{ id: "ctrlsort", title: "Sort the dissatisfiers", tag: "Activity",
+  note: "After sorting, read the “agent can still control” notes aloud. Which of those do your agents do least?",
+  build(b){
+    b.innerHTML = '<p class="lede">Sort each verbatim. When a note is non-controllable, the log shows what the agent can still control.</p><div class="srt"></div>';
+    sorter($(".srt", b), CTRL_SORT);
+  } },
+
+{ id: "types", title: "Four agent cause types", tag: "Flip cards",
+  note: "Ask: which cause type do you diagnose most? Most teams over-diagnose Will.",
+  build(b){
+    b.innerHTML = '<p class="lede">Once you reach the cause, name its type. The type decides the action. Ask in this order: do they know how? Can they do it? Do they do it when it counts? Does anything block them?</p><div class="fl"></div>';
+    flips($(".fl", b), TYPES);
+  } },
+
+{ id: "typesort", title: "Classify the root cause", tag: "Activity",
+  note: "Debate any note the room disagrees on. The disagreement is usually about missing evidence.",
+  build(b){
+    b.innerHTML = '<p class="lede">Thirteen root causes, four types. Watch the evidence words: “knows”, “has done it”, “whole team”.</p><div class="srt"></div>';
+    sorter($(".srt", b), TYPE_SORT);
+  } },
+
+{ id: "action", title: "From cause type to action", tag: "Concept + quiz",
+  note: "Ask: what’s one Environment cause you’ve been coaching as if it were the agent’s fault?",
+  build(b){
+    b.innerHTML =
+    '<div class="map">' +
+      '<div class="mrow"><b>Knowledge</b><span>Doesn’t know</span><span>Short training or a job aid, then check understanding.</span></div>' +
+      '<div class="mrow"><b>Skill</b><span>Knows, can’t execute</span><span>Practice: role play, model calls, side-by-sides with feedback.</span></div>' +
+      '<div class="mrow"><b>Will</b><span>Can, but doesn’t</span><span>Expectations conversation: the why behind it, what good looks like, a follow-up date. Recognize it when it happens.</span></div>' +
+      '<div class="mrow env"><b>Environment</b><span>Something blocks them</span><span>Escalate to process, ops or client with evidence (volume, examples, impact). It isn’t a coaching issue. Coach only the controllable part.</span></div>' +
+    '</div><h3>Pick the action</h3><div class="quizgrid"></div>';
+    const g = $(".quizgrid", b);
+    ACTION_Q.forEach((q, i) => { const d = document.createElement("div"); g.appendChild(d); mcq(d, q, "act-" + i); });
+  } },
+
+{ id: "session", title: "Run the 5 Whys with the agent", tag: "Concept",
+  note: "Role play in pairs: one supervisor, one agent, using the FCR example. Swap after 3 minutes.",
+  build(b){
+    b.innerHTML =
+    '<p class="lede">This is where C meets the E in DIRECT. The agent works through the whys with you instead of hearing your conclusion. People act on causes they found themselves.</p>' +
+    '<h3 style="margin-top:0">How the conversation flows</h3>' +
+    '<ol class="flow"><li><b>1</b>Share the data, not the verdict</li><li><b>2</b>Listen to a call together</li><li><b>3</b>Ask open what and how questions</li><li><b>4</b>Check each answer against evidence</li><li><b>5</b>Agree on the cause and the action</li></ol>' +
+    '<h3>Questions, not an interrogation</h3><p class="muted">Flip each card for a version that opens the conversation instead of closing it.</p><div class="fl"></div>' +
+    '<h3>Your turn</h3><div class="q1"></div>';
+    flips($(".fl", b), PAIRS);
+    mcq($(".q1", b), { q: "The agent says, “I don’t know, the tool is just slow.” Your best next move?",
+      o: ["“So you’re blaming the tool?”", "“How slow? Let’s time it on the next call and compare with the team.”", "“Okay, I’ll escalate it.”", "“Everyone uses the same tool, so that’s not it.”"], a: 1,
+      e: "Stay curious and turn the claim into evidence. Timing it tells you whether this is Skill (navigation) or Environment (the tool)." }, "s13");
+  } },
+
+{ id: "mistakes", title: "Common mistakes", tag: "Concept + quiz",
+  note: "Which of these did you make this month? Share one example with the group.",
+  build(b){
+    b.innerHTML = '<p class="lede">Five ways a 5 Whys goes wrong. Reveal the fix for each.</p><div class="mistakes"></div><h3>Spot it</h3><div class="q1"></div>';
+    const g = $(".mistakes", b);
+    MISTAKES.forEach(mi => {
+      const d = document.createElement("div"); d.className = "mist";
+      d.innerHTML = '<b>' + mi.m + '</b><span class="ex">' + mi.ex + '</span><button type="button" class="btn sm">Show the fix</button>';
+      $("button", d).addEventListener("click", e => { e.currentTarget.outerHTML = '<div class="note-y pop"><strong>Instead:</strong> ' + mi.fix + '</div>'; });
+      g.appendChild(d);
+    });
+    mcq($(".q1", b), { q: "A supervisor reviews one detractor call where the agent was short with the member and writes: “Agent lacks empathy. Will coach.” Which mistake is this?",
+      o: ["Ignoring environment causes", "Using one call as evidence, and concluding before finding a pattern", "Coaching on what the policy causes", "Asking too many whys"], a: 1,
+      e: "One call is an example. Check more calls and the data before you name a cause." }, "s14");
+  } },
+
+{ id: "exam", title: "Final exam", tag: "Exam",
+  note: "Have everyone take it individually, then review the most-missed question together.",
+  build(b){
+    b.innerHTML = '<p class="lede">10 random questions from a bank of ' + BANK.length + '. Your first attempt counts toward the score in the top bar.</p><div class="ex"></div>';
+    exam($(".ex", b));
+  } },
+
+{ id: "template", title: "Your 5 Whys worksheet", tag: "Tool",
+  note: "Each supervisor fills one worksheet on a real gap from their own team before the next 1x1.",
+  build(b){
+    const whyRows = [1,2,3,4,5].map(n => '<div class="wrow"><span class="wn">Why ' + n + '</span><input data-k="w' + n + '" aria-label="Why ' + n + ' answer" placeholder="Answer"><input data-k="e' + n + '" aria-label="Why ' + n + ' evidence" placeholder="Evidence: call, report, verbatim"></div>').join("");
+    b.innerHTML =
+    '<p class="lede">Use it before your next coaching session. It saves in this browser as you type.</p>' +
+    '<div class="tpl" id="tpl"><div class="tpl-top"><h3>Root cause worksheet</h3><div class="row"><button type="button" class="btn sm" id="tplEx">Fill with the FCR example</button><button type="button" class="btn sm" id="tplClear">Clear</button></div></div>' +
+    '<label class="f"><span>Problem (specific and measurable)</span><textarea data-k="problem" rows="2" placeholder="e.g., Agent’s DD FCR is 78% vs. a 92% goal, last 4 weeks"></textarea></label>' +
+    '<div class="whys"><div class="wh"><span></span><span>Why? (answer)</span><span>Evidence</span></div>' + whyRows + '</div>' +
+    '<div class="tgrid">' +
+      '<label class="f"><span>Cause type</span><select data-k="type"><option value="">Choose</option><option>Knowledge</option><option>Skill</option><option>Will / Motivation</option><option>Environment</option><option>Mixed</option></select></label>' +
+      '<label class="f"><span>Controllable?</span><select data-k="ctrl"><option value="">Choose</option><option>Yes</option><option>Partly</option><option>No, escalate</option></select></label>' +
+      '<label class="f"><span>Owner</span><input data-k="owner" placeholder="Who does it"></label>' +
+      '<label class="f"><span>Date</span><input type="date" data-k="date"></label>' +
+    '</div><label class="f"><span>Action</span><textarea data-k="action" rows="2" placeholder="Knowledge: training/job aid. Skill: practice. Will: expectations. Environment: escalate with evidence."></textarea></label>' +
+    '<span class="saved" aria-live="polite"></span></div>' +
+    '<p class="fine">To print just this worksheet, open the page in its own tab and use your browser’s print (Ctrl+P or ⌘P).</p>';
+    const fields = $$("[data-k]", b), saved = $(".saved", b);
+    const load = d => fields.forEach(f => { f.value = d[f.dataset.k] || ""; });
+    const save = () => { const d = {}; fields.forEach(f => d[f.dataset.k] = f.value); store.set("fw-template", d); saved.textContent = "Saved in this browser."; };
+    load(store.get("fw-template", {}));
+    fields.forEach(f => f.addEventListener("input", save));
+    $("#tplEx", b).addEventListener("click", () => {
+      const d = { problem: EX1.problem, type: "Mixed", ctrl: "Yes", owner: "Supervisor + ops manager", date: "",
+        action: "Walkthrough of the claim detail view + 3 side-by-sides (supervisor). Add acknowledgment step to job aid releases (ops)." };
+      EX1.steps.forEach((s, i) => { d["w" + (i + 1)] = s.a; d["e" + (i + 1)] = s.ev; });
+      load(d); save();
+    });
+    $("#tplClear", b).addEventListener("click", () => { load({}); save(); saved.textContent = "Cleared."; });
+  } }
+];
+
+function exam(el){
+  let attempt = 0, qs, i, right, missed;
+  function start(){
+    attempt++;
+    qs = shuffle(BANK.slice()).slice(0, 10).map(q => {
+      const idx = shuffle(q.o.map((_, k) => k));
+      return { q: q.q, o: idx.map(k => q.o[k]), a: idx.indexOf(q.a), e: q.e, ans: q.o[q.a] };
+    });
+    i = 0; right = 0; missed = []; show();
+  }
+  function show(){
+    const q = qs[i];
+    el.innerHTML = '<div class="exhead"><span>Question ' + (i + 1) + ' of 10' + (attempt > 1 ? ' (attempt ' + attempt + ', not scored)' : '') + '</span><span>Right so far: ' + right + '</span></div>' +
+      '<div class="exbar"><i style="width:' + (i * 10) + '%"></i></div><div class="exq"></div><div class="row" style="margin-top:12px"><button type="button" class="btn primary go" hidden></button></div>';
+    const go = $(".go", el);
+    mcq($(".exq", el), q, attempt === 1 ? "exam-" + i : null, ok => {
+      if (ok) right++; else missed.push(q);
+      $(".exhead span:last-child", el).textContent = "Right so far: " + right;
+      go.hidden = false; go.textContent = i < 9 ? "Next question" : "See my result";
+      go.focus();
+    });
+    go.addEventListener("click", () => { if (i < 9) { i++; show(); } else results(); });
+  }
+  function results(){
+    const msg = right >= 9 ? "Ready to run this with your team." : right >= 7 ? "Solid. Review the slides behind what you missed." : "Worth another pass through the activities, then a new exam.";
+    el.innerHTML = '<div class="result"><span class="num">' + right + '/10</span><div><b style="font-size:18px">' + msg + '</b><p class="muted" style="margin:4px 0 0">' + (attempt === 1 ? "This attempt is in your top-bar score." : "Practice attempt, not added to the top-bar score.") + '</p></div></div>' +
+      (missed.length ? '<h4>What you missed</h4><div class="missed">' + missed.map(q => '<div><b>' + q.q + '</b><br>Answer: ' + q.ans + '. ' + q.e + '</div>').join("") + '</div>' : '<div class="note-y" style="margin-bottom:14px"><strong>Perfect score.</strong> Nothing to review.</div>') +
+      '<div class="row"><button type="button" class="btn primary again">New exam: 10 new questions</button><button type="button" class="btn tot">Go to the worksheet</button></div>';
+    $(".again", el).addEventListener("click", start);
+    $(".tot", el).addEventListener("click", () => go(SLIDES.length - 1));
+  }
+  start();
+}
+
+/* ================= Deck shell ================= */
+const deck = $("#deck"), jump = $("#jump");
+const tagAct = { "Activity": 1, "Flip cards": 1, "Concept + quiz": 1, "Exam": 1, "Tool": 1 };
+SLIDES.forEach((s, i) => {
+  const sec = document.createElement("section");
+  sec.className = "slide"; sec.id = "s-" + s.id; sec.setAttribute("aria-label", s.title);
+  const n = String(i + 1).padStart(2, "0");
+  sec.innerHTML = '<article class="ticket"><div class="slide-head"><span class="id">C-' + n + '</span><span class="chip' + (tagAct[s.tag] ? ' act' : '') + '">' + s.tag + '</span></div><h2 tabindex="-1">' + s.title + '</h2><div class="body"></div><aside class="fnote"><b>Huddle prompt.</b> ' + s.note + '</aside></article>';
+  deck.appendChild(sec);
+  s.build($(".body", sec));
+  const o = document.createElement("option"); o.value = i; o.textContent = (i + 1) + ". " + s.title; jump.appendChild(o);
+});
+
+let cur = 0;
+function go(i){
+  i = Math.max(0, Math.min(SLIDES.length - 1, i));
+  $$(".slide").forEach((s, j) => s.classList.toggle("active", j === i));
+  cur = i; jump.value = i;
+  $("#bar").style.width = (i / (SLIDES.length - 1) * 100) + "%";
+  $("#pos").textContent = (i + 1) + " / " + SLIDES.length;
+  $("#prev").disabled = i === 0;
+  $("#next").disabled = i === SLIDES.length - 1;
+  $("#main").scrollTop = 0;
+  const h = $(".slide.active h2"); if (h) h.focus({ preventScroll: true });
+  store.set("fw-slide", i);
+}
+$("#prev").addEventListener("click", () => go(cur - 1));
+$("#next").addEventListener("click", () => go(cur + 1));
+jump.addEventListener("change", () => go(+jump.value));
+document.addEventListener("keydown", e => {
+  const t = e.target, tag = t && t.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (t && t.isContentEditable)) return;
+  if (e.altKey || e.ctrlKey || e.metaKey) return;
+  if (e.key === "ArrowRight") { e.preventDefault(); go(cur + 1); }
+  if (e.key === "ArrowLeft") { e.preventDefault(); go(cur - 1); }
+});
+
+function setMode(m, nav){
+  document.body.classList.toggle("fac", m === "fac");
+  $$(".mode").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === m));
+  store.set("fw-mode", m);
+  if (nav) go(m === "exam" ? SLIDES.findIndex(s => s.id === "exam") : 1);
+}
+setMode(store.get("fw-mode", "self"), false);
+
+const themes = ["auto", "light", "dark"];
+let th = store.get("fw-theme", "auto");
+function applyTheme(){
+  if (th === "auto") document.documentElement.removeAttribute("data-theme");
+  else document.documentElement.setAttribute("data-theme", th);
+  $("#theme").textContent = "Theme: " + th.charAt(0).toUpperCase() + th.slice(1);
+}
+$("#theme").addEventListener("click", () => { th = themes[(themes.indexOf(th) + 1) % 3]; store.set("fw-theme", th); applyTheme(); });
+applyTheme();
+
+go(store.get("fw-slide", 0) || 0);
+})();
+</script>
+</body>
+</html>

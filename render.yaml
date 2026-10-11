@@ -1,0 +1,36 @@
+# Render Blueprint: New > Blueprint, point it at this repo.
+services:
+  - type: web
+    name: pulse-api
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: AUTH_MODE
+        value: supabase
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: AI_ORDER
+        value: gemini,groq,nvidia
+      - key: AI_FAST_ORDER
+        value: gemini,groq,nvidia
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: APP_SECRET
+        generateValue: true
+      - key: CORS_ORIGIN
+        sync: false

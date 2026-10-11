@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weekly SMART Commitments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: project taskboard. Sticky top bar + thin progress, one "ticket" slide per screen, kanban lanes for sorting, sticky notes for reveals. */
+:root{
+  --bg:#E4EAF0; --surface:#FFFFFF; --surface-2:#F1F4F7; --line:#D0D9E1;
+  --ink:#14212A; --ink-2:#44545F; --ink-3:#66767F;
+  --teal:#0B5C63; --teal-ink:#FFFFFF; --teal-soft:#D9ECEC; --teal-text:#0A5258;
+  --sticky:#FBE38A; --sticky-ink:#3A3110; --sticky-edge:#E6C64F;
+  --ok:#1D7A4C; --ok-soft:#DCF0E4; --bad:#B23A2B; --bad-soft:#F7E0DB;
+  --ok-strong:#1D7A4C; --bad-strong:#B23A2B;
+  --shadow:0 10px 22px -12px rgba(25,45,60,.45);
+  --f-display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E151A; --surface:#172129; --surface-2:#1E2A33; --line:#2B3943;
+    --ink:#E3EBF0; --ink-2:#AEBCC5; --ink-3:#8696A1;
+    --teal:#4DB4B1; --teal-ink:#06292B; --teal-soft:#16393B; --teal-text:#86D5D2;
+    --sticky:#F3DA76; --sticky-ink:#2B240A; --sticky-edge:#D3B647;
+    --ok:#5CC48E; --ok-soft:#14322A; --bad:#F08B7B; --bad-soft:#3B201C;
+    --shadow:0 10px 22px -12px rgba(0,0,0,.7);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E151A; --surface:#172129; --surface-2:#1E2A33; --line:#2B3943;
+  --ink:#E3EBF0; --ink-2:#AEBCC5; --ink-3:#8696A1;
+  --teal:#4DB4B1; --teal-ink:#06292B; --teal-soft:#16393B; --teal-text:#86D5D2;
+  --sticky:#F3DA76; --sticky-ink:#2B240A; --sticky-edge:#D3B647;
+  --ok:#5CC48E; --ok-soft:#14322A; --bad:#F08B7B; --bad-soft:#3B201C;
+  --shadow:0 10px 22px -12px rgba(0,0,0,.7);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{height:100%}
+body{min-height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.015em;line-height:1.15}
+p{margin:0}
+.muted{color:var(--ink-3)}
+
+/* Top bar */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.tb{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1.05rem;white-space:nowrap;background:none;border:0;padding:0;cursor:pointer}
+.mark{width:30px;height:30px;border-radius:7px;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;font-weight:800;font-size:1rem}
+.jump{flex:1 1 220px;min-width:0;display:flex;justify-content:center}
+.jump select{width:100%;max-width:440px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font:inherit;font-size:.92rem}
+.score{font-family:var(--f-mono);font-size:.84rem;font-weight:600;background:var(--teal-soft);color:var(--teal-text);padding:7px 12px;border-radius:999px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.icon-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;cursor:pointer;color:var(--ink-2)}
+.icon-btn svg{width:18px;height:18px}
+.progress{height:4px;background:var(--line)}
+.progress span{display:block;height:100%;width:0;background:var(--teal);transition:width .3s ease}
+
+/* Stage */
+.stage{flex:1;width:100%;max-width:1180px;margin:0 auto;padding-block:28px 40px;padding-inline:16px}
+.slide{animation:rise .28s ease}
+@keyframes rise{from{opacity:.35;transform:translateY(6px)}to{opacity:1;transform:none}}
+.head{margin-bottom:24px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.tid{font-family:var(--f-mono);font-size:.78rem;color:var(--ink-3);letter-spacing:.04em}
+.chip{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:4px;background:var(--surface);border:1px solid var(--line);color:var(--ink-2);white-space:nowrap}
+.chip.fmt{background:var(--teal-soft);border-color:transparent;color:var(--teal-text)}
+h2{font-size:clamp(1.65rem,3.4vw,2.5rem);font-weight:750}
+h3{font-size:1.15rem;font-weight:700}
+.lede{color:var(--ink-2);font-size:1.05rem;max-width:70ch;margin-top:10px}
+.eyebrow{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-weight:600;margin-bottom:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;min-width:0}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.mt{margin-top:20px}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.94rem}
+.btn:hover:not([disabled]){border-color:var(--teal)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.btn.sm{padding:6px 12px;font-size:.85rem}
+
+/* Footer nav */
+.footbar{position:sticky;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+.fnav{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.fmid{flex:1;min-width:0;text-align:center;font-size:.84rem;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fmid b{font-family:var(--f-mono);color:var(--ink);font-weight:600;margin-right:8px;font-variant-numeric:tabular-nums}
+.kbd{font-family:var(--f-mono);font-size:.72rem;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-left:8px}
+
+/* Sticky note + feedback */
+.sticky{background:var(--sticky);color:var(--sticky-ink);border-radius:3px;padding:18px 20px;box-shadow:0 1px 0 var(--sticky-edge),var(--shadow)}
+.fb{background:var(--sticky);color:var(--sticky-ink);border-radius:4px;padding:12px 14px;margin-top:12px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 0 var(--sticky-edge)}
+.fb b{display:block}
+.badge{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#FFFFFF;font-weight:800;font-size:.85rem}
+.badge.ok{background:var(--ok-strong)} .badge.bad{background:var(--bad-strong)}
+
+/* MCQ */
+.mcq .situ{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:12px;color:var(--ink-2)}
+.mcq .situ b{color:var(--ink)}
+.mcq .q{font-weight:650;font-size:1.06rem;margin-bottom:12px}
+.opts{display:grid;gap:8px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:11px 14px;cursor:pointer;line-height:1.4}
+.opt:hover{border-color:var(--teal)}
+.opt .k{flex:none;font-family:var(--f-mono);font-size:.78rem;width:24px;height:24px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--ink-2)}
+.opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.correct .k{background:var(--ok-strong);border-color:var(--ok-strong);color:#FFFFFF}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .k{background:var(--bad-strong);border-color:var(--bad-strong);color:#FFFFFF}
+.mcq.done .opt{cursor:default}
+.mcq.done .opt:not(.correct):not(.wrong){opacity:.55}
+.mcq.done .opt:hover{border-color:var(--line)}
+.mcq.done .opt.correct:hover{border-color:var(--ok)} .mcq.done .opt.wrong:hover{border-color:var(--bad)}
+
+/* Flip cards */
+.flip{display:block;width:100%;border:0;padding:0;background:none;text-align:left;cursor:pointer;perspective:1200px;border-radius:10px}
+.flip-in{display:grid;transition:transform .5s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;min-height:200px}
+.front{background:var(--surface);border:1px solid var(--line)}
+.flip:hover .front{border-color:var(--teal)}
+.back{transform:rotateY(180deg);background:var(--sticky);color:var(--sticky-ink);box-shadow:0 1px 0 var(--sticky-edge)}
+.face .hint{margin-top:auto;font-size:.8rem;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.back .hint{color:var(--sticky-ink);opacity:.75}
+.back .mini{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.04em;opacity:.8}
+.back .bk{font-size:1.08rem;font-weight:600;line-height:1.35}
+.back .ask{font-size:.92rem}
+.letter{font-family:var(--f-display);font-weight:800;font-size:3.4rem;line-height:.9;color:var(--teal)}
+.letter.xl{font-size:5.5rem}
+.front .gen{font-family:var(--f-display);font-size:1.5rem;font-weight:700}
+
+/* Ordering */
+.slots{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.slot{border:2px dashed var(--line);border-radius:10px;min-height:110px;padding:12px;display:flex;flex-direction:column;gap:4px;background:var(--surface-2)}
+.slot .n{font-family:var(--f-mono);font-size:.74rem;color:var(--ink-3)}
+.slot.filled{border-style:solid;border-color:var(--teal);background:var(--surface)}
+.slot .L{font-family:var(--f-display);font-weight:800;font-size:2.2rem;line-height:1;color:var(--teal)}
+.slot .nm{font-weight:600;font-size:.88rem;line-height:1.25}
+.status{font-family:var(--f-mono);font-size:.82rem;color:var(--ink-2);margin-bottom:16px}
+.pool{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px}
+.pitem{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;line-height:1.4;font-size:.98rem}
+.pitem:hover{border-color:var(--teal)}
+.pitem.used{visibility:hidden}
+.shake{animation:shake .42s ease;border-color:var(--bad)!important;background:var(--bad-soft)}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+
+/* Sorter */
+.sorter{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:20px;align-items:start}
+.board{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}
+.note-zone{display:flex;flex-direction:column;align-items:center;gap:10px;padding:8px 0 4px}
+.note-count{font-family:var(--f-mono);font-size:.78rem;color:var(--ink-3)}
+.big-note{width:100%;max-width:480px;font-size:1.22rem;font-weight:550;line-height:1.4;transform:rotate(-1.2deg);min-height:120px;display:flex;align-items:center}
+.note-zone .fb{width:100%;max-width:480px}
+.lanes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px;margin-top:18px}
+.lanes.six{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:560px){.lanes.six{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.lane{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;min-height:100px}
+.lane:hover:not([disabled]){border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+.lane[disabled]{cursor:default}
+.lane-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-family:var(--f-display);font-weight:700;font-size:1.02rem;line-height:1.2}
+.cnt{font-family:var(--f-mono);font-size:.74rem;color:var(--ink-3);background:var(--surface-2);border-radius:4px;padding:1px 6px;font-weight:500}
+.lane-sub{font-size:.8rem;color:var(--ink-3);line-height:1.3}
+.pips{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto;padding-top:4px}
+.pip{width:12px;height:12px;border-radius:2px;background:var(--ok)}
+.pip.bad{background:var(--bad)}
+.log{max-height:620px;overflow:auto}
+.log h4{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:1rem;margin-bottom:6px}
+.log h4 span{font-family:var(--f-mono);font-size:.76rem;color:var(--ink-3);font-weight:500}
+.log ol{list-style:none;margin:0;padding:0}
+.log li{display:flex;gap:10px;font-size:.88rem;padding:10px 0;border-top:1px solid var(--line)}
+.log li:first-child{border-top:0}
+.log .lt{font-weight:600}
+.log .lw{margin-top:2px;color:var(--ink-2)}
+.log .badge{width:22px;height:22px;font-size:.75rem}
+.done-box{text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0}
+.done-box .big{font-family:var(--f-display);font-weight:800;font-size:3.2rem;line-height:1;color:var(--teal);font-variant-numeric:tabular-nums}
+
+/* Cover */
+.cover{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:18px;align-items:stretch}
+.cover-main{padding:clamp(20px,4vw,40px)}
+.cover h1{font-size:clamp(2.6rem,7.5vw,5.2rem);font-weight:800;line-height:.95;letter-spacing:-.035em}
+.cover h1 span{color:var(--teal);display:block}
+.cover .lede{margin-top:16px}
+.letters{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:28px}
+.ltile{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ltile:hover{border-color:var(--teal)}
+.ltile .L{font-family:var(--f-display);font-weight:800;font-size:1.9rem;line-height:1;color:var(--teal)}
+.ltile .nm{font-size:.76rem;line-height:1.2;color:var(--ink-2)}
+.modes{display:flex;flex-direction:column;gap:10px}
+.modes h3{margin:4px 0 2px}
+.mode{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;cursor:pointer}
+.mode:hover{border-color:var(--teal)}
+.mode-t{font-family:var(--f-display);font-weight:700;font-size:1.2rem;display:flex;justify-content:space-between;gap:8px}
+.mode-t i{font-style:normal;color:var(--teal)}
+.mode-d{color:var(--ink-2);font-size:.92rem}
+.mode-f{display:flex;flex-wrap:wrap;gap:6px}
+.secs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin-top:12px}
+.secb{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.secb:hover{border-color:var(--teal)}
+.secb .ix{font-family:var(--f-mono);font-size:.74rem;color:var(--ink-3)}
+.secb .sn{font-weight:650}
+.reset-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-top:24px;font-size:.88rem}
+
+/* Comparison */
+.cmp-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.cmp{width:100%;min-width:620px;border-collapse:collapse}
+.cmp th,.cmp td{padding:14px 16px;text-align:left;vertical-align:top;border-top:1px solid var(--line)}
+.cmp thead th{border-top:0;font-family:var(--f-display);font-size:1.15rem}
+.cmp thead th span{font-family:var(--f-body);font-weight:500;color:var(--ink-3);font-size:.9rem}
+.cmp tbody th{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600;width:18%}
+.cmp .co{background:var(--teal-soft)}
+.cmp thead .co{color:var(--teal-text)}
+
+/* Step slides */
+.step-top{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:18px;align-items:start}
+.step-id{display:flex;flex-direction:column;gap:10px}
+.step-id .def{font-size:1.05rem;font-weight:600}
+.step-id .why{color:var(--ink-2);font-size:.94rem}
+.askbox{background:var(--teal-soft);border-radius:8px;padding:12px 14px;color:var(--ink)}
+.askbox .eyebrow{color:var(--teal-text);margin-bottom:4px}
+.sayavoid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
+.col h3{display:flex;align-items:center;gap:8px}
+.dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#FFFFFF;font-size:.75rem;font-weight:800}
+.dot.ok{background:var(--ok-strong)} .dot.bad{background:var(--bad-strong)}
+.lines{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:8px}
+.lines li{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;line-height:1.4}
+.lines.avoid li{display:flex;flex-direction:column;gap:3px}
+.lines .at{font-weight:600}
+.lines .aw{color:var(--ink-3);font-size:.88rem}
+.causes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.cause{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+.cause b{font-family:var(--f-display);font-size:1.05rem}
+.cause p{font-size:.9rem;color:var(--ink-2);margin-top:4px}
+.cause .fix{color:var(--ink);font-weight:600}
+
+/* Voice */
+.verbatim{border-left:0;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:12px 0}
+.verbatim q{display:block;font-family:var(--f-display);font-size:1.25rem;font-weight:600;line-height:1.3;quotes:"\201C" "\201D"}
+.verbatim .src{font-family:var(--f-mono);font-size:.74rem;color:var(--ink-3);margin-top:8px}
+.say-line{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-top:10px}
+.say-line .eyebrow{margin-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.tag{font-size:.82rem;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line)}
+.tag.s{background:var(--ok-soft);border-color:transparent;color:var(--ink)}
+.tag.d{background:var(--bad-soft);border-color:transparent;color:var(--ink)}
+
+/* SMART */
+.weak{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.weak q{font-family:var(--f-display);font-size:1.6rem;font-weight:700;text-decoration:line-through;text-decoration-color:var(--bad);text-decoration-thickness:3px;quotes:"\201C" "\201D"}
+.stamp{font-family:var(--f-mono);font-size:.78rem;font-weight:600;color:var(--bad);border:2px solid var(--bad);border-radius:4px;padding:2px 8px;transform:rotate(-4deg);text-transform:uppercase;letter-spacing:.06em}
+.srow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+.srow:first-child{border-top:0}
+.sL{display:flex;flex-direction:column}
+.sL b{font-family:var(--f-display);font-weight:800;font-size:2rem;line-height:1;color:var(--teal)}
+.sL span{font-size:.85rem;color:var(--ink-2);font-weight:600}
+.squ{font-weight:600;margin-bottom:8px}
+.choices{display:flex;flex-wrap:wrap;gap:8px}
+.choice{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;line-height:1.35;font-size:.94rem}
+.choice:hover{border-color:var(--teal)}
+.choice.correct{border-color:var(--ok);background:var(--ok-soft)}
+.choice.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.locked .choice{cursor:default}
+.locked .choice:not(.correct):not(.wrong){opacity:.5}
+.swhy{font-size:.88rem;color:var(--ink-2);margin-top:8px}
+
+/* Sample session */
+.script{display:grid;gap:12px}
+.blk{display:grid;grid-template-columns:170px minmax(0,1fr);gap:18px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.reveal{border:2px dashed var(--line);background:var(--surface-2);border-radius:6px;padding:10px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;align-self:start;width:100%}
+.reveal:hover{border-color:var(--teal)}
+.reveal .q{font-family:var(--f-display);font-size:1.6rem;font-weight:800;line-height:1;color:var(--ink-3)}
+.reveal .rh{font-size:.78rem;color:var(--ink-3)}
+.reveal.on{border:0;background:var(--sticky);color:var(--sticky-ink);box-shadow:0 1px 0 var(--sticky-edge);transform:rotate(-1deg)}
+.reveal.on .q{color:var(--sticky-ink)}
+.reveal.on .rh{color:var(--sticky-ink)}
+.lines-s{display:grid;gap:8px}
+.ln{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;line-height:1.45}
+.who{font-family:var(--f-mono);font-size:.76rem;color:var(--ink-3);padding-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.ln.sup .who{color:var(--teal-text)}
+.stage-dir{font-style:italic;color:var(--ink-3)}
+
+/* Scenarios / exam */
+.dots{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.dotb{width:34px;height:34px;border-radius:7px;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-family:var(--f-mono);font-size:.8rem}
+.dotb.cur{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+.dotb.ok{background:var(--ok-soft);border-color:var(--ok)}
+.dotb.bad{background:var(--bad-soft);border-color:var(--bad)}
+.exam-bar{display:flex;gap:4px;margin:8px 0 18px}
+.exam-bar span{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.exam-bar span.ok{background:var(--ok)} .exam-bar span.bad{background:var(--bad)} .exam-bar span.cur{background:var(--teal)}
+.result{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:20px;align-items:start}
+.bigscore{font-family:var(--f-display);font-weight:800;font-size:clamp(4.5rem,13vw,8rem);line-height:.9;color:var(--teal);font-variant-numeric:tabular-nums;letter-spacing:-.04em}
+.bigscore small{font-size:.4em;color:var(--ink-3);letter-spacing:0}
+.miss{border-top:1px solid var(--line);padding:12px 0}
+.miss:first-of-type{border-top:0}
+.miss p{font-size:.92rem}
+.miss .ans{color:var(--ok);font-weight:600;margin-top:4px}
+
+/* Checklist */
+.ck-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:18px;align-items:start}
+.ck-sheet{padding:clamp(18px,3vw,32px)}
+.ck-title{font-size:clamp(1.5rem,3vw,2rem);font-weight:800}
+.ck-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px;margin:14px 0 6px}
+.ck-fields label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600;display:flex;flex-direction:column;gap:4px}
+.ck-fields input{font:inherit;font-size:.95rem;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:7px 10px;text-transform:none;letter-spacing:0;min-width:0}
+.ck-g{margin-top:18px}
+.ck-g h4{font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-family:var(--f-body);font-weight:700;margin-bottom:4px}
+.ck{display:grid;grid-template-columns:24px 34px minmax(0,1fr);gap:8px;align-items:start;padding:9px 0;border-top:1px solid var(--line);cursor:pointer}
+.ck input{width:20px;height:20px;accent-color:var(--teal);margin:2px 0 0}
+.ck .cL{font-family:var(--f-display);font-weight:800;font-size:1.25rem;line-height:1.1;color:var(--teal)}
+.ck input:checked ~ .ct{color:var(--ink-3);text-decoration:line-through}
+.copybox{width:100%;min-height:160px;font-family:var(--f-mono);font-size:.78rem;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:10px;margin-top:10px}
+
+@media (max-width:900px){
+  .cover,.step-top,.result,.ck-wrap,.sorter{grid-template-columns:minmax(0,1fr)}
+  .slots{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .letters{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .slots{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .blk{grid-template-columns:minmax(0,1fr)}
+  .srow{grid-template-columns:minmax(0,1fr);gap:8px}
+  .sL{flex-direction:row;align-items:baseline;gap:8px}
+  .ln{grid-template-columns:minmax(0,1fr);gap:0}
+  .kbd,.brand .bt{display:none}
+  .stage{padding-block:20px 32px}
+}
+@media (prefers-reduced-motion: reduce){
+  .flip-in,.progress span{transition:none}
+  .slide{animation:none}
+  .shake{animation:none}
+}
+@media print{
+  .topbar,.footbar,.no-print{display:none!important}
+  body{background:#FFFFFF;color:#000000}
+  .stage{padding:0}
+  .ck-wrap{grid-template-columns:1fr}
+  .card{border:0}
+}
+
+/* ---- Weekly SMART Commitments additions ---- */
+.lanes.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.lanes.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:760px){.lanes.c3,.lanes.c4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.grid-4c{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:14px}
+.grid-5{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.info-tile{background:var(--teal-soft);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px;justify-content:center;min-height:200px}
+.info-tile h3{color:var(--teal-text)}
+.slots.n4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:560px){.slots.n4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.slot .L.word{font-size:1.25rem;line-height:1.15}
+
+/* Week board */
+.week{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.day{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.day-h{font-family:var(--f-mono);font-size:.76rem;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase}
+.sess{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.sess .sn{font-family:var(--f-display);font-weight:700;font-size:1.02rem;line-height:1.2}
+.sess .sd{font-size:.85rem;color:var(--ink-2)}
+.sess .chips{margin:2px 0 0}
+.sess .chip{font-size:.62rem}
+.day.span2{grid-column:span 2}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;flex:1}
+@media (max-width:860px){.week{grid-template-columns:minmax(0,1fr)}.day.span2{grid-column:auto}}
+@media (max-width:520px){.pair{grid-template-columns:minmax(0,1fr)}}
+.link-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.link{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.link .L{font-family:var(--f-display);font-weight:800;font-size:1.8rem;line-height:1;color:var(--teal);flex:none;width:30px}
+.link p{font-size:.92rem}
+
+/* Root cause + 5 whys */
+.whys{display:flex;flex-direction:column;gap:8px}
+.why-row{display:grid;grid-template-columns:70px minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.why-row .wl{font-family:var(--f-mono);font-size:.76rem;color:var(--ink-3);padding-top:3px}
+.why-row.root{background:var(--sticky);color:var(--sticky-ink);border:0;box-shadow:0 1px 0 var(--sticky-edge)}
+.why-row.root .wl{color:var(--sticky-ink)}
+.cause .tools{font-size:.82rem;color:var(--teal-text);font-weight:600;margin-top:6px}
+
+/* Anatomy */
+.anat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px}
+.anat div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px}
+.anat b{display:block;font-family:var(--f-display);font-size:1rem}
+.anat span{font-size:.85rem;color:var(--ink-2)}
+.anat .n{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-3)}
+
+/* Builder */
+.scen{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:760px){.scen{grid-template-columns:minmax(0,1fr)}}
+.grp-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;padding:16px 0 4px;border-top:2px solid var(--line)}
+.grp-h:first-child{border-top:0;padding-top:0}
+.grp-h b{font-family:var(--f-display);font-size:1.2rem}
+.grp-h span{font-size:.88rem;color:var(--ink-2)}
+.sL b.sm{font-size:1.05rem;line-height:1.2}
+
+/* Plan table */
+.plan{width:100%;min-width:640px;border-collapse:collapse}
+.plan th,.plan td{padding:10px 12px;text-align:left;vertical-align:top;border-top:1px solid var(--line);font-size:.92rem}
+.plan thead th{border-top:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+.plan td:first-child{font-family:var(--f-mono);font-size:.8rem;white-space:nowrap}
+
+/* Tracker */
+.trk{display:grid;gap:12px}
+.trow{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:16px}
+@media (max-width:760px){.trow{grid-template-columns:minmax(0,1fr)}}
+.tfields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px 14px}
+.tf{min-width:0}
+.tf .k{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600}
+.tf .v{font-size:.9rem;line-height:1.35}
+.tf.wide{grid-column:1/-1}
+.tsess{display:flex;flex-wrap:wrap;gap:6px;grid-column:1/-1}
+.ts{font-size:.76rem;border:1px solid var(--line);border-radius:6px;padding:3px 8px;background:var(--surface-2)}
+.ts.miss{border-color:var(--bad);background:var(--bad-soft)}
+.tact{display:flex;flex-direction:column;gap:8px}
+.tact .btn{justify-content:center}
+.tact .fb{margin-top:0}
+.trow.ans-ok{border-color:var(--ok)} .trow.ans-bad{border-color:var(--bad)}
+
+/* Form */
+.form-top{display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between}
+.tally{font-family:var(--f-mono);font-size:.84rem;background:var(--teal-soft);color:var(--teal-text);padding:8px 12px;border-radius:8px;font-variant-numeric:tabular-nums}
+.agent-card{border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:14px;background:var(--surface)}
+.agent-card h4{font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-family:var(--f-body);font-weight:700;margin:14px 0 6px}
+.agent-card h4:first-child{margin-top:0}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px}
+.fl{display:flex;flex-direction:column;gap:4px;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:600;min-width:0}
+.fl.wide{grid-column:1/-1}
+.fl input,.fl select{font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:7px 9px;text-transform:none;letter-spacing:0;min-width:0;width:100%}
+.sgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:860px){.sgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.sgrid{grid-template-columns:minmax(0,1fr)}}
+.scell{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.scell .st{font-family:var(--f-display);font-weight:700;font-size:.95rem}
+.scell input,.scell select{font:inherit;font-size:.86rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;width:100%;min-width:0}
+
+.letters.l4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:560px){.letters.l4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.ltile .L.sm{font-size:1rem;line-height:1.2;overflow-wrap:anywhere}
+.sess .sn,.slot .L.word,.lane-h span:first-child{overflow-wrap:anywhere}
+</style>
+
+</head>
+<body>
+<header class="topbar">
+  <div class="tb">
+    <button class="brand" id="home" aria-label="Go to cover"><span class="mark">W</span><span class="bt">Weekly SMART Commitments</span></button>
+    <div class="jump"><label for="jump" style="position:absolute;left:-9999px">Jump to slide</label><select id="jump"></select></div>
+    <span class="score" id="score" aria-live="polite">Correct 0/0</span>
+    <button class="icon-btn" id="theme" aria-label="Switch light or dark mode"></button>
+  </div>
+  <div class="progress"><span id="bar"></span></div>
+</header>
+
+<main class="stage" id="stage"></main>
+
+<nav class="footbar" aria-label="Slide navigation">
+  <div class="fnav">
+    <button class="btn" id="prev">&larr; Previous</button>
+    <div class="fmid"><b id="pos">1 / 21</b><span id="nextup"></span><span class="kbd">&larr; &rarr;</span></div>
+    <button class="btn primary" id="next">Next &rarr;</button>
+  </div>
+</nav>
+
+<script>
+/* ---------- Content ---------- */
+const BEH = [
+ {n:"LARA",full:"Listen, Acknowledge, Respond, Ask",d:"Listen fully, acknowledge what the member said, respond to it, then ask to confirm it landed.",sounds:"“So the claim from your March visit was denied and nobody told you why. Let me pull it up.” … “Did that answer your question?”",sat:"“Just to make sure I’ve got it: you need the new card before your appointment Friday.”",dis:"Members repeating themselves, or “you’re not listening.”"},
+ {n:"Take Ownership",d:"Own the issue until it’s resolved or properly handed off.",sounds:"“I’ll stay on the line while I check that claim.”",sat:"“Let me take care of that for you.”",dis:"“You’ll need to call another department.”"},
+ {n:"Set Clear Expectations",d:"Tell the member what happens next, when, and what they need to do.",sounds:"“Your payment posts in 2 business days. If you don’t see it by Thursday, call us back.”",sat:"“Here’s what happens next, and here’s when.”",dis:"Repeat calls and “nobody told me.”"},
+ {n:"Discover Needs",d:"Ask questions to find the real need behind the call, including what the member didn’t mention.",sounds:"“Besides the ID card, is anything coming up, like a refill or an appointment?”",sat:"“What prompted the call today?”",dis:"A second call about the thing they didn’t ask the first time."},
+ {n:"Be Warm & Friendly",d:"Sound like a person, not a script: tone, the member’s name, a smile you can hear.",sounds:"“Good morning, Mrs. Alvarez! Happy to help with that.”",sat:"Using the member’s name at the greeting and the close.",dis:"Cold, robotic calls."},
+ {n:"Show Appreciation",d:"Thank the member for their time, patience and loyalty, and mean it.",sounds:"“Thank you for holding while I checked that.”",sat:"“Thanks for being with us, Mr. Reyes.”",dis:"The member feeling like a ticket number."},
+ {n:"Demonstrate Empathy",d:"Show you understand how the situation feels, then move to action.",sounds:"“I can hear how stressful this denial is. Let’s work through it together.”",sat:"An empathy line tied to the member’s situation, not a generic one.",dis:"“They didn’t care.”"}
+];
+
+const SESS = [
+ {n:"Setting Goals",day:"Mon–Tue",d:"Pick one behavior, mark the root cause, and agree on the on-call action with the agent.",tools:["Discuss","Self Tape","Setting Expectations"]},
+ {n:"Skill Transfer",day:"Mon–Tue",d:"Teach and practice the on-call action until the agent can do it.",tools:["Model Tape","Self Tape vs. Model","SBS","Fast Ball Quizzes"]},
+ {n:"Monitor",day:"Wed–Thu",d:"Listen to calls and check whether the action is happening.",tools:["Remote Call Listening","SBS"]},
+ {n:"Kudos/Accountability",day:"Fri",d:"Recognize it if the commitment was met. If it wasn’t, hold the agent accountable and adjust the plan.",tools:["Discuss","Self Tape","Setting Expectations"]}
+];
+
+const TOOLS = [
+ {n:"SBS",full:"Side-by-side",d:"Sit with the agent on live calls and coach between calls.",how:"Listen to 2–3 calls. Give one tip after each, then try it on the next call.",fit:"Skill and tool/process gaps. Skill Transfer and Monitor."},
+ {n:"Remote Call Listening",d:"Listen to live or recorded calls without sitting next to the agent.",how:"Pick 3–5 calls of the target type. Score only the committed action.",fit:"Monitor. You hear real behavior, not behavior changed because you’re there."},
+ {n:"Fast Ball Quizzes",d:"Quick 3–5 question quizzes on process or policy.",how:"Ask 3 rapid questions at the desk or in chat. Correct on the spot.",fit:"Knowledge gaps. Skill Transfer."},
+ {n:"Setting Expectations",d:"A clear conversation about the standard, why it matters and what happens next.",how:"State the standard, show the evidence, agree on the action, confirm understanding.",fit:"Will gaps. Setting Goals, and Kudos/Accountability when it wasn’t met."},
+ {n:"Discuss",d:"A two-way conversation built on open questions, the DIRECT way.",how:"Ask what happened, why, and what they’d do differently. Then wait.",fit:"Setting Goals and Kudos/Accountability. Finding what gets in the way."},
+ {n:"Self Tape vs. Model",d:"The agent hears their own call next to a model call and compares.",how:"Play 30 seconds of each at the same moment. Ask: “What’s different?”",fit:"Skill gaps. Skill Transfer."},
+ {n:"Self Tape",d:"The agent listens to their own call and assesses it.",how:"Play the key moment. Ask: “What did the member hear?”",fit:"Setting Goals (find the gap) and Kudos (hear the progress)."},
+ {n:"Model Tape",d:"The agent listens to a strong call by a peer.",how:"Play the model moment. Ask: “What made that work?”",fit:"Knowledge of what good sounds like. Skill Transfer."}
+];
+const TOOL_NAMES = TOOLS.map(t=>t.n);
+
+const SMARTL = [
+ {L:"S",n:"Specific",d:"One action you can hear on a recording.",ex:"“Before closing every billing call, I’ll say when the payment posts.”"},
+ {L:"M",n:"Measurable",d:"A number, plus how it’s checked.",ex:"5 of 5 billing calls, checked with Remote Call Listening."},
+ {L:"A",n:"Achievable",d:"Doable this week, built on what you practiced in Skill Transfer.",ex:"Uses the timeline phrase practiced Tuesday."},
+ {L:"R",n:"Relevant",d:"Drives the selected behavior and fixes the marked root cause.",ex:"Set Clear Expectations · Skill gap in how to say the timeline."},
+ {L:"T",n:"Time-bound",d:"Starts now, checked in Monitor, closed in Kudos/Accountability.",ex:"Starts Monday. Monitor Wed–Thu. Review Friday at 2 pm."}
+];
+
+const CAUSES = [
+ {n:"Knowledge",sign:"Doesn’t know the policy, process or what good sounds like. Gives wrong info or keeps asking peers.",tools:"Fast Ball Quizzes · Model Tape · Discuss"},
+ {n:"Skill",sign:"Knows it, but the delivery slips: rushed, robotic or inconsistent under pressure.",tools:"SBS · Self Tape vs. Model · Self Tape"},
+ {n:"Will",sign:"Knows it, can do it, doesn’t do it. Often shows up only when someone is listening.",tools:"Setting Expectations · Discuss"},
+ {n:"Tool/Process",sign:"The system or the process gets in the way: slow screens, broken steps, outdated job aids.",tools:"SBS on the path · then escalate the process"}
+];
+
+const WHYS = [
+ ["Problem","Kevin’s claim-status members call back within 48 hours. His FCR is 84%."],
+ ["Why 1","Members don’t know what happens after the call."],
+ ["Why 2","Kevin doesn’t give the next step or the timeline before closing."],
+ ["Why 3","He rushes the close."],
+ ["Why 4","He knows the timelines, but isn’t sure how to say them without sounding like a promise he can’t keep."],
+ ["Root cause","Skill. He knows the what, not the how. Behavior: Set Clear Expectations. Skill Transfer tool: Self Tape vs. Model."]
+];
+
+const SORT_CAUSE = {
+ buckets:CAUSES.map(c=>({id:c.n,label:c.n})),
+ items:[
+  {t:"Told the member a referral was needed for a specialist. Their plan doesn’t require one.",b:"Knowledge",why:"Wrong information. She doesn’t know the plan rule."},
+  {t:"Asked a peer three times this week how to read the claim status codes.",b:"Knowledge",why:"He doesn’t know the codes yet."},
+  {t:"Quoted last year’s copay because she didn’t know the plan year changed.",b:"Knowledge",why:"Missing information, not missing ability."},
+  {t:"Knows the next-step script, but it comes out rushed and the member says “wait, what?”",b:"Skill",why:"Knows it, delivery breaks down. Practice fixes it."},
+  {t:"Uses the same empathy line on every call, even happy ones. It sounds robotic.",b:"Skill",why:"Knows empathy matters, hasn’t built the skill to make it real."},
+  {t:"Does LARA well on easy calls but skips Acknowledge when members get upset.",b:"Skill",why:"Inconsistent under pressure is a skill gap."},
+  {t:"Uses the warm greeting when QA is listening and skips it on other calls.",b:"Will",why:"Can do it, chooses when to. That’s will."},
+  {t:"Agreed to offer the digital ID card. Did it on 1 of 6 calls and says it “takes too long.”",b:"Will",why:"Knows how, agreed, didn’t do it. Start with Setting Expectations."},
+  {t:"40+ seconds of dead air on every call while the claims screen loads.",b:"Tool/Process",why:"The system is in the way, not the agent."},
+  {t:"Can’t give an appeal timeline because the process changed and the job aid wasn’t updated.",b:"Tool/Process",why:"A broken process. Escalate it and coach around it."}
+ ]
+};
+
+const SORT_BEH = {
+ buckets:BEH.map(b=>({id:b.n,label:b.n})),
+ items:[
+  {t:"Repeat the member’s issue back in one sentence before researching.",b:"LARA",why:"Listen and Acknowledge before you Respond."},
+  {t:"After answering, ask “Did that answer your question?”",b:"LARA",why:"That’s the Ask that closes the LARA loop."},
+  {t:"Stay on the line during the claim check instead of transferring.",b:"Take Ownership",why:"You keep the issue until it’s solved."},
+  {t:"Warm-transfer with a full summary so the member never repeats the issue.",b:"Take Ownership",why:"A proper handoff is still ownership."},
+  {t:"Before closing, tell the member what happens next and by when.",b:"Set Clear Expectations",why:"Next step plus timeline."},
+  {t:"Give the ID card delivery window and how to use the digital card meanwhile.",b:"Set Clear Expectations",why:"The member knows what to expect and what to do now."},
+  {t:"Ask one open question about upcoming appointments or refills before closing.",b:"Discover Needs",why:"Finds the need the member didn’t mention."},
+  {t:"Ask “What prompted the call today?” before jumping into the account.",b:"Discover Needs",why:"Finds the real reason for the call."},
+  {t:"Greet with the member’s name and an offer to help in the first 5 seconds.",b:"Be Warm & Friendly",why:"A warm, personal start."},
+  {t:"Use the member’s name at least twice during the call.",b:"Be Warm & Friendly",why:"Makes the call personal, not scripted."},
+  {t:"Thank the member by name after every hold.",b:"Show Appreciation",why:"Thanks them for their time and patience."},
+  {t:"Close by thanking the member for being with the plan.",b:"Show Appreciation",why:"Appreciation for their loyalty."},
+  {t:"When the member shares a frustration, acknowledge the feeling before moving to the fix.",b:"Demonstrate Empathy",why:"Feelings first, then action."},
+  {t:"On every denial call, use one empathy line tied to the member’s situation.",b:"Demonstrate Empathy",why:"Specific empathy, not a generic line."}
+ ]
+};
+
+const SORT_AR = {
+ buckets:[{id:"a",label:"On-call action",sub:"You can hear it on a recording"},{id:"r",label:"KPI result",sub:"A number the actions add up to"}],
+ items:[
+  {t:"Thank the member after every hold.",b:"a",why:"An action you can hear."},
+  {t:"Restate the member’s issue before researching.",b:"a",why:"A LARA action you can hear."},
+  {t:"Give the next step and timeline before every close.",b:"a",why:"A Set Clear Expectations action."},
+  {t:"Ask about upcoming refills or appointments before closing.",b:"a",why:"A Discover Needs action."},
+  {t:"Use the member’s name at the greeting and the close.",b:"a",why:"A Be Warm & Friendly action."},
+  {t:"Raise my CSAT to 90%.",b:"r",why:"A result. Ask which action will move it."},
+  {t:"Get my MES NPS to 36.",b:"r",why:"A result, not something you do on a call."},
+  {t:"Hit 92% FCR.",b:"r",why:"A result. The action might be the clear next step."},
+  {t:"Cut AHT by 30 seconds.",b:"r",why:"A result. Find the behavior behind it."},
+  {t:"Zero QA fails this week.",b:"r",why:"An outcome, not an on-call action."}
+ ]
+};
+
+const SORT_TOOL = {
+ buckets:TOOLS.map(t=>({id:t.n,label:t.n})),
+ items:[
+  {t:"Knowledge gap: doesn’t know the new plan-year copays. Skill Transfer comes next.",b:"Fast Ball Quizzes",why:"Quick questions lock in facts."},
+  {t:"Has never heard what a strong denial explanation sounds like.",b:"Model Tape",why:"Let a peer’s call show what good sounds like."},
+  {t:"Knows the empathy line, but it sounds robotic. Needs to hear the difference.",b:"Self Tape vs. Model",why:"Comparing their call to a model makes the gap obvious."},
+  {t:"You need to check the commitment on 5 calls without your presence changing the behavior.",b:"Remote Call Listening",why:"Real behavior, no audience effect."},
+  {t:"Loses 40 seconds finding payment history. You want to coach the path live.",b:"SBS",why:"Sit with them and fix the path on real calls."},
+  {t:"Agreed to the warm greeting but only uses it when observed.",b:"Setting Expectations",why:"A will gap. Restate the standard and why it matters."},
+  {t:"Setting Goals: you want the agent to find the gap before you name it.",b:"Self Tape",why:"Hearing their own call lets them name it."},
+  {t:"Friday: commitment met. You want the agent to explain what changed and set the next step.",b:"Discuss",why:"Open questions, their words, next step."},
+  {t:"Does LARA on easy calls. You want to coach it live on the hard ones.",b:"SBS",why:"Live calls, coaching between them."}
+ ]
+};
+
+const SORT_SESS = {
+ buckets:SESS.map(s=>({id:s.n,label:s.n,sub:s.day})),
+ items:[
+  {t:"Self Tape: the agent hears her own call and names the gap.",b:"Setting Goals",why:"Finding the gap is how the week starts."},
+  {t:"Discuss: agree on the behavior and the on-call action in the agent’s words.",b:"Setting Goals",why:"The agreement happens Monday."},
+  {t:"Model Tape: hear how a peer gives the payment timeline.",b:"Skill Transfer",why:"Teaching what good sounds like."},
+  {t:"Self Tape vs. Model: compare her close with the model close, then practice it.",b:"Skill Transfer",why:"Building the skill before you check it."},
+  {t:"Fast Ball Quizzes: three quick questions on posting timelines.",b:"Skill Transfer",why:"Closing a knowledge gap."},
+  {t:"Remote Call Listening: score only the committed action on 5 calls.",b:"Monitor",why:"Collecting evidence."},
+  {t:"SBS: listen to 3 live calls and check the new close is happening.",b:"Monitor",why:"Live evidence, with a quick tip if needed."},
+  {t:"Discuss: 5 of 5 met. Recognize it and set the next step.",b:"Kudos/Accountability",why:"Kudos, then what’s next."},
+  {t:"Setting Expectations: missed with no reason. Restate the standard and the consequence.",b:"Kudos/Accountability",why:"Accountability, based on Monitor evidence."}
+ ]
+};
+
+const BUILD1 = {
+ scenario:{who:"Marisol · IFM · billing calls",review:"4 of 5 reviewed billing calls ended without telling the member when the payment would post. Two of those members called back the next day. She passed the posting-timelines Fast Ball Quiz last month, but says she “doesn’t want to promise a date.”",verb:"Nobody told me when my payment would show up, so I had to call again."},
+ rows:[
+  {L:"1",n:"Behavior",q:"Which core behavior do you pick?",o:["Discover Needs","Set Clear Expectations","Be Warm & Friendly"],a:1,why:"The gap is the missing next step and timeline."},
+  {L:"2",n:"Root cause",q:"Why that behavior? Mark the root cause.",o:["Knowledge","Skill","Will"],a:1,why:"She knows the timelines (she passed the quiz). She doesn’t know how to say them without sounding like a promise."},
+  {L:"3",n:"Agreed action",q:"What does she agree to do on her calls?",o:["Be clearer with members","Before closing every billing call, tell the member when the payment will post and what to do if it doesn’t","Improve my FCR"],a:1,why:"An action you can hear, in her words."},
+  {L:"4",n:"Measure",q:"How will you both know?",o:["5 of 5 billing calls reviewed in Monitor","As often as I can","Until my CSAT goes up"],a:0,why:"A number, plus how it’s checked."},
+  {L:"5",n:"Skill Transfer tool",q:"Skill Transfer tool for this root cause?",o:["Fast Ball Quizzes","Self Tape vs. Model","Setting Expectations"],a:1,why:"Skill gap: hear her close next to a model close, then practice."},
+  {L:"6",n:"Follow-up",q:"How does the week close?",o:["Next month’s QA","Remote Call Listening Wed–Thu; Kudos/Accountability Friday at 2 pm","When she feels ready"],a:1,why:"Evidence midweek, verdict Friday."}
+ ],
+ result:"<b>Marisol · Set Clear Expectations · Root cause: Skill.</b><br>“Before closing every billing call, I’ll tell the member when the payment will post and what to do if it doesn’t.” Measure: 5 of 5 billing calls. Skill Transfer (Mon–Tue): Self Tape vs. Model. Monitor: Remote Call Listening Wed–Thu. Kudos/Accountability: Friday 2 pm."
+};
+
+const BUILD2 = {
+ rows:[
+  {grp:"Luis",gs:"Set Clear Expectations · Knowledge: doesn’t know the new appeal timelines"},
+  {L:"Mon–Tue",n:"Setting Goals",q:"Tool to agree on the gap and the action",o:["Discuss","Remote Call Listening","Fast Ball Quizzes"],a:0,why:"Open questions to agree on the gap and the action."},
+  {L:"Mon–Tue",n:"Skill Transfer",q:"Tool for a knowledge gap",o:["Fast Ball Quizzes","Setting Expectations","Self Tape"],a:0,why:"Quick questions on the appeal timelines."},
+  {L:"Wed–Thu",n:"Monitor",q:"Tool to check the action on calls",o:["Remote Call Listening","Model Tape","Discuss"],a:0,why:"Real calls, scored only on the committed action."},
+  {L:"Fri",n:"Kudos/Accountability",q:"He hit 5 of 5. Tool?",o:["Fast Ball Quizzes","Discuss","Model Tape"],a:1,why:"Recognize it and set the next step together."},
+  {grp:"Andrea",gs:"Demonstrate Empathy · Skill: her empathy line sounds robotic"},
+  {L:"Mon–Tue",n:"Setting Goals",q:"Tool so she finds the gap herself",o:["Self Tape","Fast Ball Quizzes","Remote Call Listening"],a:0,why:"Hearing her own line lets her name the gap."},
+  {L:"Mon–Tue",n:"Skill Transfer",q:"Tool for a skill gap",o:["Fast Ball Quizzes","Self Tape vs. Model","Setting Expectations"],a:1,why:"Compare her line to a model, then practice."},
+  {L:"Wed–Thu",n:"Monitor",q:"She struggles most on upset callers. Tool?",o:["SBS","Model Tape","Fast Ball Quizzes"],a:0,why:"Live calls, with a quick tip between them."},
+  {L:"Fri",n:"Kudos/Accountability",q:"She hit 4 of 5 and improved a lot. Tool?",o:["Self Tape","Fast Ball Quizzes","Remote Call Listening"],a:0,why:"Let her hear her own progress."},
+  {grp:"Jorge",gs:"Be Warm & Friendly · Will: greets warmly only when someone is listening"},
+  {L:"Mon–Tue",n:"Setting Goals",q:"Tool for a will gap",o:["Setting Expectations","Model Tape","Fast Ball Quizzes"],a:0,why:"Restate the standard, why it matters and what’s expected."},
+  {L:"Mon–Tue",n:"Skill Transfer",q:"He can already do it. Tool?",o:["Fast Ball Quizzes","Discuss","Self Tape vs. Model"],a:1,why:"Find what gets in the way and what matters to him."},
+  {L:"Wed–Thu",n:"Monitor",q:"Tool that catches real behavior",o:["SBS","Remote Call Listening","Model Tape"],a:1,why:"Will gaps hide when you sit next to them."},
+  {L:"Fri",n:"Kudos/Accountability",q:"He hit 2 of 5. Tool?",o:["Fast Ball Quizzes","Setting Expectations","Model Tape"],a:1,why:"Recognize the 2, hold the line on the standard, agree on the consequence."}
+ ],
+ result:"<b>Your week:</b> 12 sessions for 3 agents, each with a tool that fits the session and the root cause. Mark each one Held, Rescheduled or Missed the same day, and report planned vs. held on Friday."
+};
+
+const SCN = [
+ {s:"Daniela committed to giving the next step and timeline on 5 of 5 claim-status calls. Monitor found 3 of 5.",q:"What happens in Kudos/Accountability?",o:["Mark it failed and pick a new behavior","Recognize the 3 with specifics, find what got in the way on the other 2, and adjust the plan","Say “good enough” and close it","Escalate to your manager"],a:1,why:"Partially met: keep the behavior, recognize what worked, and fix what got in the way."},
+ {s:"Kevin hit 5 of 5 on his commitment, but his FCR didn’t move this week.",q:"What does that tell you?",o:["He’s gaming the review","Commitments don’t work","One week is short, and the action may not hit the real driver. Keep it and recheck the verbatims and calls","Nothing, ignore the KPI"],a:2,why:"Actions lead, KPIs lag. If it still doesn’t move, the behavior or the action may not be the real driver."},
+ {s:"Week 3: same agent, same behavior, same commitment, still not met.",q:"What’s wrong?",o:["The root cause or the tool is probably wrong. Go back to Setting Goals and re-diagnose","Give it a fourth week","Raise the target","Pick a different behavior at random"],a:0,why:"Not met twice means the diagnosis needs another look: new root cause, new tool or new action."},
+ {s:"You set goals Monday, did Skill Transfer Tuesday, then went straight to Kudos/Accountability on Friday.",q:"What’s missing?",o:["Nothing","Monitor. Your Friday verdict has no evidence","Rapport","A second Skill Transfer"],a:1,why:"Without Monitor, Kudos and Accountability are based on a guess."},
+ {s:"You planned 6 sessions but held 3 because of staffing.",q:"How do you report it?",o:["Mark all 6 as Held","Don’t mention it","Mark the 3 as Missed with the reason, reschedule them, and report planned vs. held on Friday","Drop those agents’ commitments"],a:2,why:"Honest status plus a recovery plan. Your manager can help with staffing only if they know."},
+ {s:"You marked Knowledge as the root cause, but the agent clearly knows the process.",q:"What do you change?",o:["Keep running Fast Ball Quizzes","Change the root cause (likely Skill or Will) and switch to a tool that fits it","Remove the root cause","Pick a new behavior"],a:1,why:"The root cause picks the tool. Wrong cause, wrong tool."},
+ {s:"On Friday, the agent says: “I never agreed to that.”",q:"What happened in Setting Goals?",o:["Nothing, show them the form","The commitment was assigned, not agreed. Redo it with open questions and let the agent say it in their words","Write them up","Keep it anyway"],a:1,why:"If the agent didn’t say it, they don’t own it."}
+];
+
+const TRACK = [
+ {a:"Daniela",b:"Set Clear Expectations",c:"Skill",act:"Before closing every denial call, I’ll say the next step and when it happens.",m:"5 of 5 reviewed calls",s:[["Mon","Discuss","Held"],["Tue","Self Tape vs. Model","Held"],["Wed","Remote Call Listening","Held"],["Fri","Discuss","Held"]],res:"Met",bad:false,why:"Everything lines up: one behavior, a root cause, an on-call action, a fitting tool, every session held, evidence for the result."},
+ {a:"Kevin",b:"LARA, Take Ownership, Demonstrate Empathy",c:"Knowledge",act:"Do better on all three.",m:"—",s:[["Mon","Discuss","Held"],["Tue","Fast Ball Quizzes","Held"],["Wed","Remote Call Listening","Held"],["Fri","Discuss","Held"]],res:"Not met",bad:true,why:"Three behaviors and no measurable action. Pick one behavior and one action you can hear."},
+ {a:"Marisol",b:"Show Appreciation",c:"(blank)",act:"Thank the member by name after every hold.",m:"5 of 5 reviewed calls",s:[["Mon","Discuss","Held"],["Tue","Model Tape","Held"],["Wed","Remote Call Listening","Held"],["Fri","Discuss","Held"]],res:"Met",bad:true,why:"No root cause. Without it you can’t show why this behavior was picked or that the tool fits."},
+ {a:"Luis",b:"Take Ownership",c:"Knowledge",act:"Hit 92% FCR.",m:"FCR report",s:[["Mon","Discuss","Held"],["Tue","Fast Ball Quizzes","Held"],["Wed","Remote Call Listening","Held"],["Fri","Discuss","Held"]],res:"Not met",bad:true,why:"A KPI result, not an on-call action. What will Luis do on the call?"},
+ {a:"Andrea",b:"Demonstrate Empathy",c:"Skill",act:"On every denial call, one empathy line tied to the member’s situation.",m:"4 of 5 reviewed calls",s:[["Mon","Self Tape","Held"],["Tue","Fast Ball Quizzes","Held"],["Thu","SBS","Held"],["Fri","Self Tape","Held"]],res:"Partially met",bad:true,why:"Fast Ball Quizzes don’t fit a Skill gap. Use Self Tape vs. Model or SBS for Skill Transfer."},
+ {a:"Jorge",b:"Be Warm & Friendly",c:"Will",act:"Greet with the member’s name and an offer to help in the first 5 seconds.",m:"5 of 5 reviewed calls",s:[["Mon","Setting Expectations","Held"],["Tue","Discuss","Held"],["Wed","Remote Call Listening","Missed"],["Fri","Discuss","Held"]],res:"Met",bad:true,why:"Monitor was missed, so “Met” has no evidence."},
+ {a:"Valeria",b:"Discover Needs",c:"Skill",act:"Ask one open question about upcoming refills or appointments before closing.",m:"4 of 5 reviewed calls",s:[["Mon","Self Tape","Held"],["Mon","Model Tape","Held"],["Thu","Remote Call Listening","Held"],["Fri","Discuss","Held"]],res:"Partially met",bad:false,why:"A solid row. Partially met is honest. Friday should find what got in the way on the fifth call."}
+];
+
+const MISTAKES = [
+ {n:"More than one behavior",looks:"“LARA, Ownership and Empathy this week.”",fix:"One behavior per agent per week. Pick the one causing the most member pain."},
+ {n:"No root cause, or always “Knowledge”",looks:"The root cause box is blank, or says Knowledge on every form.",fix:"Use the 5 Whys and write one line of evidence. The cause picks the tool."},
+ {n:"A commitment the agent never agreed to",looks:"“Your commitment this week is…”",fix:"Ask, then let the agent say the action in their own words."},
+ {n:"Actions you can’t hear on a call",looks:"“Be more positive.” “Care more.”",fix:"If you can’t hear it on a recording, rewrite it."},
+ {n:"The same tool for every session",looks:"Discuss, Discuss, Discuss, Discuss.",fix:"Match the tool to the session and to the root cause."},
+ {n:"Skipping Skill Transfer or Monitor",looks:"Goal on Monday, verdict on Friday, nothing in between.",fix:"Practice it by Tuesday, check it Wednesday–Thursday. No evidence, no verdict."},
+ {n:"Sessions planned but never marked",looks:"The plan looks perfect. The status column is empty.",fix:"Mark Held, Rescheduled or Missed the same day."},
+ {n:"Kudos without accountability, or the reverse",looks:"Only praise, or only consequences.",fix:"Recognize what was met and hold the line on what wasn’t, in the same conversation."},
+ {n:"Rolling the commitment over",looks:"Same commitment, week three.",fix:"Not met twice means re-diagnose: new root cause, new tool or new action."}
+];
+
+const BANK = [
+ {q:"How many core behaviors go into one agent’s weekly commitment?",o:["One","Two","Three","All seven"],a:0,why:"One behavior, one on-call action, one week."},
+ {q:"What does the supervisor mark to show why that behavior was selected?",o:["The root cause","The QA score","The agent’s tenure","The coaching tool"],a:0,why:"The root cause explains the choice and picks the tool."},
+ {q:"What are the four root causes?",o:["Knowledge, Skill, Will, Tool/Process","Knowledge, Attitude, Time, Tools","Skill, Speed, Score, System","People, Process, Policy, Product"],a:0,why:"Each one points to a different coaching tool."},
+ {q:"What’s the order of the weekly sessions?",o:["Setting Goals → Skill Transfer → Monitor → Kudos/Accountability","Monitor → Setting Goals → Skill Transfer → Kudos/Accountability","Setting Goals → Monitor → Skill Transfer → Kudos/Accountability","Skill Transfer → Setting Goals → Kudos/Accountability → Monitor"],a:0,why:"Agree, practice, check, close."},
+ {q:"Which is an on-call action, not a result?",o:["“Give the next step and timeline before closing.”","“Hit 90% CSAT.”","“Reach 36 MES NPS.”","“Cut AHT by 30 seconds.”"],a:0,why:"You can hear it on a call. The others are KPIs."},
+ {q:"Who has to agree to the agent’s commitment?",o:["The agent and the supervisor","Only the supervisor","QA","The manager"],a:0,why:"If the agent didn’t agree, they don’t own it."},
+ {q:"Best Skill Transfer tool for a Knowledge gap?",o:["Fast Ball Quizzes","Setting Expectations","Remote Call Listening","Self Tape"],a:0,why:"Quick questions close knowledge gaps."},
+ {q:"Best Skill Transfer tool for a Skill gap?",o:["Self Tape vs. Model","Fast Ball Quizzes","Setting Expectations","Remote Call Listening"],a:0,why:"Hearing the difference, then practicing it."},
+ {q:"Best Setting Goals tool for a Will gap?",o:["Setting Expectations","Fast Ball Quizzes","Model Tape","Self Tape vs. Model"],a:0,why:"State the standard, why it matters and what’s expected."},
+ {q:"Why use Remote Call Listening in Monitor?",o:["You hear real behavior, not behavior that changes because you’re there","It’s faster than QA","It replaces Skill Transfer","It doesn’t need notes"],a:0,why:"Especially important for will gaps."},
+ {q:"LARA stands for…",o:["Listen, Acknowledge, Respond, Ask","Listen, Ask, Repeat, Answer","Learn, Act, Review, Adjust","Listen, Assist, Resolve, Advise"],a:0,why:"Listen, Acknowledge, Respond, Ask."},
+ {q:"“Repeat the member’s issue back before researching” drives which behavior?",o:["LARA","Show Appreciation","Be Warm & Friendly","Take Ownership"],a:0,why:"Listen and Acknowledge before you Respond."},
+ {q:"“Before closing, tell the member what happens next and by when” drives…",o:["Set Clear Expectations","Discover Needs","LARA","Demonstrate Empathy"],a:0,why:"Next step plus timeline."},
+ {q:"“Stay on the line during the claim check instead of transferring” drives…",o:["Take Ownership","Be Warm & Friendly","Discover Needs","Show Appreciation"],a:0,why:"You keep the issue until it’s solved."},
+ {q:"“Ask one open question about upcoming refills or appointments” drives…",o:["Discover Needs","Set Clear Expectations","LARA","Take Ownership"],a:0,why:"Finds the need the member didn’t mention."},
+ {q:"“Thank the member by name after every hold” drives…",o:["Show Appreciation","Demonstrate Empathy","Take Ownership","Discover Needs"],a:0,why:"Thanks for their time and patience."},
+ {q:"“Acknowledge the member’s frustration before moving to the fix” drives…",o:["Demonstrate Empathy","Show Appreciation","Set Clear Expectations","Be Warm & Friendly"],a:0,why:"Feelings first, then action."},
+ {q:"What makes a measure SMART?",o:["A number plus how it’s checked","“As much as possible”","“Better than last week”","The agent’s own opinion"],a:0,why:"Something you can both verify."},
+ {q:"The commitment was met, but the KPI didn’t move. What’s the best read?",o:["Keep it a little longer and recheck the verbatims and calls. The action may not hit the real driver","The agent faked it","Commitments don’t work","Nothing, ignore the KPI"],a:0,why:"Actions lead, KPIs lag."},
+ {q:"Same commitment, not met, three weeks in a row. What do you do?",o:["Re-diagnose the root cause and change the tool or action","Add a fourth week","Raise the target","Stop coaching that agent"],a:0,why:"Repeating the same plan repeats the same result."},
+ {q:"You skipped Monitor this week. What’s the risk?",o:["Your Friday verdict has no evidence","None","The agent won’t know the goal","Skill Transfer won’t happen"],a:0,why:"No evidence, no verdict."},
+ {q:"You held 3 of 6 planned sessions because of staffing. What do you do?",o:["Mark them Missed with the reason, reschedule, and report planned vs. held Friday","Mark them Held","Don’t report it","Cancel those commitments"],a:0,why:"Honest status plus a recovery plan."},
+ {q:"Which session usually uses Self Tape so the agent finds the gap?",o:["Setting Goals","Monitor","Kudos/Accountability only","None"],a:0,why:"Hearing their own call lets them name the gap."},
+ {q:"What does the supervisor record for each session?",o:["Day/time, coaching tool and status (Held, Rescheduled, Missed)","Only the date","Only the tool","Nothing until Friday"],a:0,why:"That’s the supervisor’s weekly commitment."},
+ {q:"The agent hit 3 of 5. What happens in Kudos/Accountability?",o:["Recognize what worked, find what got in the way, adjust the plan","Mark it failed and switch behaviors","Close it as done","Escalate it"],a:0,why:"Partially met keeps the behavior and adjusts the plan."}
+];
+
+const SECS = {start:"Start",week:"The week",build:"Building blocks",agent:"Agent commitment",sup:"Supervisor commitment",review:"Friday review",exam:"Final exam",wrap:"Wrap-up"};
+const MODES = [
+ {t:"Learn",go:"rhythm",d:"The weekly rhythm, the 7 behaviors, the 8 coaching tools and SMART on flip cards.",f:["Flip","Read","Order"]},
+ {t:"Practice",go:"sort-cause",d:"Mark root causes, match actions and tools, build commitments, spot what’s wrong in a tracker.",f:["Sort","Build","Scenarios","Spot"]},
+ {t:"Test",go:"exam",d:"10 random questions from a bank of 25, options shuffled every time.",f:["Exam"]}
+];
+
+/* ---------- State ---------- */
+const KEY = "weekly-commitments-v1";
+const fresh = () => ({i:0,score:{},mcq:{},build:{},track:{},form:{sup:"",week:"",agents:[{},{},{}]}});
+let S = fresh();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch(e) {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} }
+function record(key, ok){ if (key in S.score) return; S.score[key] = !!ok; save(); paintScore(); }
+function paintScore(){ const v = Object.values(S.score); document.getElementById("score").textContent = "Correct " + v.filter(Boolean).length + "/" + v.length; }
+
+let ORDS = {}, SCN_I = 0, EXAM = null, SORTS = {}, WHY_N = 1;
+
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+function shuffle(a){ a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const ABC = "ABCD";
+const escA = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+
+/* ---------- Components ---------- */
+function fbHTML(ok, text){
+  return '<span class="badge '+(ok?'ok':'bad')+'" aria-hidden="true">'+(ok?'✓':'✕')+'</span><div><b>'+(ok?'Correct.':'Not quite.')+'</b>'+text+'</div>';
+}
+function mcq(q, key){
+  const w = document.createElement("div"); w.className = "mcq";
+  w.innerHTML = (q.s ? '<p class="situ"><b>Situation.</b> '+q.s+'</p>' : '') + '<p class="q">'+q.q+'</p><div class="opts">' +
+    q.o.map((o,i)=>'<button class="opt" data-i="'+i+'"><span class="k">'+ABC[i]+'</span><span>'+o+'</span></button>').join('') +
+    '</div><div class="fb" hidden aria-live="polite"></div>';
+  const show = i => {
+    w.classList.add("done");
+    $$(".opt", w).forEach(b => { const j=+b.dataset.i; if (j===q.a) b.classList.add("correct"); else if (j===i) b.classList.add("wrong"); b.setAttribute("aria-disabled","true"); });
+    const fb = $(".fb", w); fb.hidden = false; fb.innerHTML = fbHTML(i===q.a, q.why);
+  };
+  $$(".opt", w).forEach(b => b.addEventListener("click", () => {
+    if (w.classList.contains("done")) return;
+    const i = +b.dataset.i; S.mcq[key] = i; record(key, i===q.a); save(); show(i);
+    if (w.onanswer) w.onanswer();
+  }));
+  if (key in S.mcq) show(S.mcq[key]);
+  return w;
+}
+function flipCard(front, back, label){
+  const b = document.createElement("button");
+  b.className = "flip"; b.setAttribute("aria-pressed","false"); b.setAttribute("aria-label", label || "Flip card");
+  b.innerHTML = '<div class="flip-in"><div class="face front">'+front+'</div><div class="face back">'+back+'</div></div>';
+  b.addEventListener("click", () => { const on = b.classList.toggle("on"); b.setAttribute("aria-pressed", String(on)); });
+  return b;
+}
+function flipControls(h, gridClass){
+  h.innerHTML = '<div class="row" style="margin-bottom:16px"><button class="btn sm" data-fa>Flip all</button><button class="btn sm" data-fr>Turn all back</button></div><div class="'+gridClass+'" data-grid></div>';
+  $("[data-fa]",h).onclick = () => $$(".flip",h).forEach(b=>{b.classList.add("on");b.setAttribute("aria-pressed","true");});
+  $("[data-fr]",h).onclick = () => $$(".flip",h).forEach(b=>{b.classList.remove("on");b.setAttribute("aria-pressed","false");});
+  return $("[data-grid]",h);
+}
+
+function sorter(host, key, cfg){
+  let st = SORTS[key];
+  const start = () => { st = SORTS[key] = {order:shuffle(cfg.items.map((_,i)=>i)), pos:0, log:[]}; draw(); };
+  const label = id => cfg.buckets.find(b=>b.id===id).label;
+  const n = cfg.buckets.length, lc = (n===4||n>=7) ? ' c4' : (n===3||n===6) ? ' c3' : '';
+  function draw(){
+    const done = st.pos >= st.order.length;
+    const it = done ? null : cfg.items[st.order[st.pos]];
+    const right = st.log.filter(l=>l.ok).length;
+    const last = st.log[st.log.length-1];
+    const pips = id => st.log.filter(l=>l.chose===id).map(l=>'<span class="pip'+(l.ok?'':' bad')+'"></span>').join('');
+    const count = id => st.log.filter(l=>l.chose===id).length;
+    const pct = st.log.length ? right/st.log.length : 0;
+    const msg = pct===1 ? "Clean sweep." : pct>=.75 ? "Strong. Check the log for the ones you missed." : "Read the log, then shuffle and run it again.";
+    host.innerHTML =
+      '<div class="sorter"><div class="board"><div class="note-zone">' +
+      (done ? '<div class="done-box"><p class="eyebrow">Board cleared</p><p class="big">'+right+'/'+st.log.length+'</p><p>'+msg+'</p><button class="btn primary" data-act="again">Shuffle and try again</button></div>'
+            : '<p class="note-count">Note '+(st.pos+1)+' of '+st.order.length+'</p><div class="sticky big-note">'+(cfg.quote===false?it.t:'“'+it.t+'”')+'</div>') +
+      (last && !done ? '<div class="fb" aria-live="polite">'+fbHTML(last.ok, (last.ok?' ':' It’s <b style="display:inline">'+label(last.b)+'</b>. ')+'<span>'+last.why+'</span>')+'</div>' : '') +
+      '</div><div class="lanes'+lc+'">' +
+      cfg.buckets.map(b=>'<button class="lane" data-b="'+escA(b.id)+'"'+(done?' disabled':'')+'><span class="lane-h"><span>'+b.label+'</span><span class="cnt">'+count(b.id)+'</span></span>'+(b.sub?'<span class="lane-sub">'+b.sub+'</span>':'')+'<span class="pips">'+pips(b.id)+'</span></button>').join('') +
+      '</div></div><div class="card log"><h4>Log <span>'+right+' right · '+(st.log.length-right)+' wrong</span></h4>' +
+      (st.log.length ? '<ol>'+st.log.slice().reverse().map(l=>'<li><span class="badge '+(l.ok?'ok':'bad')+'" aria-hidden="true">'+(l.ok?'✓':'✕')+'</span><div><p class="lt">'+(cfg.quote===false?l.t:'“'+l.t+'”')+'</p><p class="lw">'+(l.ok?'':'You chose '+label(l.chose)+'. ')+'<b>'+label(l.b)+'.</b> '+l.why+'</p></div></li>').join('')+'</ol>' : '<p class="muted" style="font-size:.9rem">Your answers show up here, newest first, with the reason.</p>') +
+      '</div></div>';
+    $$(".lane", host).forEach(b => b.addEventListener("click", () => {
+      if (st.pos >= st.order.length) return;
+      const idx = st.order[st.pos], item = cfg.items[idx], ok = b.dataset.b === item.b;
+      record(key+"-"+idx, ok);
+      st.log.push({t:item.t, b:item.b, chose:b.dataset.b, ok, why:item.why});
+      st.pos++; draw();
+    }));
+    const again = $('[data-act="again"]', host); if (again) again.addEventListener("click", start);
+  }
+  if (!st) start(); else draw();
+}
+
+function ordering(h, key, items, doneMsg){
+  const N = items.length;
+  if (!ORDS[key]) ORDS[key] = {pool:shuffle(items.map((_,i)=>i)), placed:[], wrong:0};
+  const O = ORDS[key];
+  const draw = () => {
+    const p = O.placed.length, done = p===N;
+    h.innerHTML =
+      '<div class="slots'+(N===4?' n4':'')+'">'+items.map((_,i)=>{ const it = O.placed[i]!==undefined ? items[O.placed[i]] : null;
+        return it ? '<div class="slot filled"><span class="n">'+(it.tag||('Step '+(i+1)))+'</span><span class="L word">'+it.n+'</span></div>' : '<div class="slot"><span class="n">Step '+(i+1)+'</span></div>'; }).join('')+'</div>' +
+      (done ? '<div class="sticky" style="max-width:620px;margin-bottom:16px"><b>Done'+(O.wrong?' with '+O.wrong+' wrong tap'+(O.wrong>1?'s':''):' with zero wrong taps')+'.</b> '+doneMsg+'</div>'
+            : '<p class="status" aria-live="polite">Next: step '+(p+1)+' of '+N+' · Wrong taps: '+O.wrong+'</p>') +
+      '<div class="pool">'+O.pool.map(ix=>{ const used = O.placed.includes(ix);
+        return '<button class="pitem'+(used?' used':'')+'" data-ix="'+ix+'"'+(used?' disabled aria-hidden="true"':'')+'>'+items[ix].d+'</button>'; }).join('')+'</div>' +
+      '<div class="row mt"><button class="btn sm" data-reset>Shuffle and restart</button></div>';
+    $$(".pitem",h).forEach(b=>b.addEventListener("click",()=>{
+      const ix = +b.dataset.ix, pos = O.placed.length; if (pos>=N) return;
+      record(key+"-"+pos, ix===pos);
+      if (ix===pos){ O.placed.push(ix); draw(); }
+      else { O.wrong++; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
+        b.addEventListener("animationend",()=>b.classList.remove("shake"),{once:true});
+        if (matchMedia("(prefers-reduced-motion: reduce)").matches) setTimeout(()=>b.classList.remove("shake"),600);
+        const st=$(".status",h); if (st) st.textContent='Next: step '+(pos+1)+' of '+N+' · Wrong taps: '+O.wrong; }
+    }));
+    $("[data-reset]",h).onclick = () => { ORDS[key] = null; ordering(h, key, items, doneMsg); };
+  };
+  draw();
+}
+
+function builder(h, key, cfg, intro){
+  if (!S.build[key]) S.build[key] = {};
+  const B = S.build[key];
+  const qRows = cfg.rows.map((r,i)=>[r,i]).filter(x=>!x[0].grp);
+  const draw = () => {
+    const all = qRows.every(([,i])=>i in B);
+    const right = qRows.filter(([r,i])=>B[i]===r.a).length;
+    h.innerHTML = (intro||'') + '<div class="card mt">'+cfg.rows.map((r,i)=>{
+       if (r.grp) return '<div class="grp-h"><b>'+r.grp+'</b><span>'+r.gs+'</span></div>';
+       const ch = B[i], locked = ch!==undefined;
+       return '<div class="srow'+(locked?' locked':'')+'"><div class="sL"><b class="'+(r.L.length>2?'sm':'')+'">'+r.L+'</b><span>'+r.n+'</span></div><div><p class="squ">'+r.q+'</p><div class="choices">' +
+         r.o.map((o,j)=>'<button class="choice'+(locked&&j===r.a?' correct':'')+(locked&&j===ch&&ch!==r.a?' wrong':'')+'" data-r="'+i+'" data-j="'+j+'"'+(locked?' aria-disabled="true"':'')+'>'+o+'</button>').join('') +
+         '</div>'+(locked?'<p class="swhy">'+(ch===r.a?'✓ ':'✕ Best pick: “'+r.o[r.a]+'.” ')+r.why+'</p>':'')+'</div></div>'; }).join('')+'</div>' +
+      (all ? '<div class="sticky mt" style="max-width:820px"><p class="eyebrow" style="color:inherit;opacity:.8">Finished · '+right+' of '+qRows.length+' best picks</p><p style="font-size:1.05rem;line-height:1.5">'+cfg.result+'</p></div>'
+           : '<p class="muted mt">Pick one option per row. The finished version appears when every row is done.</p>') +
+      '<div class="row mt"><button class="btn sm" data-reset>Start over</button></div>';
+    $$(".choice",h).forEach(b=>b.onclick=()=>{ const i=+b.dataset.r, j=+b.dataset.j; if (i in B) return; B[i]=j; record(key+"-"+i, j===cfg.rows[i].a); save(); draw(); });
+    $("[data-reset]",h).onclick=()=>{ S.build[key]={}; builder(h,key,cfg,intro); save(); };
+  };
+  draw();
+}
+
+/* ---------- Slide renderers ---------- */
+function rCover(h){
+  const secKeys = Object.keys(SECS).filter(k=>k!=="start");
+  h.innerHTML =
+   '<div class="cover"><div class="card cover-main">' +
+   '<p class="eyebrow">Supervisor training · Medicare Supplement · BVA · IFM · NPG</p>' +
+   '<h1 id="sl-title">Weekly SMART <span>Commitments</span></h1>' +
+   '<p class="lede">One behavior, one root cause, one on-call action the agent agrees to, and four sessions to make it stick. Every answer you give here counts toward the score at the top.</p>' +
+   '<div class="letters l4">'+SESS.map((s,i)=>'<button class="ltile" data-go="rhythm"><span class="L sm">'+s.n+'</span><span class="nm">'+s.day+'</span></button>').join('')+'</div>' +
+   '</div><div class="modes"><h3>Study modes</h3>' +
+   MODES.map(m=>'<button class="mode" data-go="'+m.go+'"><span class="mode-t">'+m.t+'<i aria-hidden="true">→</i></span><span class="mode-d">'+m.d+'</span><span class="mode-f">'+m.f.map(x=>'<span class="chip">'+x+'</span>').join('')+'</span></button>').join('') +
+   '</div></div>' +
+   '<div class="mt"><h3>Jump to a section</h3><div class="secs">' +
+   secKeys.map((k,n)=>{ const first = SLIDES.findIndex(s=>s.sec===k); const cnt = SLIDES.filter(s=>s.sec===k).length;
+     return '<button class="secb" data-go="'+SLIDES[first].id+'"><span class="ix">'+String(n+1).padStart(2,"0")+' · '+cnt+' slide'+(cnt>1?'s':'')+'</span><span class="sn">'+SECS[k]+'</span></button>'; }).join('') +
+   '</div></div>' +
+   '<div class="reset-row"><span class="muted">Your score, answers and commitment card are saved in this browser only.</span><button class="btn sm" id="reset">Reset my progress</button></div>';
+  const rb = $("#reset", h);
+  rb.addEventListener("click", () => {
+    if (rb.dataset.arm) { S = fresh(); ORDS={}; SCN_I=0; EXAM=null; SORTS={}; WHY_N=1; save(); paintScore(); go(0); return; }
+    rb.dataset.arm = "1"; rb.textContent = "Tap again to clear everything";
+    setTimeout(()=>{ if (rb.isConnected){ delete rb.dataset.arm; rb.textContent = "Reset my progress"; } }, 4000);
+  });
+}
+
+function sessCard(s, extra){
+  return '<div class="sess'+(extra||'')+'"><span class="sn">'+s.n+'</span><span class="sd">'+s.d+'</span><span class="chips">'+s.tools.map(t=>'<span class="chip">'+t+'</span>').join('')+'</span></div>';
+}
+function rRhythm(h){
+  const day = (d, inner) => '<div class="day"><span class="day-h">'+d+'</span>'+inner+'</div>';
+  h.innerHTML =
+   '<div class="week"><div class="day span2"><span class="day-h">Mon – Tue</span><div class="pair">'+sessCard(SESS[0])+sessCard(SESS[1])+'</div></div>' +
+   '<div class="day span2"><span class="day-h">Wed – Thu</span>'+sessCard(SESS[2])+'</div>' + day("Fri", sessCard(SESS[3])) + '</div>' +
+   '<p class="muted" style="font-size:.86rem;margin-top:8px">Setting Goals comes first, then Skill Transfer, both Monday–Tuesday (same day or back to back). Chips show the tools that usually fit each session.</p>' +
+   '<div class="mt"><p class="eyebrow">How it connects to DIRECT</p><div class="link-row">' +
+   '<div class="link"><span class="L">C</span><p><b>Cause of Gap</b> becomes the root cause you mark in Setting Goals. It explains why this behavior, and picks the tool.</p></div>' +
+   '<div class="link"><span class="L">T</span><p><b>Tweak & Timeline</b> is the agreed on-call action, the measure and the Friday follow-up.</p></div>' +
+   '<div class="link"><span class="L">I</span><p><b>Indicate Focus</b> in next week’s Setting Goals opens with Friday’s result: “Last week you committed to…”</p></div>' +
+   '</div></div><div class="card mt" id="q"><p class="eyebrow">Quick check</p></div>';
+  $("#q",h).appendChild(mcq({q:"Why does Monitor come before Kudos/Accountability?",o:["So the supervisor has less to do on Friday","So Friday’s recognition or accountability is based on evidence from real calls","Because QA requires it"],a:1,why:"Kudos and accountability only land when they’re based on what you actually heard."},"rhythm-q"));
+}
+
+function rOrderSess(h){
+  ordering(h, "ord-sess", SESS.map(s=>({n:s.n,tag:s.day,d:s.d})), "Agree and practice Monday–Tuesday, check Wednesday–Thursday, close Friday.");
+}
+
+function rBehaviors(h){
+  const g = flipControls(h, "grid-4c");
+  BEH.forEach((b,i) => g.appendChild(flipCard(
+    '<span class="tid">BEHAVIOR '+(i+1)+' OF 7</span><h3 style="font-size:1.45rem">'+b.n+'</h3>'+(b.full?'<p class="muted" style="font-size:.9rem">'+b.full+'</p>':'')+'<span class="hint">What does it sound like? Say it, then flip ↻</span>',
+    '<span class="mini">'+b.n.toUpperCase()+'</span><p class="bk" style="font-size:.98rem">'+b.d+'</p><p style="font-size:.88rem"><b>Satisfier:</b> '+b.sat+'</p><p style="font-size:.88rem"><b>Prevents:</b> '+b.dis+'</p>',
+    b.n+". Flip to see what it sounds like")));
+  const tile = document.createElement("div"); tile.className = "info-tile";
+  tile.innerHTML = '<h3>One per agent, per week</h3><p>Pick the behavior that causes the most member pain on this agent’s calls. Work on that one until it sticks.</p>';
+  g.appendChild(tile);
+}
+
+function rTools(h){
+  const g = flipControls(h, "grid-4c");
+  TOOLS.forEach(t => g.appendChild(flipCard(
+    '<span class="tid">COACHING TOOL</span><h3 style="font-size:1.35rem">'+t.n+'</h3>'+(t.full?'<p class="muted" style="font-size:.9rem">'+t.full+'</p>':'')+'<span class="hint">When would you use it? Flip ↻</span>',
+    '<span class="mini">'+t.n.toUpperCase()+'</span><p class="bk" style="font-size:.98rem">'+t.d+'</p><p style="font-size:.86rem"><b>In 2 minutes:</b> '+t.how+'</p><p style="font-size:.86rem"><b>Best for:</b> '+t.fit+'</p>',
+    t.n+". Flip to see how to use it")));
+}
+
+function rSmart(h){
+  const g = flipControls(h, "grid-5");
+  SMARTL.forEach(s => g.appendChild(flipCard(
+    '<span class="letter">'+s.L+'</span><h3>'+s.n+'</h3><span class="hint">Say what it means for an on-call action ↻</span>',
+    '<span class="mini">'+s.L+' · '+s.n.toUpperCase()+'</span><p class="bk" style="font-size:1rem">'+s.d+'</p><p style="font-size:.86rem"><b>Example:</b> '+s.ex+'</p>',
+    s.n+". Flip to see what it means")));
+}
+
+function rCause(h){
+  h.innerHTML =
+   '<div class="causes">'+CAUSES.map(c=>'<div class="cause"><b>'+c.n+'</b><p>'+c.sign+'</p><p class="tools">'+c.tools+'</p></div>').join('')+'</div>' +
+   '<div class="grid-2 mt"><div class="card"><p class="eyebrow">5 Whys · example</p><div class="whys" id="whys"></div><div class="row mt"><button class="btn primary sm" id="w-next">Ask why</button><button class="btn sm" id="w-reset">Start over</button></div></div>' +
+   '<div class="card"><p class="eyebrow">How to pick the behavior</p><ul class="lines"><li>Pull 3–5 calls of the agent’s most common call type.</li><li>Read their survey verbatims from the last two weeks.</li><li>Ask: which of the 7 behaviors, if fixed, removes the most member pain?</li><li>Ask “why?” until you reach something you can coach. That’s the root cause. Write one line of evidence.</li></ul></div></div>';
+  const draw = () => {
+    $("#whys",h).innerHTML = WHYS.slice(0,WHY_N).map((w,i)=>'<div class="why-row'+(i===WHYS.length-1?' root':'')+'"><span class="wl">'+w[0]+'</span><span>'+w[1]+'</span></div>').join('');
+    const b = $("#w-next",h); b.disabled = WHY_N>=WHYS.length; b.textContent = WHY_N===WHYS.length-1 ? "Reveal the root cause" : "Ask why";
+  };
+  $("#w-next",h).onclick=()=>{ if (WHY_N<WHYS.length){ WHY_N++; draw(); } };
+  $("#w-reset",h).onclick=()=>{ WHY_N=1; draw(); };
+  draw();
+}
+
+function rAgent(h){
+  const fields = [["1","Behavior","One of the 7, picked from calls and surveys"],["2","Root cause","Knowledge, Skill, Will or Tool/Process, plus one line of evidence"],["3","Agreed action","What the agent will do on calls, in their words"],["4","Measure","A number, plus how it’s checked"],["5","Follow-up","Monitor midweek, closed in Friday’s Kudos/Accountability"]];
+  const say = ["Here’s what I heard on three of your calls. What do you notice?","Of the seven behaviors, which one would help your members most right now?","What will you do on your calls this week? Say it your way.","How will we both know it happened?"];
+  const avoid = [["“Your commitment this week is to improve empathy.”","Assigned and vague. The agent didn’t agree to anything."],["“Work on LARA, Ownership and Expectations.”","Too many. One behavior per week."],["“Hit 90% CSAT.”","A result, not an on-call action."],["Leaving the root cause blank","Then nobody knows why this behavior, or which tool fits."]];
+  h.innerHTML =
+   '<p class="eyebrow">The anatomy</p><div class="anat">'+fields.map(f=>'<div><span class="n">'+f[0]+'</span><b>'+f[1]+'</b><span>'+f[2]+'</span></div>').join('')+'</div>' +
+   '<div class="sayavoid mt"><div class="col"><h3><span class="dot ok" aria-hidden="true">✓</span>What to say in Setting Goals</h3><ul class="lines">'+say.map(t=>'<li>“'+t+'”</li>').join('')+'</ul></div>' +
+   '<div class="col"><h3><span class="dot bad" aria-hidden="true">✕</span>What to avoid</h3><ul class="lines avoid">'+avoid.map(a=>'<li><span class="at">'+a[0]+'</span><span class="aw">'+a[1]+'</span></li>').join('')+'</ul></div></div>' +
+   '<div class="card mt" id="q"><p class="eyebrow">Quick check</p></div>';
+  $("#q",h).appendChild(mcq({q:"Which agent commitment is ready to sign?",o:["“I’ll work on empathy and ownership.”","“Demonstrate Empathy · Skill · On every denial call, I’ll use one empathy line tied to the member’s situation, on 5 of 5 reviewed calls. Monitor Wed–Thu, review Friday.”","“I’ll raise my MES NPS to 36 this week.”"],a:1,why:"One behavior, a marked root cause, an action you can hear, a measure and a follow-up."},"agent-q"));
+}
+
+function rBuild1(h){
+  const sc = BUILD1.scenario;
+  const intro = '<div class="scen"><div class="card"><p class="eyebrow">Call review · '+sc.who+'</p><p>'+sc.review+'</p></div>' +
+    '<div class="card"><p class="eyebrow">Survey verbatim · sample</p><div class="verbatim" style="margin:0"><q>'+sc.verb+'</q></div></div></div>';
+  builder(h, "b1", BUILD1, intro);
+}
+
+function rSup(h){
+  const plan = [["Mon 10:00","Setting Goals","Luis, Andrea, Jorge","Discuss · Self Tape · Setting Expectations","Held"],["Mon 2:00 pm","Skill Transfer","Luis, Andrea, Jorge","Fast Ball Quizzes · Self Tape vs. Model · Discuss","Held"],["Wed–Thu","Monitor","All 3, 5 calls each","Remote Call Listening · SBS with Andrea Thu 9:00","Rescheduled (Thu → Fri 9:00)"],["Fri 3:00 pm","Kudos/Accountability","All 3","Discuss · Self Tape · Setting Expectations","Held"]];
+  h.innerHTML =
+   '<p class="eyebrow">The anatomy</p><div class="anat"><div><span class="n">1</span><b>Plan</b><span>For each focus agent, the 4 sessions with day and time</span></div><div><span class="n">2</span><b>Tool</b><span>One coaching tool per session, fit to the session and the root cause</span></div><div><span class="n">3</span><b>Mark</b><span>Held, Rescheduled or Missed (with the reason), the same day</span></div><div><span class="n">4</span><b>Report</b><span>Friday: planned vs. held, plus each agent’s Met / Partially / Not met</span></div></div>' +
+   '<div class="grid-2 mt"><div class="card"><p class="eyebrow">Weak</p><div class="weak"><q>Coach my team more this week.</q><span class="stamp">Not SMART</span></div><p class="muted mt" style="font-size:.92rem">No agents, no sessions, no tools, no days, nothing to mark.</p></div>' +
+   '<div class="card" style="min-width:0"><p class="eyebrow">Strong · supervisor Ruth’s week</p><div style="overflow-x:auto"><table class="plan"><thead><tr><th>When</th><th>Session</th><th>Agents</th><th>Tools</th><th>Status</th></tr></thead><tbody>'+plan.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div><p class="muted" style="font-size:.86rem;margin-top:8px">Friday report: 12 planned · 11 held · 1 rescheduled.</p></div></div>' +
+   '<div class="card mt" id="q"><p class="eyebrow">Quick check</p></div>';
+  $("#q",h).appendChild(mcq({q:"What turns a session plan into a commitment you can be held to?",o:["Writing it in a nice template","Marking each session Held, Rescheduled or Missed the same day, and reporting planned vs. held on Friday","Telling the agents about it"],a:1,why:"A plan nobody marks can’t be reviewed. The status column is the commitment."},"sup-q"));
+}
+
+function rBuild2(h){
+  builder(h, "b2", BUILD2, '<div class="card"><p class="eyebrow">Your three focus agents this week</p><p>Days are set. For each agent, pick the best coaching tool for each session, based on the behavior and the root cause.</p></div>');
+}
+
+function rFriday(h){
+  const out = [["Met","Recognize the specific behavior with Discuss or Self Tape. Then raise the bar or move to the next behavior."],["Partially met","Recognize what worked. Find what got in the way. Adjust the measure or the plan, keep the behavior."],["Not met","Use Monitor evidence. Go back to the root cause. Never just copy last week’s commitment."]];
+  h.innerHTML = '<div class="grid-3" id="fo"></div><div class="mt"><h3>What would you do?</h3><p class="muted" style="margin:4px 0 14px">Seven Friday moments. Pick your move.</p></div><div id="scn"></div>';
+  out.forEach(o => $("#fo",h).appendChild(flipCard('<span class="tid">FRIDAY RESULT</span><h3 style="font-size:1.6rem">'+o[0]+'</h3><span class="hint">What happens next? Flip ↻</span>','<span class="mini">'+o[0].toUpperCase()+'</span><p class="bk">'+o[1]+'</p>',o[0]+". Flip to see what to do")));
+  $$("#fo .face",h).forEach(f=>f.style.minHeight="170px");
+  const host = $("#scn",h);
+  const draw = () => {
+    host.innerHTML = '<div class="dots">'+SCN.map((_,i)=>{ const k="scn-"+i; const st = k in S.score ? (S.score[k]?' ok':' bad') : '';
+      return '<button class="dotb'+st+(i===SCN_I?' cur':'')+'" data-i="'+i+'" aria-label="Scenario '+(i+1)+'">'+(i+1)+'</button>'; }).join('')+'</div>' +
+      '<div class="card" id="sc"></div><div class="row mt"><button class="btn" id="sp"'+(SCN_I===0?' disabled':'')+'>← Previous</button><button class="btn primary" id="sn"'+(SCN_I===SCN.length-1?' disabled':'')+'>Next scenario →</button></div>';
+    const m = mcq(SCN[SCN_I], "scn-"+SCN_I); m.onanswer = () => { const d=$('.dotb[data-i="'+SCN_I+'"]',host); d.classList.add(S.score["scn-"+SCN_I]?'ok':'bad'); };
+    $("#sc",host).appendChild(m);
+    $$(".dotb",host).forEach(b=>b.onclick=()=>{SCN_I=+b.dataset.i; draw();});
+    $("#sp",host).onclick=()=>{ if(SCN_I>0){SCN_I--; draw();} };
+    $("#sn",host).onclick=()=>{ if(SCN_I<SCN.length-1){SCN_I++; draw();} };
+  };
+  draw();
+}
+
+function rTracker(h){
+  const draw = () => {
+    const answered = Object.keys(S.track).length, right = TRACK.filter((t,i)=>i in S.track && S.track[i]===t.bad).length;
+    h.innerHTML = '<p class="status">'+answered+' of '+TRACK.length+' rows checked · '+right+' right</p><div class="trk">' + TRACK.map((t,i)=>{
+      const ans = S.track[i], done = ans!==undefined, ok = done && ans===t.bad;
+      return '<div class="trow'+(done?(ok?' ans-ok':' ans-bad'):'')+'"><div class="tfields">' +
+        '<div class="tf"><div class="k">Agent</div><div class="v"><b>'+t.a+'</b></div></div>' +
+        '<div class="tf"><div class="k">Behavior</div><div class="v">'+t.b+'</div></div>' +
+        '<div class="tf"><div class="k">Root cause</div><div class="v">'+t.c+'</div></div>' +
+        '<div class="tf"><div class="k">Measure</div><div class="v">'+t.m+'</div></div>' +
+        '<div class="tf"><div class="k">Friday</div><div class="v">'+t.res+'</div></div>' +
+        '<div class="tf wide"><div class="k">Agreed action</div><div class="v">“'+t.act+'”</div></div>' +
+        '<div class="tsess">'+t.s.map((x,k)=>'<span class="ts'+(x[2]==="Missed"?' miss':'')+'">'+SESS[k].n+' · '+x[0]+' · '+x[1]+' · <b>'+x[2]+'</b></span>').join('')+'</div>' +
+        '</div><div class="tact">' + (done ? '<div class="fb">'+fbHTML(ok,' '+(t.bad?'<b style="display:inline">Problem:</b> ':'<b style="display:inline">Looks good.</b> ')+t.why)+'</div>'
+          : '<button class="btn" data-i="'+i+'" data-v="0">Looks good</button><button class="btn" data-i="'+i+'" data-v="1">Has a problem</button>') +
+        '</div></div>'; }).join('') + '</div><div class="row mt"><button class="btn sm" id="t-reset">Clear my answers</button></div>';
+    $$(".tact .btn",h).forEach(b=>b.onclick=()=>{ const i=+b.dataset.i, v=b.dataset.v==="1"; S.track[i]=v; record("trk-"+i, v===TRACK[i].bad); save(); draw(); });
+    $("#t-reset",h).onclick=()=>{ S.track={}; save(); draw(); };
+  };
+  draw();
+}
+
+function rMistakes(h){
+  const g = flipControls(h, "grid-3");
+  MISTAKES.forEach((m,i)=>g.appendChild(flipCard(
+    '<span class="tid">MISTAKE '+(i+1)+' OF '+MISTAKES.length+'</span><h3 style="font-size:1.3rem">'+m.n+'</h3><p class="muted"><b style="color:var(--ink-2)">Looks like:</b> '+m.looks+'</p><span class="hint">What’s the fix? Say it, then flip ↻</span>',
+    '<span class="mini">THE FIX</span><p class="bk">'+m.fix+'</p>', m.n+". Flip to see the fix")));
+}
+
+function newExam(){
+  const qs = shuffle(BANK.map((_,i)=>i)).slice(0,10);
+  EXAM = {qs, perms:qs.map(qi=>shuffle(BANK[qi].o.map((_,k)=>k))), picks:[], i:0};
+}
+function rExam(h){
+  const draw = () => {
+    if (!EXAM){
+      h.innerHTML = '<div class="grid-2"><div class="card"><p class="bigscore">10<small> questions</small></p><p class="lede">Drawn at random from a bank of '+BANK.length+'. Options are shuffled. You’ll see right or wrong after each answer, and your score at the end.</p><div class="row mt"><button class="btn primary" id="ex-go">Start the exam</button></div></div>' +
+        '<div class="card"><p class="eyebrow">What it covers</p><ul class="lines">'+["The 7 core behaviors and the actions that drive them","Root causes and the 5 Whys","The 4 weekly sessions and their order","The 8 coaching tools and when each fits","On-call actions vs. KPI results","Friday review: met, partially met, not met"].map(x=>'<li>'+x+'</li>').join('')+'</ul></div></div>';
+      $("#ex-go",h).onclick=()=>{ newExam(); draw(); };
+      return;
+    }
+    const E = EXAM, n = E.qs.length;
+    const bar = '<div class="exam-bar" aria-hidden="true">'+E.qs.map((qi,k)=>{ const p=E.picks[k]; return '<span class="'+(p===undefined?(k===E.i?'cur':''):(p===BANK[qi].a?'ok':'bad'))+'"></span>'; }).join('')+'</div>';
+    if (E.i >= n){
+      const right = E.qs.filter((qi,k)=>E.picks[k]===BANK[qi].a).length;
+      const msg = right===10 ? "Perfect. You’re ready to run the weekly cycle on your own. Fill in your commitment card next."
+        : right>=8 ? "Strong. Review what you missed, then fill in your commitment card for this week."
+        : right>=6 ? "Good base. Redo the sorts and the builders, then take a new exam."
+        : "Not there yet. Go back to the flip cards and the root-cause slide, then try again.";
+      const missed = E.qs.map((qi,k)=>({q:BANK[qi],p:E.picks[k]})).filter(x=>x.p!==x.q.a);
+      h.innerHTML = bar + '<div class="result"><div class="card"><p class="eyebrow">Your score</p><p class="bigscore">'+right+'<small>/'+n+'</small></p><div class="sticky mt"><p style="font-weight:600">'+msg+'</p></div><div class="row mt"><button class="btn primary" id="ex-new">New exam</button><button class="btn" data-go="card">Go to my commitments</button></div></div>' +
+        '<div class="card"><p class="eyebrow">'+(missed.length?'Review what you missed':'Nothing to review')+'</p>' +
+        (missed.length ? missed.map(x=>'<div class="miss"><p><b>'+x.q.q+'</b></p><p class="muted">You picked: '+x.q.o[x.p]+'</p><p class="ans">Answer: '+x.q.o[x.q.a]+'</p><p class="muted">'+x.q.why+'</p></div>').join('') : '<p>Every answer was right. Nice work.</p>') + '</div></div>';
+      $("#ex-new",h).onclick=()=>{ newExam(); draw(); };
+      return;
+    }
+    const qi = E.qs[E.i], q = BANK[qi], perm = E.perms[E.i], pick = E.picks[E.i];
+    h.innerHTML = '<p class="status">Question '+(E.i+1)+' of '+n+'</p>' + bar +
+      '<div class="card mcq'+(pick!==undefined?' done':'')+'" style="max-width:820px"><p class="q" style="font-size:1.2rem">'+q.q+'</p><div class="opts">' +
+      perm.map((oi,j)=>{ let c=''; if (pick!==undefined){ if (oi===q.a) c=' correct'; else if (oi===pick) c=' wrong'; }
+        return '<button class="opt'+c+'" data-oi="'+oi+'"><span class="k">'+ABC[j]+'</span><span>'+q.o[oi]+'</span></button>'; }).join('') +
+      '</div>' + (pick!==undefined ? '<div class="fb" aria-live="polite">'+fbHTML(pick===q.a, ' '+q.why)+'</div><div class="row mt"><button class="btn primary" id="ex-next">'+(E.i===n-1?'See my score':'Next question →')+'</button></div>' : '') + '</div>';
+    $$(".opt",h).forEach(b=>b.onclick=()=>{ if (E.picks[E.i]!==undefined) return; const oi=+b.dataset.oi; E.picks[E.i]=oi; record("exam-"+qi, oi===q.a); draw(); const nx=$("#ex-next",h); if(nx) nx.focus(); });
+    const nx = $("#ex-next",h); if (nx) nx.onclick=()=>{ E.i++; draw(); };
+  };
+  draw();
+}
+
+function rCard(h){
+  const F = S.form;
+  const opt = (list, v, ph) => '<option value="">'+ph+'</option>'+list.map(x=>'<option'+(x===v?' selected':'')+'>'+escA(x)+'</option>').join('');
+  const draw = () => {
+    let planned=0, held=0;
+    F.agents.forEach(a=>SESS.forEach((_,k)=>{ const s=(a.s||{})[k]||{}; if (s.when||s.tool) planned++; if (s.st==="Held") held++; }));
+    h.innerHTML = '<div class="card ck-sheet" id="sheet"><div class="form-top"><div><p class="eyebrow">Teleperformance · Supervisor tool</p><p class="ck-title">My Weekly Commitments</p></div><span class="tally">Sessions held: '+held+' of '+planned+' planned</span></div>' +
+      '<div class="ck-fields"><label for="f-sup">Supervisor<input id="f-sup" data-top="sup" value="'+escA(F.sup)+'" autocomplete="off"></label><label for="f-week">Week of<input id="f-week" data-top="week" value="'+escA(F.week)+'" autocomplete="off"></label></div>' +
+      F.agents.map((a,i)=>{ const s=a.s||{};
+        return '<div class="agent-card"><h4>Agent commitment · '+(i+1)+'</h4><div class="fgrid">' +
+          '<label class="fl" for="a'+i+'-name">Agent<input id="a'+i+'-name" data-a="'+i+'" data-k="name" value="'+escA(a.name)+'" autocomplete="off"></label>' +
+          '<label class="fl" for="a'+i+'-beh">Core behavior<select id="a'+i+'-beh" data-a="'+i+'" data-k="beh">'+opt(BEH.map(b=>b.n),a.beh,"Choose…")+'</select></label>' +
+          '<label class="fl" for="a'+i+'-rc">Root cause<select id="a'+i+'-rc" data-a="'+i+'" data-k="rc">'+opt(CAUSES.map(c=>c.n),a.rc,"Choose…")+'</select></label>' +
+          '<label class="fl" for="a'+i+'-res">Friday result<select id="a'+i+'-res" data-a="'+i+'" data-k="res">'+opt(["Met","Partially met","Not met"],a.res,"—")+'</select></label>' +
+          '<label class="fl wide" for="a'+i+'-ev">Evidence for the root cause<input id="a'+i+'-ev" data-a="'+i+'" data-k="ev" value="'+escA(a.ev)+'" autocomplete="off"></label>' +
+          '<label class="fl wide" for="a'+i+'-act">Agreed on-call action (agent’s words)<input id="a'+i+'-act" data-a="'+i+'" data-k="act" value="'+escA(a.act)+'" autocomplete="off"></label>' +
+          '<label class="fl wide" for="a'+i+'-m">Measure and how it’s checked<input id="a'+i+'-m" data-a="'+i+'" data-k="m" value="'+escA(a.m)+'" autocomplete="off"></label>' +
+          '</div><h4>My sessions with this agent</h4><div class="sgrid">' +
+          SESS.map((se,k)=>{ const x=s[k]||{}; return '<div class="scell"><span class="st">'+se.n+'</span>' +
+            '<input aria-label="'+se.n+' day and time" placeholder="Day / time" data-a="'+i+'" data-s="'+k+'" data-sk="when" value="'+escA(x.when)+'">' +
+            '<select aria-label="'+se.n+' coaching tool" data-a="'+i+'" data-s="'+k+'" data-sk="tool">'+opt(TOOL_NAMES,x.tool,"Coaching tool…")+'</select>' +
+            '<select aria-label="'+se.n+' status" data-a="'+i+'" data-s="'+k+'" data-sk="st">'+opt(["Held","Rescheduled","Missed"],x.st,"Status…")+'</select></div>'; }).join('') +
+          '</div></div>'; }).join('') +
+      '<div class="row mt no-print"><button class="btn" id="f-add"'+(F.agents.length>=10?' disabled':'')+'>+ Add an agent</button>'+(F.agents.length>1?'<button class="btn" id="f-rem">Remove the last agent</button>':'')+'</div></div>' +
+      '<div class="grid-2 mt no-print"><div class="card"><h3>Take it with you</h3><p class="muted" style="margin:6px 0 12px;font-size:.92rem">Copy the card as text and paste it into Word, Teams or an email to print or send to your manager. Everything you type is saved in this browser.</p><div class="row"><button class="btn primary" id="f-copy">Copy as text</button><button class="btn" id="f-clear">Clear the card</button></div><textarea class="copybox" id="f-box" hidden readonly aria-label="Commitment card text"></textarea></div>' +
+      '<div class="card"><p class="eyebrow">Before you sign it</p><ul class="lines"><li>One behavior per agent, with a root cause and one line of evidence</li><li>An action you can hear on a call, in the agent’s words</li><li>A tool for every session that fits the root cause</li><li>Every session marked the same day</li></ul></div></div>';
+    $$("[data-top]",h).forEach(el=>el.oninput=()=>{ F[el.dataset.top]=el.value; save(); });
+    $$("[data-k]",h).forEach(el=>{ const ev = el.tagName==="SELECT"?"onchange":"oninput"; el[ev]=()=>{ F.agents[+el.dataset.a][el.dataset.k]=el.value; save(); }; });
+    $$("[data-sk]",h).forEach(el=>{ const ev = el.tagName==="SELECT"?"onchange":"oninput"; el[ev]=()=>{ const a=F.agents[+el.dataset.a]; a.s=a.s||{}; const k=el.dataset.s; a.s[k]=a.s[k]||{}; a.s[k][el.dataset.sk]=el.value; save(); if (el.tagName==="SELECT") tally(); }; });
+    const tally = () => { let p=0,hd=0; F.agents.forEach(a=>SESS.forEach((_,k)=>{ const s=(a.s||{})[k]||{}; if (s.when||s.tool) p++; if (s.st==="Held") hd++; })); $(".tally",h).textContent="Sessions held: "+hd+" of "+p+" planned"; };
+    $$("[data-sk='when']",h).forEach(el=>el.addEventListener("change",tally));
+    $("#f-add",h).onclick=()=>{ if (F.agents.length<10){ F.agents.push({}); save(); draw(); } };
+    const rm=$("#f-rem",h); if (rm) rm.onclick=()=>{ F.agents.pop(); save(); draw(); };
+    $("#f-clear",h).onclick=()=>{ const b=$("#f-clear",h); if (b.dataset.arm){ S.form = fresh().form; save(); rCard(h); return; } b.dataset.arm="1"; b.textContent="Tap again to clear"; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.arm; b.textContent="Clear the card"; } },4000); };
+    $("#f-copy",h).onclick=()=>{
+      let t = "MY WEEKLY COMMITMENTS\nSupervisor: "+(F.sup||"________")+"   Week of: "+(F.week||"________")+"\n";
+      F.agents.forEach((a,i)=>{ t += "\nAGENT "+(i+1)+": "+(a.name||"________")+"\n  Behavior: "+(a.beh||"—")+"   Root cause: "+(a.rc||"—")+"\n  Evidence: "+(a.ev||"—")+"\n  Agreed action: "+(a.act||"—")+"\n  Measure: "+(a.m||"—")+"\n  Friday result: "+(a.res||"—")+"\n";
+        SESS.forEach((se,k)=>{ const x=(a.s||{})[k]||{}; t += "  - "+se.n+": "+(x.when||"—")+" · "+(x.tool||"—")+" · "+(x.st||"—")+"\n"; }); });
+      const b=$("#f-copy",h), box=$("#f-box",h);
+      const fallback=()=>{ box.hidden=false; box.value=t; box.focus(); box.select(); b.textContent="Select and copy below"; };
+      try { navigator.clipboard.writeText(t).then(()=>{ b.textContent="Copied"; setTimeout(()=>{ if(b.isConnected) b.textContent="Copy as text"; },2000); }).catch(fallback); } catch(e){ fallback(); }
+    };
+  };
+  draw();
+}
+
+/* ---------- Slides ---------- */
+const SLIDES = [
+ {id:"cover",sec:"start",fmt:"Start",title:"Weekly SMART Commitments",r:rCover},
+ {id:"rhythm",sec:"week",fmt:"Read + quiz",title:"The weekly rhythm",lede:"Four sessions per focus agent, every week. The agent commits to an on-call action. You commit to the sessions that make it stick.",r:rRhythm},
+ {id:"order-sess",sec:"week",fmt:"Order",title:"Put the four sessions in order",lede:"Tap the descriptions in the order they happen during the week. A wrong tap shakes.",r:rOrderSess},
+ {id:"behaviors",sec:"build",fmt:"Flip",title:"The 7 core behaviors",lede:"Every agent commitment starts with one of these. Say what each one sounds like on a call before you flip.",r:rBehaviors},
+ {id:"tools",sec:"build",fmt:"Flip",title:"The 8 coaching tools",lede:"Every session uses one. Say when you’d use each tool before you flip.",r:rTools},
+ {id:"smart",sec:"build",fmt:"Flip",title:"SMART, for on-call actions",lede:"Each letter is a test the agent’s commitment has to pass.",r:rSmart},
+ {id:"cause",sec:"agent",fmt:"Read + reveal",title:"Pick the behavior, mark the root cause",lede:"The root cause explains why you picked this behavior, and it picks the coaching tool.",r:rCause},
+ {id:"sort-cause",sec:"agent",fmt:"Sort",title:"Which root cause is it?",lede:"Each note is from a call review. Send it to its root cause.",r:h=>sorter(h,"rc",SORT_CAUSE)},
+ {id:"sort-beh",sec:"agent",fmt:"Sort",title:"Which behavior does this action drive?",lede:"Each note is an on-call action an agent could commit to. Match it to the core behavior it improves.",r:h=>sorter(h,"beh",SORT_BEH)},
+ {id:"agent",sec:"agent",fmt:"Read + quiz",title:"The agent commitment",lede:"Agreed in Setting Goals, in the agent’s words, about something they’ll do on their calls.",r:rAgent},
+ {id:"sort-ar",sec:"agent",fmt:"Sort",title:"On-call action or KPI result?",lede:"“Raise my CSAT to 90%” is a result. The commitment is the action that moves it.",r:h=>sorter(h,"ar",SORT_AR)},
+ {id:"build1",sec:"agent",fmt:"Build",title:"Build Marisol’s commitment",lede:"Read the call review and the verbatim, then build the commitment one field at a time.",r:rBuild1},
+ {id:"sup",sec:"sup",fmt:"Read + quiz",title:"The supervisor commitment",lede:"Your weekly commitment is the sessions: which agent, which session, which day, which tool, and whether it happened.",r:rSup},
+ {id:"sort-tool",sec:"sup",fmt:"Sort",title:"Pick the coaching tool",lede:"Read the situation and send it to the tool that fits best.",r:h=>sorter(h,"tool",SORT_TOOL,{})},
+ {id:"sort-sess",sec:"sup",fmt:"Sort",title:"Which session is this?",lede:"Each note is a tool used for a purpose. Send it to the session where it belongs.",r:h=>sorter(h,"sess",SORT_SESS)},
+ {id:"build2",sec:"sup",fmt:"Build",title:"Plan a week for three agents",lede:"Three agents, three root causes, twelve sessions. Pick the best tool for each.",r:rBuild2},
+ {id:"friday",sec:"review",fmt:"Flip + scenarios",title:"The Friday review",lede:"Three possible results, and seven moments that test how you close the week.",r:rFriday},
+ {id:"tracker",sec:"review",fmt:"Spot",title:"Spot the problems in this tracker",lede:"Seven rows from a supervisor’s week. Decide whether each one looks good or has a problem.",r:rTracker},
+ {id:"mistakes",sec:"review",fmt:"Flip",title:"Nine common mistakes",lede:"You’ll recognize these. Name the fix before you flip.",r:rMistakes},
+ {id:"exam",sec:"exam",fmt:"Exam",title:"Final exam",lede:"Ten questions. No notes.",r:rExam},
+ {id:"card",sec:"wrap",fmt:"Card",title:"My Weekly Commitments",lede:"Fill it in Monday, mark it every day, review it Friday.",r:rCard}
+];
+[SORT_TOOL,SORT_SESS,SORT_CAUSE,SORT_BEH,SORT_AR].forEach(c=>c.quote=false);
+
+/* ---------- Navigation ---------- */
+function headHTML(s, i){
+  return '<header class="head"><div class="meta"><span class="tid">WSC-'+String(i+1).padStart(2,"0")+'</span><span class="chip">'+SECS[s.sec]+'</span><span class="chip fmt">'+s.fmt+'</span></div><h2 id="sl-title">'+s.title+'</h2>'+(s.lede?'<p class="lede">'+s.lede+'</p>':'')+'</header>';
+}
+function go(i){
+  i = Math.max(0, Math.min(SLIDES.length-1, i));
+  S.i = i; save();
+  const s = SLIDES[i], st = $("#stage");
+  st.innerHTML = "";
+  const art = document.createElement("article"); art.className = "slide"; art.setAttribute("aria-labelledby","sl-title");
+  if (s.id !== "cover") art.insertAdjacentHTML("beforeend", headHTML(s,i));
+  const body = document.createElement("div"); art.appendChild(body); st.appendChild(art);
+  s.r(body, s);
+  $("#jump").value = String(i);
+  $("#bar").style.width = (i/(SLIDES.length-1)*100) + "%";
+  $("#prev").disabled = i===0; $("#next").disabled = i===SLIDES.length-1;
+  $("#pos").textContent = (i+1)+" / "+SLIDES.length;
+  $("#nextup").textContent = i<SLIDES.length-1 ? "Next: "+SLIDES[i+1].title : "Last slide";
+  window.scrollTo(0,0);
+}
+const goId = id => { const i = SLIDES.findIndex(s=>s.id===id); if (i>=0) go(i); };
+
+(function init(){
+  const sel = $("#jump");
+  Object.keys(SECS).forEach(k=>{
+    const g = document.createElement("optgroup"); g.label = SECS[k];
+    SLIDES.forEach((s,i)=>{ if (s.sec===k){ const o=document.createElement("option"); o.value=String(i); o.textContent=(i+1)+". "+s.title; g.appendChild(o); } });
+    sel.appendChild(g);
+  });
+  sel.addEventListener("change", ()=>go(+sel.value));
+  $("#prev").onclick = ()=>go(S.i-1);
+  $("#next").onclick = ()=>go(S.i+1);
+  $("#home").onclick = ()=>go(0);
+  $("#stage").addEventListener("click", e=>{ const b = e.target.closest("[data-go]"); if (b) goId(b.dataset.go); });
+  document.addEventListener("keydown", e=>{
+    if (e.altKey||e.ctrlKey||e.metaKey) return;
+    if (e.target.closest && e.target.closest("input,select,textarea")) return;
+    if (e.key==="ArrowRight"){ e.preventDefault(); go(S.i+1); }
+    else if (e.key==="ArrowLeft"){ e.preventDefault(); go(S.i-1); }
+  });
+  const sun='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+  const moon='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  const isDark = () => { const t = document.documentElement.dataset.theme; return t ? t==="dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+  const paint = () => { $("#theme").innerHTML = isDark()? sun : moon; };
+  try { const t = localStorage.getItem(KEY+"-theme"); if (t==="dark"||t==="light") document.documentElement.dataset.theme = t; } catch(e) {}
+  $("#theme").onclick = () => { const d = !isDark(); document.documentElement.dataset.theme = d?"dark":"light"; try{ localStorage.setItem(KEY+"-theme", d?"dark":"light"); }catch(e){} paint(); };
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paint); } catch(e) {}
+  paint(); paintScore();
+  const hash = (location.hash||"").slice(1);
+  const hi = SLIDES.findIndex(s=>s.id===hash);
+  go(hi>=0 ? hi : (S.i||0));
+})();
+
+</script>
+
+</body>
+</html>
