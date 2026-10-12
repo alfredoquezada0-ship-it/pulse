@@ -6,13 +6,13 @@ create table if not exists diagnoses (
   agent_id uuid not null references users(id) on delete cascade,
   week_start date not null,
   calls jsonb default '[]'::jsonb,   -- the supervisor's call listening: [{ label, marks: { behavior: 'shown'|'missed' }, note }]
-  evidence_top text check (evidence_top in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),  -- most-missed behavior in those calls
-  sup_pick text not null check (sup_pick in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  evidence_top text,  -- most-missed behavior in those calls
+  sup_pick text not null,
   sup_reason text,
-  ai_pick text check (ai_pick in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  ai_pick text,
   ai jsonb,                          -- the AI's second opinion
   agrees boolean,
-  final_pick text check (final_pick in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  final_pick text,
   final_reason text,
   status text not null default 'draft' check (status in ('draft','final')),
   session_id uuid references coaching_sessions(id) on delete set null,

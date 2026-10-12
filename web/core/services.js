@@ -153,13 +153,13 @@ export function buildAlerts({ agents, summaries, commitments, sessions, week, no
 }
 
 // ---------- Effectiveness: before vs. after the first coaching session ----------
-export function effectiveness(agent, rows, sessions, commitments) {
+export function effectiveness(agent, rows, sessions, commitments, behaviors = BEHAVIORS) {
   const done = sessions.filter((s) => s.agent_id === agent.id && s.status === "completed").sort((a, b) => (a.date < b.date ? -1 : 1));
   if (!done.length) return null;
   const start = weekStart(done[0].date);
   const before = rows.filter((r) => r.week_start < start).slice(-4);
   const after = rows.filter((r) => r.week_start >= start);
-  const kpi = done[done.length - 1].kpi_focus || BEHAVIOR_BY_ID[done[0].behavior]?.kpis[0] || "nps";
+  const kpi = done[done.length - 1].kpi_focus || behaviors.find((b) => b.id === done[0].behavior)?.kpis?.[0] || BEHAVIOR_BY_ID[done[0].behavior]?.kpis[0] || "nps";
   const b = avg(before.map((r) => r[kpi])), a = avg(after.map((r) => r[kpi]));
   const dir = KPI_BY_ID[kpi].dir;
   const cs = commitments.filter((c) => c.agent_id === agent.id && c.status !== "open");
@@ -171,19 +171,19 @@ export function effectiveness(agent, rows, sessions, commitments) {
   };
 }
 
-export function behaviorDistribution(commitments) {
-  return BEHAVIORS.map((b) => ({ id: b.id, name: b.name, count: commitments.filter((c) => c.behavior === b.id).length, met: commitments.filter((c) => c.behavior === b.id && c.status === "met").length }));
+export function behaviorDistribution(commitments, behaviors = BEHAVIORS) {
+  return behaviors.map((b) => ({ id: b.id, name: b.name, count: commitments.filter((c) => c.behavior === b.id).length, met: commitments.filter((c) => c.behavior === b.id && c.status === "met").length }));
 }
 
 // Offline diagnosis used when the AI is unavailable, and as evidence for the AI prompt.
-export function scoreBehaviors(summary, verbatims) {
-  const scores = Object.fromEntries(BEHAVIORS.map((b) => [b.id, { score: 0, evidence: [] }]));
+export function scoreBehaviors(summary, verbatims, behaviors = BEHAVIORS) {
+  const scores = Object.fromEntries(behaviors.map((b) => [b.id, { score: 0, evidence: [] }]));
   const neg = verbatims.filter((v) => v.score == null || v.score <= 6);
   neg.forEach((v) => {
     const t = v.text.toLowerCase();
-    BEHAVIORS.forEach((b) => { const hits = b.keywords.filter((k) => t.includes(k)); if (hits.length) { scores[b.id].score += 2 + hits.length; scores[b.id].evidence.push(`Verbatim (${v.score ?? "?"}/10): “${v.text}”`); } });
+    behaviors.forEach((b) => { const hits = (b.keywords || []).filter((k) => t.includes(k)); if (hits.length) { scores[b.id].score += 2 + hits.length; scores[b.id].evidence.push(`Verbatim (${v.score ?? "?"}/10): “${v.text}”`); } });
   });
-  if (summary) BEHAVIORS.forEach((b) => b.kpis.forEach((k, i) => { const g = summary.kpis[k]?.gap || 0; if (g > 0) { scores[b.id].score += g * (i === 0 ? 30 : 15); } }));
+  if (summary) behaviors.forEach((b) => (b.kpis || []).forEach((k, i) => { const g = summary.kpis[k]?.gap || 0; if (g > 0) { scores[b.id].score += g * (i === 0 ? 30 : 15); } }));
   return Object.entries(scores).map(([id, s]) => ({ id, ...s, score: round(s.score, 2) })).sort((a, b) => b.score - a.score);
 }
 

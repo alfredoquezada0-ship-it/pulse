@@ -1,8 +1,8 @@
 // Coaching tools shared across roles: AI prep, DIRECT session, roleplay, quizzes, training, data upload.
-import { KPIS, BEHAVIORS, BEHAVIOR_BY_ID, ROOT_CAUSES, TOOLS, TOOL_NAMES, SESSION_TYPES, TOOL_PLAN, DIRECT_STEPS, CALL_TYPES, GUIDES } from "../core/constants.js";
+import { KPIS, ROOT_CAUSES, TOOLS, TOOL_NAMES, SESSION_TYPES, TOOL_PLAN, DIRECT_STEPS, CALL_TYPES, GUIDES } from "../core/constants.js";
 import { smartCheck } from "../core/services.js";
 import { weekStart, addDays, today, parseCSV, coachingWeek } from "../core/util.js";
-import { esc, $, $$, fmtKpi, statusChip, bName, rcName, sName, dateLabel, options, sourceTag, modal, icon } from "../ui.js";
+import { esc, $, $$, fmtKpi, statusChip, bName, rcName, sName, dateLabel, options, sourceTag, modal, icon, behaviorList, behaviorOf, allBehaviors, bankInfo } from "../ui.js";
 import * as Voice from "../voice.js";
 
 const head = (title, sub, actions = "") => `<div class="topline"><div><h1>${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div><div class="row">${actions}</div></div>`;
@@ -53,7 +53,8 @@ export async function prep(main, params, { api, go, toast }) {
   };
 
   // ---- Step 1 and 2: the supervisor's own evidence and pick ----
-  const tally = () => BEHAVIORS.map((b) => ({ b, shown: calls.filter((c) => c.marks[b.id] === "shown").length, missed: calls.filter((c) => c.marks[b.id] === "missed").length }));
+  const myBehaviors = () => behaviorList(detail?.agent?.lob);
+  const tally = () => myBehaviors().map((b) => ({ b, shown: calls.filter((c) => c.marks[b.id] === "shown").length, missed: calls.filter((c) => c.marks[b.id] === "missed").length }));
   const topMissed = () => { const t = tally().sort((x, y) => y.missed - x.missed || x.shown - y.shown); return t[0].missed ? t[0].b.id : ""; };
   const marked = () => calls.filter((c) => Object.keys(c.marks).length).length;
   const drawListen = () => {
@@ -67,7 +68,7 @@ export async function prep(main, params, { api, go, toast }) {
       </tbody></table></div>
       <div class="row mt">${calls.length < 5 ? `<button class="btn sm" id="addcall">+ Add a call</button>` : ""}${calls.length > 3 ? `<button class="btn ghost sm" id="delcall">Remove the last call</button>` : ""}</div></div>
       <div class="card mt"><h3>Step 2 · Your pick</h3>
-        <div class="fgrid"><label class="f">The behavior you’d coach<select class="in" id="mypick">${options([{ id: "", name: "Choose one" }, ...BEHAVIORS], pick)}</select></label>
+        <div class="fgrid"><label class="f">The behavior you’d coach<select class="in" id="mypick">${options([{ id: "", name: "Choose one" }, ...myBehaviors()], pick)}</select></label>
           <div class="f"><span class="small muted">${top ? `Most missed in your calls: <b>${esc(bName(top))}</b>` : "Mark the calls to see which behavior was missed most."}</span></div>
           <label class="f wide">Why this one? <small class="muted">(what you heard: the moment, what the member said or how they reacted)</small><textarea class="in" id="myreason" rows="3" maxlength="1000" placeholder="e.g. On 3 of 4 calls she fixed the issue but never said when the member would hear back; two members asked “so when?”">${esc(reason)}</textarea></label></div>
         <div class="spread mt"><span class="small muted" id="lockhint"></span><button class="btn primary ai" id="lock">Lock in my pick and see the AI’s second opinion</button></div></div>`;
@@ -118,10 +119,10 @@ export async function prep(main, params, { api, go, toast }) {
       <div class="choice mt">
         <label><input type="radio" name="fin" value="mine" ${!done || dx.final_pick === dx.sup_pick ? "checked" : ""}><span><b>Keep my pick: ${esc(bName(dx.sup_pick))}</b><small>You heard the calls; go with your judgment.</small></span></label>
         ${differs ? `<label><input type="radio" name="fin" value="ai" ${done && dx.final_pick === diag.behavior_id ? "checked" : ""}><span><b>Switch to ${esc(bName(diag.behavior_id))}</b><small>The data convinced you.</small></span></label>` : ""}
-        <label><input type="radio" name="fin" value="other" ${done && dx.final_pick !== dx.sup_pick && dx.final_pick !== diag.behavior_id ? "checked" : ""}><span><b>Something else</b><small><select class="in" id="other">${options(BEHAVIORS, done ? dx.final_pick : dx.sup_pick)}</select></small></span></label>
+        <label><input type="radio" name="fin" value="other" ${done && dx.final_pick !== dx.sup_pick && dx.final_pick !== diag.behavior_id ? "checked" : ""}><span><b>Something else</b><small><select class="in" id="other">${options(myBehaviors(), done ? dx.final_pick : dx.sup_pick)}</select></small></span></label>
       </div>
       <label class="f mt" id="why-wrap" hidden>What changed your mind? <small class="muted">(required when you change your pick)</small><textarea class="in" id="finwhy" rows="2" maxlength="1000">${esc(done && dx.final_pick !== dx.sup_pick ? dx.final_reason || "" : "")}</textarea></label>
-      <select id="beh" hidden>${options(BEHAVIORS, dx.final_pick || dx.sup_pick)}</select>
+      <select id="beh" hidden>${options(behaviorList(detail?.agent?.lob, dx.final_pick || dx.sup_pick), dx.final_pick || dx.sup_pick)}</select>
       <div class="fgrid mt"><label class="f">Root cause to confirm in the session<select class="in" id="rc">${options(ROOT_CAUSES, diag.root_cause_hypothesis?.id || "skill")}</select></label>
         <label class="f wide">Evidence for the session<textarea class="in" id="ev" rows="4">${esc(evidence)}</textarea></label></div>
       <p class="small muted mt">${esc(diag.root_cause_hypothesis?.why || "")}</p>
@@ -158,7 +159,7 @@ export async function prep(main, params, { api, go, toast }) {
   const startSession = async () => {
     try {
       const behavior = $("#beh", main).value;
-      const s = await api("POST", "/api/sessions", { agent_id: sel.value, date: today(), behavior, root_cause: $("#rc", main).value, evidence: $("#ev", main).value, kpi_focus: BEHAVIOR_BY_ID[behavior].kpis[0], ai: { diagnosis: diag, strategy: strat }, diagnosis_id: dx?.id });
+      const s = await api("POST", "/api/sessions", { agent_id: sel.value, date: today(), behavior, root_cause: $("#rc", main).value, evidence: $("#ev", main).value, kpi_focus: behaviorOf(behavior)?.kpis?.[0] || "nps", ai: { diagnosis: diag, strategy: strat }, diagnosis_id: dx?.id });
       go("session", { id: s.id });
     } catch (e) { toast(e.message, "err"); }
   };
@@ -181,7 +182,7 @@ export async function session(main, { id }, { api, go, toast }) {
   (d.last_commitment ? `<div class="sticky"><span class="eyebrow">For the I step: last commitment</span><p class="mt small">${esc(bName(d.last_commitment.behavior))} · “${esc(d.last_commitment.action)}” · ${d.last_commitment.status.replace("_", " ")}${d.last_commitment.monitor_total ? ` (${d.last_commitment.monitor_hits}/${d.last_commitment.monitor_total} calls)` : ""}</p></div>` : "") +
   `<div class="grid g-main mt"><div class="stack">
     <div class="card"><h3>Focus</h3><div class="fgrid">
-      <label class="f">Core behavior<select class="in" id="beh" ${done ? "disabled" : ""}>${options(BEHAVIORS, s.behavior, "Pick one")}</select></label>
+      <label class="f">Core behavior<select class="in" id="beh" ${done ? "disabled" : ""}>${options(behaviorList(d.agent?.lob, s.behavior), s.behavior, "Pick one")}</select></label>
       <label class="f">Root cause (why this behavior)<select class="in" id="rc" ${done ? "disabled" : ""}>${options(ROOT_CAUSES, s.root_cause, "Pick one")}</select></label>
       <label class="f">KPI it should move<select class="in" id="kf" ${done ? "disabled" : ""}>${options(KPIS, s.kpi_focus)}</select></label>
       <label class="f wide">Evidence (calls, counts, verbatims)<textarea class="in" id="ev" ${done ? "disabled" : ""}>${esc(s.evidence || "")}</textarea></label></div></div>
@@ -237,7 +238,7 @@ export function assignRoleplayModal(agent, { api, toast, onDone, behavior, scena
     <p class="small muted mt">${esc(agent.name)} gets a notification and finds it under Practice. You’re notified with the score when they finish.</p>
     <form id="ra" class="fgrid mt">
       ${scenario ? `<div class="wide sticky small"><b>Your scenario:</b> ${esc(scenario.member_name)} · ${esc(scenario.call_type)} · ${esc(scenario.mood)}<br><b>Practicing:</b> ${esc(bName(scenario.behavior))} · scored on ${scenario.success_criteria.length} thing${scenario.success_criteria.length > 1 ? "s" : ""} to do</div>`
-        : `<label class="f">Core behavior<select class="in" id="ra-b">${options(BEHAVIORS, behavior || "expectations")}</select></label>
+        : `<label class="f">Core behavior<select class="in" id="ra-b">${options(behaviorList(agent.lob), behavior || behaviorList(agent.lob)[0]?.id)}</select></label>
       <label class="f">Call type<select class="in" id="ra-c">${options(CALL_TYPES, CALL_TYPES[0])}</select></label>
       <label class="f">Difficulty<select class="in" id="ra-d">${options([{ id: "easy", name: "Easy" }, { id: "medium", name: "Medium" }, { id: "hard", name: "Hard (angry member)" }], "medium")}</select></label>`}
       <label class="f">How<select class="in" id="ra-ch">${options([{ id: "voice", name: "Voice call" }, { id: "text", name: "Chat" }], channel)}</select></label>
@@ -284,12 +285,12 @@ export function scenarioEditor(el, base, { agent, channel, start, assign, regene
     <p class="small muted">Change anything: who the member is, what happened, and what ${agent ? esc(agent.name.split(" ")[0]) : "the agent"} practices and gets scored on. Keep it fictional: no real member names, IDs or health details.</p>
     <h4 class="eyebrow mt">What they practice</h4>
     <div class="fgrid">
-      <label class="f">Core behavior<select class="in" data-f="behavior">${options(BEHAVIORS, d.behavior)}</select></label>
+      <label class="f">Core behavior<select class="in" data-f="behavior">${options(behaviorList(agent?.lob, d.behavior), d.behavior)}</select></label>
       <label class="f">Difficulty<select class="in" data-f="difficulty">${options(DIFF_OPTS, d.difficulty)}</select></label>
       <label class="f">Call type<input class="in" data-f="call_type" list="ct-list" value="${esc(d.call_type)}" maxlength="60"><datalist id="ct-list">${CALL_TYPES.map((c) => `<option value="${esc(c)}">`).join("")}</datalist></label></div>
     <span class="f mt">Scored on: what the agent should do <small class="muted">(the feedback checks these)</small></span>
     <div id="crit">${crit()}</div>
-    <div class="row mt"><button class="btn sm" type="button" id="addc">+ Add one</button><button class="btn ghost sm" type="button" id="stdc">Use the standard actions for this behavior</button></div>
+    <div class="row mt"><button class="btn sm" type="button" id="addc">+ Add one</button><button class="btn ghost sm" type="button" id="stdc">Use the bank’s listen-for list for this behavior</button></div>
     <h4 class="eyebrow mt2">The member</h4>
     <div class="fgrid">
       <label class="f">Name (fictional)<input class="in" data-f="member_name" value="${esc(d.member_name)}" maxlength="60"></label>
@@ -311,7 +312,7 @@ export function scenarioEditor(el, base, { agent, channel, start, assign, regene
   const redrawCrit = () => { $("#crit", el).innerHTML = crit(); bindCrit(); check(); };
   $$("[data-f]", el).forEach((inp) => (inp.oninput = inp.onchange = () => { d[inp.dataset.f] = inp.dataset.f === "member_age" ? Number(inp.value) : inp.value; check(); }));
   $("#addc", el).onclick = () => { if (d.success_criteria.length >= 5) return toast?.("5 at most: keep the practice focused.", "err"); d.success_criteria.push(""); redrawCrit(); $$("[data-c]", el).at(-1)?.focus(); };
-  $("#stdc", el).onclick = () => { const b = BEHAVIOR_BY_ID[d.behavior]; d.success_criteria = [...b.actions.slice(0, 2), "Close with the next step and the timeline."]; redrawCrit(); };
+  $("#stdc", el).onclick = () => { const b = behaviorOf(d.behavior); if (!b) return; d.success_criteria = b.listen_for?.length >= 2 ? b.listen_for.slice(0, 4) : [...b.actions.slice(0, 2), "Close with the next step and the timeline."]; redrawCrit(); };
   const again = $("#sc-again", el); if (again) again.onclick = () => regenerate({ behavior: d.behavior, call_type: CALL_TYPES.includes(d.call_type) ? d.call_type : CALL_TYPES[0], difficulty: d.difficulty });
   $("#sc-start", el).onclick = () => { const p = problem(); if (p) return toast?.(p, "err"); start(payload()); };
   const asg = $("#sc-assign", el); if (asg) asg.onclick = () => { const p = problem(); if (p) return toast?.(p, "err"); assign(payload()); };
@@ -383,7 +384,7 @@ export async function roleplay(main, params, { api, state, toast, go, onLeave })
     const defChannel = voiceOk ? (settings.channel || "voice") : "text";
     stage.innerHTML = assignedCard() + `<div class="card"><h3>${assigned.length ? "Or practice on your own" : "Set up the call"}</h3><div class="fgrid">
       ${isAgent ? "" : `<label class="f">Practicing for<select class="in" id="ag">${options(agents.map((a) => ({ id: a.id, name: a.name })), params.agent_id, "Myself (supervisor practice)")}</select></label>`}
-      <label class="f">Core behavior<select class="in" id="beh">${options(BEHAVIORS, defBehavior || "expectations")}</select></label>
+      <label class="f">Core behavior<select class="in" id="beh">${options(behaviorList(state.user.lob), defBehavior || behaviorList(state.user.lob)[0]?.id)}</select></label>
       <label class="f">Call type<select class="in" id="ct">${options(CALL_TYPES, CALL_TYPES[0])}</select></label>
       <label class="f">Difficulty<select class="in" id="df">${options([{ id: "easy", name: "Easy" }, { id: "medium", name: "Medium" }, { id: "hard", name: "Hard (angry member)" }], "medium")}</select></label></div>
       <fieldset class="modes mt" aria-label="Call mode"><legend class="eyebrow">How do you want to take the call?</legend>
@@ -637,12 +638,12 @@ export async function roleplay(main, params, { api, state, toast, go, onLeave })
 }
 
 // ---------------------------------------------------------------- Quizzes (supervisor)
-export async function quizzes(main, params, { api, toast, go }) {
+export async function quizzes(main, params, { api, toast, go, state }) {
   const [agents, list] = await Promise.all([api("GET", "/api/agents"), api("GET", "/api/quizzes")]);
   main.innerHTML = head("Quizzes", "Generate a short quiz on the agent’s opportunity, review it, then assign it. Agents take it from their own view.") +
     `<div class="grid g-main"><div class="stack"><div class="card"><h3>Generate a quiz</h3><div class="fgrid">
       <label class="f">Agent<select class="in" id="ag">${options(agents.map((a) => ({ id: a.id, name: a.name })), params.agent_id, "Choose an agent")}</select></label>
-      <label class="f">Core behavior<select class="in" id="beh">${options(BEHAVIORS, params.behavior || "")}</select></label>
+      <label class="f">Core behavior<select class="in" id="beh">${options(behaviorList(state.user.lob), params.behavior || "")}</select></label>
       <label class="f">Questions<select class="in" id="n">${options(["3", "5", "8"], "5")}</select></label>
       <label class="f wide">Focus: what the quiz should be about (optional)<input class="in" id="fc" maxlength="300" placeholder="e.g., giving timelines on claim-status calls"></label></div>
       <div class="row mt"><button class="btn primary ai" id="gen">Generate</button></div></div><div id="pv"></div></div>
@@ -734,10 +735,12 @@ export async function training(main, _p, { api, toast, go, state }) {
     `<div class="grid g2">${list.map((g) => `<div class="card"><div class="card-h"><h3>${esc(g.title)}</h3>${g.completed_at ? `<span class="chip ok">Completed ${dateLabel(g.completed_at)}</span>` : `<span class="chip plain">${g.minutes} min</span>`}</div>
       <p class="small">${esc(g.desc)}</p><div class="row mt"><a class="btn primary" href="${esc(g.file)}" target="_blank" rel="noopener">Open guide</a>${g.completed_at ? "" : `<button class="btn" data-done="${g.id}">Mark as completed</button>`}</div></div>`).join("")}</div>
     <div class="grid g2 mt2">
-      <div class="card"><h3>The 7 core behaviors</h3><div class="list">${BEHAVIORS.map((b) => `<div class="li"><div class="grow"><div class="t">${esc(b.name)}${b.full !== b.name ? ` <span class="small muted">(${esc(b.full)})</span>` : ""}</div><div class="small">${esc(b.desc)}</div><div class="small muted">${esc(b.sounds)}</div></div></div>`).join("")}</div></div>
+      <div class="card"><div class="card-h"><h3>Our behaviors</h3>${state.user.role !== "agent" ? `<button class="btn ghost sm" data-go-bank>See the full guide</button>` : ""}</div><div class="list">${behaviorList(state.user.lob).map((b) => `<div class="li"><div class="grow"><div class="t">${esc(b.name)}${b.full !== b.name ? ` <span class="small muted">(${esc(b.full)})</span>` : ""}</div><div class="small">${esc(b.desc)}</div>
+        ${b.how?.length ? `<details><summary class="small">How to do it on the call</summary><ol class="small steps-ol">${b.how.map((x) => `<li>${esc(x)}</li>`).join("")}</ol></details>` : ""}<div class="small muted">${esc(b.sounds)}</div></div></div>`).join("")}</div></div>
       <div class="stack"><div class="card"><h3>The weekly rhythm</h3><div class="list">${SESSION_TYPES.map((t) => `<div class="li"><span class="chip teal">${esc(t.window)}</span><div class="grow"><div class="t">${esc(t.name)}</div><div class="small">${esc(t.desc)}</div></div></div>`).join("")}</div></div>
       ${state.user.role !== "agent" ? `<div class="card"><h3>The 8 coaching tools</h3><div class="list">${TOOLS.map((t) => `<div class="li"><div class="grow"><div class="t">${esc(t.name)}</div><div class="small">${esc(t.desc)} ${esc(t.how)}</div></div></div>`).join("")}</div></div>` : ""}</div></div>`;
   $$("[data-done]", main).forEach((b) => (b.onclick = async () => { await api("POST", `/api/training/${b.dataset.done}/complete`); toast("Marked as completed."); go("training"); }));
+  const gb = $("[data-go-bank]", main); if (gb) gb.onclick = () => go("bank");
 }
 
 // ---------------------------------------------------------------- Data upload

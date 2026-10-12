@@ -1,16 +1,17 @@
 // Supervisor-first diagnosis: the supervisor listens to 3–5 calls, marks which of the 7 behaviors showed up or
 // were missing, picks the behavior to coach, and only then sees the AI's second opinion.
-import { BEHAVIORS, BEHAVIOR_BY_ID } from "./constants.js";
+import { DEFAULT_BEHAVIORS as BEHAVIORS, byKey } from "./bank.js";
 
 export const MIN_CALLS = 3, MAX_CALLS = 5;
 const MARKS = new Set(["shown", "missed"]);
 
 // Keeps only real marks; drops empty calls. Returns { calls, problem }.
-export function cleanCalls(input) {
+export function cleanCalls(input, behaviors = BEHAVIORS) {
+  const BY = byKey(behaviors);
   const list = Array.isArray(input) ? input.slice(0, MAX_CALLS) : [];
   const calls = list.map((c, i) => ({
     label: String(c?.label || `Call ${i + 1}`).trim().slice(0, 80) || `Call ${i + 1}`,
-    marks: Object.fromEntries(Object.entries(c?.marks || {}).filter(([b, m]) => BEHAVIOR_BY_ID[b] && MARKS.has(m))),
+    marks: Object.fromEntries(Object.entries(c?.marks || {}).filter(([b, m]) => BY[b] && MARKS.has(m))),
     note: String(c?.note || "").trim().slice(0, 500),
   })).filter((c) => Object.keys(c.marks).length);
   if (calls.length < MIN_CALLS) return { calls, problem: `Mark what you heard on at least ${MIN_CALLS} calls (listen to 3–5 before choosing).` };
@@ -18,8 +19,8 @@ export function cleanCalls(input) {
 }
 
 // Per behavior: how many calls it showed up in and how many it was missing from. top = the most-missed behavior.
-export function tallyCalls(calls = []) {
-  const rows = BEHAVIORS.map((b) => {
+export function tallyCalls(calls = [], behaviors = BEHAVIORS) {
+  const rows = behaviors.map((b) => {
     const shown = calls.filter((c) => c.marks?.[b.id] === "shown").length, missed = calls.filter((c) => c.marks?.[b.id] === "missed").length;
     return { id: b.id, name: b.name, shown, missed };
   });
@@ -30,9 +31,10 @@ export function tallyCalls(calls = []) {
 }
 
 // One line per call for the AI and for the DIRECT session's I step.
-export const callLines = (calls = []) => calls.map((c) => {
-  const missed = Object.entries(c.marks).filter(([, m]) => m === "missed").map(([b]) => BEHAVIOR_BY_ID[b].name);
-  const shown = Object.entries(c.marks).filter(([, m]) => m === "shown").map(([b]) => BEHAVIOR_BY_ID[b].name);
+export const callLines = (calls = [], behaviors = BEHAVIORS) => calls.map((c) => {
+  const BY = byKey(behaviors), nm = (b) => BY[b]?.name || b;
+  const missed = Object.entries(c.marks).filter(([, m]) => m === "missed").map(([b]) => nm(b));
+  const shown = Object.entries(c.marks).filter(([, m]) => m === "shown").map(([b]) => nm(b));
   return `${c.label}: missing ${missed.join(", ") || "nothing marked"}; showed ${shown.join(", ") || "nothing marked"}${c.note ? `. Note: ${c.note}` : ""}`;
 });
 

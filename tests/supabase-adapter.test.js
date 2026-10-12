@@ -24,9 +24,9 @@ async function seeded() {
   return { fake, store, call };
 }
 const views = {
-  manager: (u) => ["/api/me", "/api/dashboard/manager", "/api/agents", "/api/supervisors", "/api/sessions", "/api/commitments", "/api/weekly", "/api/quizzes", "/api/sample", "/api/roleplays", "/api/goals", "/api/leaders", "/api/notifications", "/api/roleplay-assignments"],
-  supervisor: (u) => ["/api/me", `/api/dashboard/supervisor`, "/api/agents", "/api/sessions", "/api/commitments", "/api/weekly", "/api/quizzes", "/api/sample", "/api/roleplays", "/api/my-coaching", "/api/notifications", "/api/roleplay-assignments"],
-  agent: (u) => ["/api/me", "/api/dashboard/agent", `/api/agents/${u.id}`, "/api/commitments", "/api/weekly", "/api/quizzes", "/api/sample", "/api/roleplays", "/api/notifications", "/api/roleplay-assignments"],
+  manager: (u) => ["/api/me", "/api/dashboard/manager", "/api/agents", "/api/supervisors", "/api/sessions", "/api/commitments", "/api/weekly", "/api/quizzes", "/api/sample", "/api/roleplays", "/api/goals", "/api/leaders", "/api/notifications", "/api/roleplay-assignments", "/api/behaviors"],
+  supervisor: (u) => ["/api/me", `/api/dashboard/supervisor`, "/api/agents", "/api/sessions", "/api/commitments", "/api/weekly", "/api/quizzes", "/api/sample", "/api/roleplays", "/api/my-coaching", "/api/notifications", "/api/roleplay-assignments", "/api/behaviors"],
+  agent: (u) => ["/api/me", "/api/dashboard/agent", `/api/agents/${u.id}`, "/api/commitments", "/api/weekly", "/api/quizzes", "/api/sample", "/api/roleplays", "/api/notifications", "/api/roleplay-assignments", "/api/behaviors"],
 };
 async function openAll(call, user) {
   const failed = [];

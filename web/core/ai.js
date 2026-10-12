@@ -1,14 +1,16 @@
 // AI features for PULSE. Each function tries the AI provider first (Gemini on the server)
 // and falls back to rule-based output, so the app keeps working without a key or over the free limit.
-import { BEHAVIORS, BEHAVIOR_BY_ID, ROOT_CAUSES, ROOT_CAUSE_BY_ID, TOOLS, TOOL_NAMES, SESSION_TYPES, TOOL_PLAN, DIRECT_STEPS, KPI_BY_ID, PROGRAM, CALL_TYPES } from "./constants.js";
+import { ROOT_CAUSES, ROOT_CAUSE_BY_ID, TOOLS, TOOL_NAMES, SESSION_TYPES, TOOL_PLAN, DIRECT_STEPS, KPI_BY_ID, PROGRAM, CALL_TYPES } from "./constants.js";
 import { redact } from "./util.js";
 import { scoreBehaviors } from "./services.js";
 import { deliveryMetrics, deliveryLine } from "./delivery.js";
+import { DEFAULT_BEHAVIORS, byKey, behaviorContext } from "./bank.js";
 
-export const SYSTEM = `You are PULSE, a coaching assistant for contact center supervisors at a BPO serving a US health insurance client (lines of business: Medicare Supplement, BVA, IFM, NPG).
+// The system prompt lists the behaviors of this team's bank (set by their manager).
+export const systemFor = (behaviors = DEFAULT_BEHAVIORS) => `You are PULSE, a coaching assistant for contact center supervisors at a BPO serving a US health insurance client (lines of business: Medicare Supplement, BVA, IFM, NPG).
 Purpose: ${PROGRAM.purpose}
 Coaching model DIRECT: ${DIRECT_STEPS.map((s) => `${s.id} = ${s.name} (${s.desc})`).join("; ")}.
-The 7 core behaviors (every commitment uses exactly one): ${BEHAVIORS.map((b) => `${b.id} = ${b.name}: ${b.desc}`).join(" | ")}.
+The core behaviors this team coaches, set by their manager (every commitment uses exactly one, by id): ${behaviors.map((b) => `${b.id} = ${b.name}: ${b.desc}${b.driver ? ` (prevents: ${b.driver})` : ""}`).join(" | ")}.
 Root causes: ${ROOT_CAUSES.map((r) => `${r.id} = ${r.name}: ${r.sign}`).join(" | ")}.
 Coaching tools: ${TOOLS.map((t) => `${t.name}: ${t.desc}`).join(" | ")}.
 Weekly rhythm per agent: Setting Goals and Skill Transfer on Monday–Tuesday, Monitor on Wednesday–Thursday, Kudos/Accountability on Friday.
@@ -16,8 +18,9 @@ SMART commitments are on-call actions the agent can be heard doing, in the agent
 Satisfiers members reward: ownership, plain-language explanations, clear next steps, first-contact resolution, acknowledging health or money stress. Dissatisfiers: calling again, transfers, holds and dead air, jargon, broken callbacks, feeling rushed, a "no" with no explanation.
 Quality bar: be specific to this agent and this call. Cite their actual numbers, quote their actual verbatims or transcript lines, and write lines an agent could say word for word on a US health insurance call. No generic advice ("be more empathetic", "improve communication"), no filler, no repeating the question back.
 Rules: write in clear, peer-to-peer English. Use only fictional member names. Never invent member data, IDs or medical details beyond what the scenario needs. Return only valid JSON when JSON is requested.`;
+export const SYSTEM = systemFor();
 
-const ids = BEHAVIORS.map((b) => b.id).join("|");
+const idList = (behaviors) => behaviors.map((b) => b.id).join("|");
 const rcIds = ROOT_CAUSES.map((r) => r.id).join("|");
 
 // Models don't always return clean JSON: strip thinking, code fences and any text around the object.
@@ -37,11 +40,11 @@ export function aiLabel(provider, model) {
   return m ? `${p} · ${m}` : p;
 }
 
-async function ask(provider, prompt, { temperature = 0.4, history = null, fast = false, effort = null } = {}) {
+async function ask(provider, prompt, { temperature = 0.4, history = null, fast = false, effort = null, behaviors = DEFAULT_BEHAVIORS } = {}) {
   if (!provider) return null;
   try {
     const messages = history ? [...history, { role: "user", text: prompt }] : [{ role: "user", text: prompt }];
-    const req = { system: SYSTEM, messages, json: true, temperature, fast, effort };
+    const req = { system: systemFor(behaviors), messages, json: true, temperature, fast, effort };
     const started = Date.now();
     const text = await provider.generate(req);
     if (!text) return null;
@@ -63,54 +66,56 @@ function kpiLines(summary) {
   return Object.entries(summary.kpis).map(([k, v]) => `${KPI_BY_ID[k].name}: ${v.value ?? "n/a"}${KPI_BY_ID[k].unit} (goal ${v.goal}, prior 4 weeks ${v.prev ?? "n/a"}, ${v.onGoal ? "on goal" : "below goal"})`).join("; ");
 }
 const verbLines = (vs) => vs.slice(0, 12).map((v) => `- (${v.score ?? "?"}/10) ${redact(v.text)}`).join("\n") || "- none";
-const histLines = (cs) => cs.slice(0, 5).map((c) => `- week ${c.week_start}: ${BEHAVIOR_BY_ID[c.behavior]?.name}, root cause ${c.root_cause}, action "${c.action}", result ${c.status}${c.monitor_total ? ` (${c.monitor_hits}/${c.monitor_total})` : ""}`).join("\n") || "- none";
+const histLines = (cs, BY) => cs.slice(0, 5).map((c) => `- week ${c.week_start}: ${BY[c.behavior]?.name || c.behavior}, root cause ${c.root_cause}, action "${c.action}", result ${c.status}${c.monitor_total ? ` (${c.monitor_hits}/${c.monitor_total})` : ""}`).join("\n") || "- none";
 
 // ---------- 1. Identify the behavior to coach ----------
 // supervisor (optional): { pick, reason, calls: ["one line per call"], tally: { top } } — the supervisor's own diagnosis.
 // The AI first decides from the data on its own, then gives a second opinion on the supervisor's pick.
-export async function diagnose(provider, { agent, summary, verbatims, history, supervisor = null }) {
-  const ranked = scoreBehaviors(summary, verbatims);
-  const sup = supervisor && BEHAVIOR_BY_ID[supervisor.pick] ? supervisor : null;
+export async function diagnose(provider, { agent, summary, verbatims, history, supervisor = null, behaviors = DEFAULT_BEHAVIORS }) {
+  const BY = byKey(behaviors), ids = idList(behaviors);
+  const ranked = scoreBehaviors(summary, verbatims, behaviors);
+  const sup = supervisor && BY[supervisor.pick] ? supervisor : null;
   const prompt = `Identify the ONE core behavior this supervisor should coach this week.
 Agent (fictional): first name ${agent.name.split(" ")[0]}, LOB ${agent.lob}.
 KPIs (4-week average): ${kpiLines(summary)}
 Recent survey verbatims:
 ${verbLines(verbatims)}
 Previous commitments:
-${histLines(history)}
+${histLines(history, BY)}
 Rule-based ranking for reference: ${ranked.slice(0, 3).map((r) => `${r.id} (${r.score})`).join(", ")}.${sup ? `
 THE SUPERVISOR'S OWN DIAGNOSIS (they listened to the calls; you didn't):
 ${(sup.calls || []).map((l) => `- ${l}`).join("\n")}
-Most-missed behavior in their calls: ${sup.tally?.top ? BEHAVIOR_BY_ID[sup.tally.top].name : "none marked"}.
-Their pick: ${BEHAVIOR_BY_ID[sup.pick].name}. Their reason: "${redact(String(sup.reason || "")).slice(0, 600)}"
+Most-missed behavior in their calls: ${sup.tally?.top && BY[sup.tally.top] ? BY[sup.tally.top].name : "none marked"}.
+Their pick: ${BY[sup.pick].name}. Their reason: "${redact(String(sup.reason || "")).slice(0, 600)}"
 First decide from the KPIs, verbatims and history on your own ("behavior_id"). Then give a second opinion on their pick: treat what they heard on calls as strong evidence, say plainly where the data supports or challenges it, and never just agree to be polite.` : ""}
 Return JSON: {"behavior_id":"${ids}","confidence":"high|medium|low",${sup ? '"agrees_with_supervisor":true,"comparison":"2 sentences: where the data and their call evidence support or challenge their pick","check_next":"one thing to listen for on the next calls to settle it",' : ""}"why":"2 sentences tying KPI -> driver (satisfier/dissatisfier) -> behavior","driver":"the member-side driver in plain words","kpi_link":"which KPI it moves and how","evidence":["3 short evidence bullets quoting data or verbatims"],"root_cause_hypothesis":{"id":"${rcIds}","why":"what to confirm in the session"},"secondary_behavior_id":"${ids}","listen_for":["4 observable things to listen for in 3-5 calls"],"questions_to_ask":["3 open self-discovery questions for the E step"]}`;
-  const r = await ask(provider, prompt, { temperature: 0.3 });
-  if (r && BEHAVIOR_BY_ID[r.behavior_id]) {
-    const out = { ...r, behavior_name: BEHAVIOR_BY_ID[r.behavior_id].name, ranking: ranked, source: "ai" };
+  const r = await ask(provider, prompt, { temperature: 0.3, behaviors });
+  if (r && BY[r.behavior_id]) {
+    const out = { ...r, behavior_name: BY[r.behavior_id].name, ranking: ranked, source: "ai" };
+    if (r.secondary_behavior_id && !BY[r.secondary_behavior_id]) delete out.secondary_behavior_id;
     if (sup) out.agrees_with_supervisor = r.agrees_with_supervisor === true || r.agrees_with_supervisor === "true" || r.behavior_id === sup.pick;
     return out;
   }
-  const off = diagnoseOffline({ agent, summary, verbatims, history, ranked });
-  return sup ? { ...off, ...secondOpinionOffline(off, sup, ranked) } : off;
+  const off = diagnoseOffline({ agent, summary, verbatims, history, ranked, BY });
+  return sup ? { ...off, ...secondOpinionOffline(off, sup, ranked, BY) } : off;
 }
 
 // Without AI: compare the supervisor's pick with the rule-based ranking of KPIs and verbatims.
-function secondOpinionOffline(off, sup, ranked) {
+function secondOpinionOffline(off, sup, ranked, BY) {
   const pos = ranked.findIndex((x) => x.id === sup.pick);
   const agrees = sup.pick === off.behavior_id || pos === 1;
-  const name = BEHAVIOR_BY_ID[sup.pick].name;
+  const name = BY[sup.pick].name;
   return {
     agrees_with_supervisor: agrees,
     comparison: agrees
       ? `The KPIs and verbatims point the same way: ${name} ranks ${pos === 0 ? "first" : "second"} in the data${sup.tally?.top === sup.pick ? ", and it was the most-missed behavior in your calls" : ""}.`
-      : `The data points more to ${off.behavior_name}; ${name} ranks ${pos + 1} of 7 in the KPIs and verbatims. Your calls are the stronger evidence if what you heard was clear.`,
+      : `The data points more to ${off.behavior_name}; ${name} ranks ${pos + 1} of ${ranked.length} in the KPIs and verbatims. Your calls are the stronger evidence if what you heard was clear.`,
     check_next: agrees ? `On the next calls, confirm the moment ${name} is missing (opening, middle or close).` : `On the next 2 calls, listen for both ${name} and ${off.behavior_name} and note which one the member reacts to.`,
   };
 }
 
-function diagnoseOffline({ summary, history, ranked }) {
-  const top = ranked[0], b = BEHAVIOR_BY_ID[top.id], second = BEHAVIOR_BY_ID[ranked[1].id];
+function diagnoseOffline({ summary, history, ranked, BY }) {
+  const top = ranked[0], b = BY[top.id], second = BY[ranked[1]?.id] || b;
   const k = (summary?.critical || [])[0];
   const prev = (history || []).find((c) => c.behavior === b.id);
   const rc = prev && prev.status === "partial" ? "skill" : prev && prev.status === "not_met" ? "will" : "skill";
@@ -121,23 +126,26 @@ function diagnoseOffline({ summary, history, ranked }) {
     evidence: [...top.evidence.slice(0, 2), k ? `${KPI_BY_ID[k].name}: ${summary.kpis[k].value} vs. goal ${summary.kpis[k].goal}` : "No KPI below goal"].filter(Boolean),
     root_cause_hypothesis: { id: rc, why: prev ? `Last time this behavior was ${prev.status.replace("_", " ")}. Confirm whether the agent knows the steps or struggles to apply them live.` : "Confirm with the 5 Whys: does the agent know what to say, and can they do it under pressure?" },
     secondary_behavior_id: second.id,
-    listen_for: [b.actions[0], "Whether the member has to ask the same thing twice", "What the member hears in the last 30 seconds of the call", "How the agent handles the moment the member gets frustrated"],
+    listen_for: b.listen_for?.length ? [...b.listen_for.slice(0, 3), "Whether the member has to ask the same thing twice"] : [b.actions[0], "Whether the member has to ask the same thing twice", "What the member hears in the last 30 seconds of the call", "How the agent handles the moment the member gets frustrated"],
     questions_to_ask: ["What do you think the member needed to hear at that point?", "If you took this call again, what would you do differently?", "What gets in the way of doing that on busy days?"],
     ranking: ranked, source: "offline",
   };
 }
 
 // ---------- 2. Strategy: tools per session, DIRECT guide, SMART draft ----------
-export async function strategy(provider, { agent, behaviorId, rootCause, summary, verbatims }) {
-  const b = BEHAVIOR_BY_ID[behaviorId], rc = ROOT_CAUSE_BY_ID[rootCause] || ROOT_CAUSE_BY_ID.skill;
+export async function strategy(provider, { agent, behaviorId, rootCause, summary, verbatims, behaviors = DEFAULT_BEHAVIORS }) {
+  const b = byKey(behaviors)[behaviorId], rc = ROOT_CAUSE_BY_ID[rootCause] || ROOT_CAUSE_BY_ID.skill;
   const prompt = `Build this week's coaching plan.
 Agent (fictional): ${agent.name.split(" ")[0]}, LOB ${agent.lob}. Behavior: ${b.name}. Root cause: ${rc.name}.
+THE MANAGER'S STANDARD FOR THIS BEHAVIOR (follow it: use their steps and example lines, and build the SMART draft from their on-call actions):
+${behaviorContext(b)}
+Their on-call actions: ${b.actions.join(" | ")}
 KPIs: ${kpiLines(summary)}
 Verbatims:
 ${verbLines(verbatims || [])}
 Allowed tools (use these exact names): ${TOOL_NAMES.join(", ")}.
 Return JSON: {"tools":{"setting_goals":{"tool":"","how":"1-2 sentences"},"skill_transfer":{"tool":"","how":""},"monitor":{"tool":"","how":""},"kudos_accountability":{"tool":"","how":""}},"direct":{"D":{"say":["2 lines"],"avoid":["1 line"]},"I":{"say":[],"avoid":[]},"R":{"say":[],"avoid":[]},"E":{"say":[],"avoid":[]},"C":{"say":[],"avoid":[]},"T":{"say":[],"avoid":[]}},"smart_draft":{"action":"on-call action in the agent's words, first person","measure_target":5,"measure_total":5,"check_method":"how and when it is checked"},"practice":["2 practice ideas for Skill Transfer"]}`;
-  const r = await ask(provider, prompt, { temperature: 0.5 });
+  const r = await ask(provider, prompt, { temperature: 0.5, behaviors });
   if (r && r.tools && r.direct && r.smart_draft) {
     Object.keys(r.tools).forEach((k) => { if (!TOOL_NAMES.includes(r.tools[k]?.tool)) r.tools[k] = { tool: TOOL_PLAN[rc.id][k], how: r.tools[k]?.how || "" }; });
     return { ...r, source: "ai" };
@@ -165,8 +173,8 @@ function strategyOffline(b, rc) {
 }
 
 // ---------- 3. Auto-generated quiz ----------
-export async function quiz(provider, { behaviorId, agent, summary, count = 5, focus = "" }) {
-  const b = BEHAVIOR_BY_ID[behaviorId];
+export async function quiz(provider, { behaviorId, agent, summary, count = 5, focus = "", behaviors = DEFAULT_BEHAVIORS }) {
+  const b = byKey(behaviors)[behaviorId];
   focus = redact(String(focus || "").trim()).slice(0, 300);
   // The supervisor's focus leads: every question is built around it. Without one, the behavior's usual opportunity is used.
   const prompt = `Write a ${count}-question multiple-choice quiz for a contact center agent (fictional name ${agent?.name?.split(" ")[0] || "the agent"}, LOB ${agent?.lob || "health insurance"}) on the core behavior ${b.name}: ${b.desc}
@@ -174,14 +182,16 @@ ${focus ? `THE SUPERVISOR'S FOCUS (most important): "${focus}"
 Every question must test this focus directly: set each question in the exact call situation, step or skill it describes, and use the words it uses. Do not add questions about other topics. If the focus names a call type, every question happens on that call type. The title must name the focus.
 Background only: ${b.name} usually fixes this member complaint: ${b.driver}.` : `Opportunity: ${b.driver}.
 Use realistic health insurance call moments (claim status, benefits, eligibility, billing, ID cards, denials).`}
+THE MANAGER'S STANDARD FOR THIS BEHAVIOR (right answers follow it; wrong answers break it or match the "avoid" list):
+${behaviorContext(b)}
 KPIs (context only): ${kpiLines(summary)}.
 Each question has 4 options and exactly one correct option. The wrong options must be clearly worse for a coach (vague, KPI-focused, rushed, jargon, blaming), not equally good.
 Put the correct option's exact text in "answer" (copied word for word from "o").
 Return JSON: {"title":"short title","questions":[{"q":"","o":["","","",""],"answer":"exact text of the correct option","why":"one sentence on why it is correct"}]}`;
-  const r = await ask(provider, prompt, { temperature: focus ? 0.5 : 0.6 });
+  const r = await ask(provider, prompt, { temperature: focus ? 0.5 : 0.6, behaviors });
   const questions = r && normalizeQuiz(r.questions);
   if (questions) return { ...r, questions, behavior: behaviorId, focus, source: "ai" };
-  return { ...quizOffline(b, count), focus, focus_used: false }; // the built-in questions can't be tailored
+  return { ...quizOffline(b, count, Math.random, behaviors), focus, focus_used: false }; // the built-in questions can't be tailored
 }
 
 // Models (small local ones especially) often get the answer's position wrong, so they give the answer's text and
@@ -210,33 +220,36 @@ export function normalizeQuiz(list, rand = Math.random) {
   return out.length ? out : null;
 }
 
-export function quizOffline(b, count, rand = Math.random) {
-  const others = BEHAVIORS.filter((x) => x.id !== b.id);
+export function quizOffline(b, count, rand = Math.random, behaviors = DEFAULT_BEHAVIORS) {
+  const others = behaviors.filter((x) => x.id !== b.id);
+  const wrongLines = [...(b.avoid || []).map((x) => x.replace(/^“|”$/g, "")), "“You’ll need to call another department.”", "“It’s in process.”", "“Hold on.”"];
   const shuffleWith = (correct, wrong) => {
     const opts = [correct, ...wrong.slice(0, 3)];
     const order = opts.map((_, i) => [i, rand()]).sort((x, y) => x[1] - y[1]).map(([i]) => i);
     return { o: order.map((i) => opts[i]), a: order.indexOf(0) };
   };
   const qs = [
-    { q: `Which line best shows ${b.name}?`, ...shuffleWith(b.sounds, ["“You’ll need to call another department.”", "“It’s in process.”", "“Hold on.”"]), why: b.desc },
+    { q: `Which line best shows ${b.name}?`, ...shuffleWith(`“${(b.sounds_list?.[0] || b.sounds).replace(/^“|”$/g, "")}”`, wrongLines.map((x) => (x.startsWith("“") ? x : `“${x}”`))), why: b.desc },
     { q: `Which of these is an on-call action for ${b.name}, not a KPI result?`, ...shuffleWith(b.actions[0], ["Raise my CSAT to 90%.", "Be more positive.", "Hit 92% FCR this week."]), why: "A commitment is something you can be heard doing on a call." },
-    { q: `Which member experience does ${b.name} prevent?`, ...shuffleWith(b.driver.replace(/^Dissatisfier: /, ""), others.map((o) => o.driver.replace(/^Dissatisfier: /, ""))), why: `That’s the dissatisfier ${b.name} removes.` },
+    ...(b.driver && others.filter((o) => o.driver).length >= 3 ? [{ q: `Which member experience does ${b.name} prevent?`, ...shuffleWith(b.driver, others.filter((o) => o.driver).map((o) => o.driver)), why: `That’s the dissatisfier ${b.name} removes.` }] : []),
     { q: "When does your supervisor check whether the committed action is happening on your calls?", ...shuffleWith("Wednesday–Thursday, in the Monitor session", ["Only at the end of the month", "When QA scores a call", "Never, it’s self-reported"]), why: "Monitor happens Wednesday–Thursday so Friday’s Kudos/Accountability is based on evidence." },
     { q: `Which commitment for ${b.name} is SMART?`, ...shuffleWith(`“${b.actions[0].replace(/\.$/, "")}, on 5 of 5 calls. We check Wed–Thu and review Friday.”`, [`“I’ll work on ${b.name}.”`, "“I’ll improve my NPS.”", "“I’ll try harder.”"]), why: "Specific action, a number, how it’s checked and when." },
-    { q: "What does LARA stand for?", ...shuffleWith("Listen, Acknowledge, Respond, Ask", ["Listen, Ask, Repeat, Answer", "Learn, Act, Review, Adjust", "Listen, Assist, Resolve, Advise"]), why: "Listen, Acknowledge, Respond, Ask." },
+    ...(b.how?.length && others.filter((o) => o.how?.length).length >= 3 ? [{ q: `Which step is part of how ${b.name} is done on the call?`, ...shuffleWith(b.how[0], others.filter((o) => o.how?.length).map((o) => o.how[0])), why: `Your team’s steps for ${b.name}: ${b.how.join(" ")}` }] : []),
   ];
   return { title: `${b.name}: quick check`, questions: qs.slice(0, Math.max(3, Math.min(count, qs.length))), behavior: b.id, source: "offline" };
 }
 
 // ---------- 4. AI-simulated roleplay ----------
-export async function roleplayStart(provider, { behaviorId, callType, difficulty = "medium", channel = "text" }) {
-  const b = BEHAVIOR_BY_ID[behaviorId];
+export async function roleplayStart(provider, { behaviorId, callType, difficulty = "medium", channel = "text", behaviors = DEFAULT_BEHAVIORS }) {
+  const b = byKey(behaviors)[behaviorId];
   const prompt = `Create a roleplay scenario. The AI will play a fictional health insurance member calling the contact center; the human plays the agent and is practicing ${b.name} (${b.desc}).
+THE MANAGER'S STANDARD FOR THIS BEHAVIOR (design the call so these moments come up, and write the success criteria from their steps and what supervisors listen for):
+${behaviorContext(b)}
 Call type: ${callType || CALL_TYPES[0]}. Difficulty: ${difficulty}.${channel === "voice" ? " This is a voice call: the member's lines will be read aloud by text-to-speech, so write the opening as natural spoken words only (no stage directions, brackets or emojis)." : ""}
 Make it feel like a real call on this line of business: concrete fictional details (dates, dollar amounts, provider or pharmacy names, what the member already tried), a believable reason to be upset, and a hidden need that is related but different.
 "member_notes" tells the actor how this member talks and what they know, so they stay consistent through the call.
 Return JSON: {"member_name":"fictional full name","member_gender":"female|male","member_age":65,"situation":"2 sentences the agent can see before the call","mood":"calm|worried|frustrated|angry","opening":"the member's first line, in character, 1-2 sentences","hidden_need":"a related need the member only mentions if asked","member_notes":"one sentence on how they talk (pace, words they use, what sets them off) + the 2-3 concrete details they know","success_criteria":["3 observable things the agent should do for ${b.name}, each something you could hear on the call"]}`;
-  const r = await ask(provider, prompt, { temperature: 0.8 });
+  const r = await ask(provider, prompt, { temperature: 0.8, behaviors });
   if (r && r.opening && r.member_name) return { ...r, member_gender: r.member_gender === "male" ? "male" : "female", member_age: clampAge(r.member_age), opening: spoken(r.opening, channel), member_notes: String(r.member_notes || "").slice(0, 400), behavior: behaviorId, call_type: callType, difficulty, channel, source: "ai" };
   return { ...roleplayStartOffline(b, callType, difficulty), channel };
 }
@@ -254,9 +267,9 @@ export const SCRIPTS = {
   "Claim denial": { name: "Victor Ramos", gender: "male", age: 58, situation: "Member’s claim for an emergency visit was denied. He’s worried about the bill.", opening: "I got a letter saying my ER claim was denied. I can’t afford this bill.", lines: ["Why was it denied? The letter is just codes.", "So what are my options now?", "How long does an appeal take, and what do I do with the bill meanwhile?"], need: "He was hospitalized overnight and expects a second bill." },
 };
 
-function roleplayStartOffline(b, callType, difficulty) {
+function roleplayStartOffline(b, callType, difficulty) { // success criteria come from the manager's listen-for list when there is one
   const s = SCRIPTS[callType] || SCRIPTS["Claim status"];
-  return { member_name: s.name, member_gender: s.gender, member_age: s.age, situation: s.situation, mood: difficulty === "hard" ? "angry" : "frustrated", opening: s.opening, hidden_need: s.need, success_criteria: [b.actions[0], b.actions[1] || "Confirm the member understood before closing.", "Close with the next step and the timeline."], behavior: b.id, call_type: callType || "Claim status", difficulty, source: "offline" };
+  return { member_name: s.name, member_gender: s.gender, member_age: s.age, situation: s.situation, mood: difficulty === "hard" ? "angry" : "frustrated", opening: s.opening, hidden_need: s.need, success_criteria: b.listen_for?.length >= 2 ? b.listen_for.slice(0, 3) : [b.actions[0], b.actions[1] || "Confirm the member understood before closing.", "Close with the next step and the timeline."], behavior: b.id, call_type: callType || "Claim status", difficulty, source: "offline" };
 }
 
 export async function roleplayTurn(provider, { scenario, transcript }) {
@@ -299,11 +312,13 @@ export const CUES = {
   empathy: /(i understand how|i('| a)m sorry|that sounds (stressful|frustrating|hard)|i can (hear|imagine)|that must be)/i,
 };
 
-export async function roleplayEvaluate(provider, { scenario, transcript }) {
-  const b = BEHAVIOR_BY_ID[scenario.behavior];
+export async function roleplayEvaluate(provider, { scenario, transcript, behaviors = DEFAULT_BEHAVIORS }) {
+  const b = byKey(behaviors)[scenario.behavior] || byKey(DEFAULT_BEHAVIORS)[scenario.behavior] || behaviors[0];
   const delivery = deliveryMetrics(transcript);
   const text = transcript.map((m) => `${m.who.toUpperCase()}: ${m.text}`).join("\n");
   const prompt = `Evaluate the agent's performance in this practice call on the core behavior ${b.name} (${b.desc}).
+Judge it against THE MANAGER'S STANDARD for this behavior:
+${behaviorContext(b)}
 Success criteria: ${(scenario.success_criteria || []).join("; ")}.
 Transcript:
 ${text}${delivery ? `
@@ -313,13 +328,21 @@ Score with this scale: 5 = ${b.name} clearly shown at the right moments and no d
 Check each success criterion: "met" only if you can quote the agent line that shows it.
 "did_well" and "improve" must quote or point to specific agent lines. "model_lines" must fit THIS call (use the member's situation and details), said the way an agent would say them.
 Return JSON: {"score":1-5,"summary":"2 sentences","criteria":[{"text":"the criterion","met":true,"evidence":"short quote of the agent's line, or what was missing"}],"did_well":["2-3 specific quotes or moments"],"improve":["2-3 specific changes"],"model_lines":["2 better lines the agent could have said"],"behavior_seen":true,"other_behaviors":["names of other core behaviors shown"]${delivery ? ',"delivery_tip":"one sentence"' : ""}}`;
-  const r = await ask(provider, prompt, { temperature: 0.2 });
+  const r = await ask(provider, prompt, { temperature: 0.2, behaviors });
   if (r && r.score) {
     const score = Math.max(1, Math.min(5, Math.round(Number(r.score)) || 1));
     const criteria = Array.isArray(r.criteria) ? r.criteria.filter((c) => c && c.text).slice(0, 6).map((c) => ({ text: String(c.text), met: c.met === true || c.met === "true", evidence: String(c.evidence || "") })) : null;
     return { ...r, score, criteria, delivery, source: "ai" };
   }
-  return evaluateOffline(scenario, transcript);
+  return evaluateOffline(scenario, transcript, behaviors);
+}
+
+// Phrases that show a behavior: the built-in cues for the 7, or the first words of the manager's example lines.
+const esc = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+export function cueFor(b) {
+  if (CUES[b.id]) return CUES[b.id];
+  const bits = (b.sounds_list || []).map((l) => l.replace(/[“”"]/g, "").split(/[,.!?]/)[0].trim().split(/\s+/).slice(0, 4).join(" ")).filter((x) => x.split(" ").length >= 2);
+  return bits.length ? new RegExp(`(${bits.map(esc).join("|")})`, "i") : /$^/;
 }
 
 const WEAK_LINES = [
@@ -332,11 +355,12 @@ const WEAK_LINES = [
 ];
 
 // Rule-based scoring: listens for the phrases each behavior sounds like. Used when no AI answers, and for sample data.
-export function evaluateOffline(scenario, transcript) {
-  const b = BEHAVIOR_BY_ID[scenario.behavior];
+export function evaluateOffline(scenario, transcript, behaviors = DEFAULT_BEHAVIORS) {
+  const BY = { ...byKey(DEFAULT_BEHAVIORS), ...byKey(behaviors) };
+  const b = BY[scenario.behavior] || behaviors[0];
   const delivery = deliveryMetrics(transcript);
   const agentText = transcript.filter((m) => m.who === "agent").map((m) => m.text).join(" ");
-  const seen = Object.entries(CUES).filter(([, re]) => re.test(agentText)).map(([id]) => id);
+  const seen = behaviors.filter((x) => cueFor(x).test(agentText)).map((x) => x.id);
   const main = seen.includes(b.id);
   const others = seen.filter((x) => x !== b.id).length;
   // Phrases members dislike take points off, and so do long silences and talking over the member.
@@ -346,26 +370,47 @@ export function evaluateOffline(scenario, transcript) {
   const fixes = weak.map(([, tip]) => tip);
   return {
     score, summary: main ? `${b.name} showed up in this call. ${score >= 4 ? "Strong practice." : penalty ? "But lines members dislike (or long silences) pulled the score down: see what to try next time." : "Keep building the other behaviors around it."}` : `${b.name} didn’t come through clearly in this call. Try the model lines below on the next run.`,
-    did_well: seen.length ? seen.map((id) => `You showed ${BEHAVIOR_BY_ID[id].name}.`) : ["You stayed on the call and kept it moving."],
+    did_well: seen.length ? seen.map((id) => `You showed ${BY[id].name}.`) : ["You stayed on the call and kept it moving."],
     improve: [
       ...fixes.slice(0, 1),
       main ? (seen.includes("expectations") && b.id !== "expectations" ? "Give the next step and the date one at a time, then check the member understood." : "Close with the next step and the timeline before saying goodbye.") : b.actions[0],
       !seen.includes("needs") ? "Ask if the member has anything else coming up before closing." : !seen.includes("empathy") ? "Acknowledge the member’s stress before jumping into the fix." : "Keep the same energy through the close; it’s what the member remembers.",
     ].slice(0, 3),
-    model_lines: [b.sounds.replace(/^“|”$/g, ""), "Before we hang up: is there anything else coming up, like an appointment or a refill?"],
-    behavior_seen: main, other_behaviors: seen.filter((x) => x !== b.id).map((id) => BEHAVIOR_BY_ID[id].name),
+    model_lines: [(b.sounds_list?.[0] || b.sounds).replace(/^“|”$/g, ""), "Before we hang up: is there anything else coming up, like an appointment or a refill?"],
+    behavior_seen: main, other_behaviors: seen.filter((x) => x !== b.id).map((id) => BY[id].name),
     delivery, delivery_tip: delivery?.notes[0] || undefined, source: "offline",
   };
 }
 
+// ---------- Behavior bank: the AI drafts a behavior for the manager to edit ----------
+// draft: what the manager has so far (at least a name). Returns suggested fields; nothing is saved.
+export async function suggestBehavior(provider, { draft = {}, behaviors = DEFAULT_BEHAVIORS }) {
+  const name = String(draft.name || "").trim().slice(0, 60);
+  const others = behaviors.filter((b) => b.name !== name).map((b) => b.name).join(", ");
+  const has = (k) => (Array.isArray(draft[k]) ? draft[k].filter(Boolean).length : String(draft[k] || "").trim().length);
+  const prompt = `A contact center manager is defining a behavior their supervisors will coach agents on, for US health insurance calls (${(draft.lobs || []).length ? draft.lobs.join(", ") : "all lines of business"}).
+Behavior name: "${name}"${draft.desc ? `\nWhat the manager means by it: ${redact(String(draft.desc)).slice(0, 400)}` : ""}${draft.notes ? `\nThe manager's notes on how they want it done: ${redact(String(draft.notes)).slice(0, 800)}` : ""}
+${["how", "sounds", "avoid", "actions", "listen_for", "driver"].some(has) ? `What they wrote so far (keep their wording and intent; fill the gaps and sharpen it): ${JSON.stringify({ how: draft.how, sounds: draft.sounds, avoid: draft.avoid, driver: draft.driver, actions: draft.actions, listen_for: draft.listen_for })}` : ""}
+Other behaviors already in their bank (don't overlap with them): ${others || "none"}.
+Write it so a supervisor could coach it and hear it on a call: concrete steps in call order, lines an agent could say word for word, on-call actions that can be counted on 5 calls (never a KPI result).
+Return JSON: {"full":"long name if any","desc":"one sentence: what the agent does","when":["opening|discovery|resolution|hold|close|whole"],"how":["3-5 steps, in order"],"sounds":["2-3 example lines"],"avoid":["2-3 phrases or habits to avoid"],"driver":"the member complaint it prevents, in the member's words","kpis":["nps|csat|fcr|aht|qa"],"keywords":["6-10 words or short phrases members write in surveys when it's missing"],"actions":["3 on-call actions for SMART commitments, first person optional"],"listen_for":["3-4 things a supervisor can hear on a call"]}`;
+  const r = await ask(provider, prompt, { temperature: 0.5, behaviors });
+  if (r && Array.isArray(r.how) && r.how.length) return { ...r, source: "ai" };
+  return {
+    desc: draft.desc || "", when: ["whole"], how: draft.how?.length ? draft.how : [`Say it the way the team agreed for ${name || "this behavior"}.`, "Do it at the moment it fits in the call, not as a script line.", "Check the member understood before moving on."],
+    sounds: draft.sounds?.length ? draft.sounds : [], avoid: draft.avoid || [], driver: draft.driver || "", kpis: ["nps", "csat"], keywords: [],
+    actions: draft.actions?.length ? draft.actions : [`Use ${name || "the behavior"} on every call this week, in my own words.`], listen_for: draft.listen_for || [], source: "offline",
+  };
+}
+
 // ---------- 5. Friday review assistant ----------
-export async function review(provider, { agent, commitment, sessions }) {
-  const b = BEHAVIOR_BY_ID[commitment.behavior];
+export async function review(provider, { agent, commitment, sessions, behaviors = DEFAULT_BEHAVIORS }) {
+  const b = byKey(behaviors)[commitment.behavior] || byKey(DEFAULT_BEHAVIORS)[commitment.behavior] || { name: commitment.behavior, actions: [commitment.action] };
   const held = sessions.filter((s) => s.status === "held").map((s) => s.type).join(", ") || "none";
   const prompt = `Help the supervisor run Friday's Kudos/Accountability with ${agent.name.split(" ")[0]}.
 Behavior: ${b.name}. Commitment: "${commitment.action}". Target: ${commitment.measure_target} of ${commitment.measure_total} calls. Monitor result: ${commitment.monitor_hits ?? "not recorded"} of ${commitment.monitor_total ?? commitment.measure_total}. Agent self-log: ${commitment.self_hits ?? 0} calls. Sessions held this week: ${held}.
 Return JSON: {"outcome":"met|partial|not_met","kudos":"what to recognize, specific","accountability":"what to say about the gap, if any","next_step":"keep, raise the bar, change the tool, or re-diagnose, with one sentence why","next_week_action":"suggested on-call action for next week"}`;
-  const r = await ask(provider, prompt, { temperature: 0.4, effort: "low" });
+  const r = await ask(provider, prompt, { temperature: 0.4, effort: "low", behaviors });
   if (r && r.outcome) return { ...r, source: "ai" };
   const hits = commitment.monitor_hits, total = commitment.monitor_total || commitment.measure_total;
   const outcome = hits == null ? "partial" : hits >= commitment.measure_target ? "met" : hits >= Math.ceil(total / 2) ? "partial" : "not_met";

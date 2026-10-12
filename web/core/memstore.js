@@ -5,7 +5,7 @@ import { uid } from "./util.js";
 export const TABLES = [
   "users", "kpi_goals", "kpi_weekly", "verbatims", "coaching_sessions", "commitments",
   "weekly_sessions", "quizzes", "roleplays", "training_completions",
-  "notifications", "roleplay_assignments", "leader_sessions", "leader_commitments", "diagnoses"];
+  "notifications", "roleplay_assignments", "leader_sessions", "leader_commitments", "diagnoses", "behaviors"];
 
 const matches = (row, where) =>
   Object.entries(where || {}).every(([k, v]) => (Array.isArray(v) ? v.includes(row[k]) : row[k] === v));

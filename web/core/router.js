@@ -7,6 +7,7 @@ import { HttpError, today, weekStart, addDays, coachingWeek } from "./util.js";
 import { cleanVoice } from "./delivery.js";
 import { cleanScenario, practiceFacts, practiceRow } from "./practice.js";
 import { cleanCalls, tallyCalls, callLines, calibration } from "./diagnosis.js";
+import { DEFAULT_BEHAVIORS, defaultRows, normalize, forLob, byKey, cleanBehavior, newKey, MAX_ACTIVE } from "./bank.js";
 import { parseRoster, rosterTree, applyRoster, fold, emailLocal } from "./roster.js";
 import { passwordProblems } from "./password.js";
 import { sampleOn, sampleOff } from "./sample.js";
@@ -76,6 +77,35 @@ async function summariesFor(agents, store) {
   return { goals, rows, sums: S.assignQuartiles(sums) };
 }
 const supervisorIdFor = (user, agent) => (user.role === "supervisor" ? user.id : agent.supervisor_id);
+
+// ---------- behavior bank ----------
+// Every person works with their manager's bank (agents and supervisors through their manager), filtered by LOB.
+async function managerIdOf(store, person) {
+  if (!person) return null;
+  if (person.role === "manager") return person.id;
+  if (person.manager_id) return person.manager_id;
+  if (person.supervisor_id) return (await store.get("users", person.supervisor_id))?.manager_id || null;
+  return null;
+}
+const creatingBank = new Map();
+async function bankOf(store, managerId) {
+  if (!managerId) return DEFAULT_BEHAVIORS;
+  let rows = await store.list("behaviors", { manager_id: managerId });
+  if (!rows.length) { // first use: the bank starts as a copy of the 7 core behaviors
+    if (!creatingBank.has(managerId)) creatingBank.set(managerId, store.insertMany("behaviors", defaultRows(managerId)).catch(() => null).finally(() => creatingBank.delete(managerId)));
+    await creatingBank.get(managerId);
+    rows = await store.list("behaviors", { manager_id: managerId });
+    if (!rows.length) return DEFAULT_BEHAVIORS;
+  }
+  return rows.map(normalize).sort((a, b) => a.position - b.position);
+}
+// { all: the whole bank (also retired ones, for names in history), usable: active ones for this LOB, BY: lookup by key }
+async function bankFor(store, person, lob = person?.lob) {
+  const all = await bankOf(store, await managerIdOf(store, person));
+  const BY = { ...byKey(DEFAULT_BEHAVIORS), ...byKey(all) };
+  return { all, usable: forLob(all, lob), BY };
+}
+const mustUse = (bank, id, msg = "Pick one of your team’s behaviors.") => { const b = bank.usable.find((x) => x.id === id); if (!b) throw new HttpError(400, msg); return b; };
 
 // ---------- meta / me ----------
 on("GET", "/api/health", "public", async () => ({ ok: true, app: "PULSE", time: new Date().toISOString() }));
@@ -203,11 +233,12 @@ on("GET", "/api/dashboard/manager", ["manager"], async ({ user, query }, { store
   });
   const yesterday = addDays(today(), -1);
   const lastWorkday = [0, 1, 2, 3].map((n) => addDays(yesterday, -n)).find((d) => sessions.some((x) => x.planned_date === d)) || yesterday;
-  const effect = agents.map((a) => S.effectiveness(a, rows.filter((r) => r.agent_id === a.id).sort((x, y) => (x.week_start < y.week_start ? -1 : 1)), coaching, commitments)).filter(Boolean);
+  const mgrBank = await bankFor(store, user, null);
+  const effect = agents.map((a) => S.effectiveness(a, rows.filter((r) => r.agent_id === a.id).sort((x, y) => (x.week_start < y.week_start ? -1 : 1)), coaching, commitments, mgrBank.all)).filter(Boolean);
   return {
     week, lob, lobs, lob_counts: lobCount, people: { supervisors: sups.length, agents: agents.length, in_production: agents.filter(active).filter((a) => a.in_production !== false).length },
     org: S.teamKpis(sums, goals, lob || lobs[0] || "NPG"), supervisors,
-    behaviors: S.behaviorDistribution(commitments),
+    behaviors: S.behaviorDistribution(commitments, mgrBank.all.filter((b) => b.active || commitments.some((c) => c.behavior === b.id))),
     byRootCause: C.ROOT_CAUSES.map((r) => { const cs = commitments.filter((c) => c.root_cause === r.id && c.status !== "open"); return { id: r.id, name: r.name, reviewed: cs.length, met: cs.filter((c) => c.status === "met").length }; }),
     inspection: { date: lastWorkday, sessions: sessions.filter((x) => x.planned_date === lastWorkday).map((x) => ({ ...x, agent_name: agents.find((a) => a.id === x.agent_id)?.name, supervisor_name: sups.find((s) => s.id === x.supervisor_id)?.name, commitment: commitments.find((c) => c.id === x.commitment_id) || null })) },
     effectiveness: { agents: effect.length, improved: effect.filter((e) => e.improved).length, list: effect.map((e) => ({ ...e, name: agents.find((a) => a.id === e.agent_id)?.name })) },
@@ -495,9 +526,10 @@ on("GET", "/api/sessions/:id", ["manager", "supervisor"], async ({ user, params 
 });
 on("POST", "/api/sessions", ["supervisor", "manager"], async ({ user, body }, { store }) => {
   const a = await mustSeeAgent(user, store, body.agent_id);
+  if (body.behavior) mustUse(await bankFor(store, a), body.behavior);
   let ai = body.ai || null;
   const d = body.diagnosis_id ? await store.get("diagnoses", body.diagnosis_id) : null;
-  if (d && d.agent_id === a.id) ai = { ...(ai || {}), listening: { calls: d.calls, lines: callLines(d.calls), tally: tallyCalls(d.calls), sup_pick: d.sup_pick, sup_reason: d.sup_reason, ai_pick: d.ai_pick, final_pick: d.final_pick || d.sup_pick, final_reason: d.final_reason } };
+  if (d && d.agent_id === a.id) ai = { ...(ai || {}), listening: { calls: d.calls, lines: callLines(d.calls, (await bankFor(store, a)).all), tally: tallyCalls(d.calls, (await bankFor(store, a)).usable), sup_pick: d.sup_pick, sup_reason: d.sup_reason, ai_pick: d.ai_pick, final_pick: d.final_pick || d.sup_pick, final_reason: d.final_reason } };
   const s = await store.insert("coaching_sessions", { agent_id: a.id, supervisor_id: supervisorIdFor(user, a), date: body.date || today(), status: "draft", behavior: body.behavior || null, root_cause: body.root_cause || null, evidence: body.evidence || "", kpi_focus: body.kpi_focus || null, notes: body.notes || {}, ai });
   if (d && d.agent_id === a.id) await store.update("diagnoses", d.id, { session_id: s.id, ...(d.status === "final" ? {} : { status: "final", final_pick: body.behavior || d.sup_pick, final_reason: d.final_reason || d.sup_reason }) });
   return s;
@@ -513,7 +545,11 @@ on("POST", "/api/sessions/:id/complete", ["supervisor", "manager"], async ({ use
   const s = await store.get("coaching_sessions", params.id); if (!s) throw new HttpError(404, "Session not found.");
   const a = await mustSeeAgent(user, store, s.agent_id);
   const c = { ...body.commitment, behavior: body.commitment?.behavior || s.behavior, root_cause: body.commitment?.root_cause || s.root_cause, evidence: s.evidence, session_id: s.id, week_start: coachingWeek(s.date) };
-  if (!c.behavior || !C.BEHAVIOR_BY_ID[c.behavior]) throw new HttpError(400, "Pick one of the 7 core behaviors.");
+  const bank = await bankFor(store, a);
+  // Allowed: an active behavior for the agent's LOB, or the session's own behavior if it was retired since (same LOB rules).
+  const inBank = bank.all.find((b) => b.id === c.behavior);
+  const ok = bank.usable.some((b) => b.id === c.behavior) || (c.behavior === s.behavior && inBank && (!inBank.lobs?.length || inBank.lobs.includes(a.lob)));
+  if (!c.behavior || !ok) throw new HttpError(400, "Pick one of your team’s behaviors.");
   if (!c.root_cause || !C.ROOT_CAUSE_BY_ID[c.root_cause]) throw new HttpError(400, "Mark the root cause.");
   const check = S.smartCheck(c);
   if (!check.ok && !body.force) throw new HttpError(422, "The commitment isn’t SMART yet: " + check.checks.filter((x) => !x.ok).map((x) => `${x.name} (${x.tip})`).join(" "));
@@ -629,22 +665,77 @@ async function aiContext(user, store, agentId) {
   const { sums } = await summariesFor([a], store);
   const [verbatims, history] = await Promise.all([store.list("verbatims", { agent_id: a.id }), store.list("commitments", { agent_id: a.id })]);
   verbatims.sort((x, y) => (x.date < y.date ? 1 : -1)); history.sort((x, y) => (x.week_start < y.week_start ? 1 : -1));
-  return { agent: a, summary: sums[0], verbatims: verbatims.filter((v) => v.date >= addDays(today(), -45)), history };
+  const bank = await bankFor(store, a);
+  return { agent: a, summary: sums[0], verbatims: verbatims.filter((v) => v.date >= addDays(today(), -45)), history, behaviors: bank.usable, bank };
 }
-on("POST", "/api/ai/diagnose", ["supervisor", "manager"], async ({ user, body }, { store, ai }) => AI.diagnose(ai, await aiContext(user, store, body.agent_id)));
+on("POST", "/api/ai/diagnose", ["supervisor", "manager"], async ({ user, body }, { store, ai }) => { const { bank, ...ctx } = await aiContext(user, store, body.agent_id); return AI.diagnose(ai, ctx); });
+// ---------- behavior bank (managers edit; their supervisors and agents use it) ----------
+on("GET", "/api/behaviors", null, async ({ user }, { store }) => {
+  const managerId = await managerIdOf(store, user);
+  const all = await bankOf(store, managerId);
+  const manager = managerId && managerId !== user.id ? await store.get("users", managerId) : user.role === "manager" ? user : null;
+  return { behaviors: all, editable: user.role === "manager", manager: manager ? { id: manager.id, name: manager.name } : null, lob: user.lob || null, max_active: MAX_ACTIVE };
+});
+async function ownBehavior(user, store, key) {
+  await bankOf(store, user.id); // make sure the bank exists
+  const row = (await store.list("behaviors", { manager_id: user.id, key }))[0];
+  if (!row) throw new HttpError(404, "Behavior not found in your bank.");
+  return row;
+}
+const sameName = (a, b) => String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+on("POST", "/api/behaviors", ["manager"], async ({ user, body }, { store }) => {
+  const all = await bankOf(store, user.id);
+  const { row, problem } = cleanBehavior(body);
+  if (problem) throw new HttpError(400, problem);
+  if (all.filter((b) => b.active).length >= MAX_ACTIVE) throw new HttpError(400, `Your bank already has ${MAX_ACTIVE} active behaviors. Retire one first: supervisors coach better with a short list.`);
+  if (all.some((b) => b.active && sameName(b.name, row.name))) throw new HttpError(409, "There’s already a behavior with that name.");
+  const saved = await store.insert("behaviors", { ...row, manager_id: user.id, key: newKey(row.name), active: true, position: Math.max(-1, ...all.map((b) => b.position)) + 1, ai_drafted: !!body.ai_drafted, updated_by: user.id });
+  return normalize(saved);
+});
+on("PUT", "/api/behaviors/:key", ["manager"], async ({ user, params, body }, { store }) => {
+  const current = await ownBehavior(user, store, params.key);
+  const { row, problem } = cleanBehavior(body);
+  if (problem) throw new HttpError(400, problem);
+  const all = await bankOf(store, user.id);
+  if (all.some((b) => b.active && b.id !== params.key && sameName(b.name, row.name))) throw new HttpError(409, "There’s already a behavior with that name.");
+  return normalize(await store.update("behaviors", current.id, { ...row, ai_drafted: !!body.ai_drafted || current.ai_drafted, updated_by: user.id }));
+});
+// Retire (or bring back) a behavior. Retired ones disappear from pickers but stay in history.
+on("POST", "/api/behaviors/:key/active", ["manager"], async ({ user, params, body }, { store }) => {
+  const current = await ownBehavior(user, store, params.key);
+  const all = await bankOf(store, user.id);
+  const on_ = body.active !== false;
+  if (!on_ && all.filter((b) => b.active && b.id !== params.key).length < 1) throw new HttpError(400, "Keep at least one active behavior.");
+  if (on_ && all.filter((b) => b.active).length >= MAX_ACTIVE) throw new HttpError(400, `Your bank already has ${MAX_ACTIVE} active behaviors.`);
+  return normalize(await store.update("behaviors", current.id, { active: on_, updated_by: user.id }));
+});
+on("POST", "/api/behaviors/order", ["manager"], async ({ user, body }, { store }) => {
+  const rows = await store.list("behaviors", { manager_id: user.id });
+  const keys = Array.isArray(body.keys) ? body.keys : [];
+  for (const r of rows) { const i = keys.indexOf(r.key); if (i >= 0 && r.position !== i) await store.update("behaviors", r.id, { position: i }); }
+  return bankOf(store, user.id);
+});
+// The AI drafts the fields from a name (and whatever the manager wrote). Nothing is saved.
+on("POST", "/api/behaviors/suggest", ["manager"], async ({ user, body }, { store, ai }) => {
+  const draft = body.draft || {};
+  if (String(draft.name || "").trim().length < 2) throw new HttpError(400, "Write the behavior’s name first.");
+  const all = await bankOf(store, user.id);
+  return AI.suggestBehavior(ai, { draft, behaviors: all.filter((b) => b.active && b.id !== body.key) });
+});
+
 // ---------- supervisor-first diagnosis ----------
 // 1) The supervisor marks what they heard on 3–5 calls and picks the behavior with a reason.
 // 2) The AI decides from the data on its own and gives a second opinion on that pick.
 // 3) The supervisor makes the final call (a reason is required to change their pick).
 on("POST", "/api/diagnoses", ["supervisor", "manager"], async ({ user, body }, { store, ai }) => {
-  const ctx = await aiContext(user, store, body.agent_id);
-  if (!C.BEHAVIOR_BY_ID[body.sup_pick]) throw new HttpError(400, "Choose the behavior you would coach.");
+  const { bank, ...ctx } = await aiContext(user, store, body.agent_id);
+  mustUse(bank, body.sup_pick, "Choose the behavior you would coach.");
   const reason = String(body.sup_reason || "").trim().slice(0, 1000);
   if (reason.length < 15) throw new HttpError(400, "Say in a sentence why: what you heard on the calls.");
-  const { calls, problem } = cleanCalls(body.calls);
+  const { calls, problem } = cleanCalls(body.calls, bank.usable);
   if (problem) throw new HttpError(400, problem);
-  const tally = tallyCalls(calls);
-  const second = await AI.diagnose(ai, { ...ctx, supervisor: { pick: body.sup_pick, reason, calls: callLines(calls), tally } });
+  const tally = tallyCalls(calls, bank.usable);
+  const second = await AI.diagnose(ai, { ...ctx, supervisor: { pick: body.sup_pick, reason, calls: callLines(calls, bank.all), tally } });
   const { ranking, ...opinion } = second;
   const d = await store.insert("diagnoses", { supervisor_id: supervisorIdFor(user, ctx.agent), agent_id: ctx.agent.id, week_start: coachingWeek(today()), calls, evidence_top: tally.top, sup_pick: body.sup_pick, sup_reason: reason, ai_pick: second.behavior_id, ai: opinion, agrees: second.agrees_with_supervisor ?? null, final_pick: null, final_reason: null, status: "draft", session_id: null });
   return { ...d, tally };
@@ -656,25 +747,27 @@ async function mustSeeDiagnosis(user, store, id) {
 }
 on("POST", "/api/diagnoses/:id/final", ["supervisor", "manager"], async ({ user, params, body }, { store }) => {
   const d = await mustSeeDiagnosis(user, store, params.id);
-  if (!C.BEHAVIOR_BY_ID[body.final_pick]) throw new HttpError(400, "Choose the behavior you’ll coach.");
+  const bank = await bankFor(store, await store.get("users", d.agent_id));
+  mustUse(bank, body.final_pick, "Choose the behavior you’ll coach.");
   const reason = String(body.final_reason || "").trim().slice(0, 1000);
   if (body.final_pick !== d.sup_pick && reason.length < 10) throw new HttpError(400, "You changed your pick: say what changed your mind.");
-  return { ...(await store.update("diagnoses", d.id, { final_pick: body.final_pick, final_reason: reason || d.sup_reason, status: "final" })), tally: tallyCalls(d.calls) };
+  return { ...(await store.update("diagnoses", d.id, { final_pick: body.final_pick, final_reason: reason || d.sup_reason, status: "final" })), tally: tallyCalls(d.calls, bank.usable) };
 });
 on("GET", "/api/diagnoses", ["supervisor", "manager"], async ({ user, query }, { store }) => {
   const ids = [...(await agentIdsFor(user, store))];
   const list = await store.list("diagnoses", { agent_id: query.agent_id && ids.includes(query.agent_id) ? query.agent_id : ids });
-  return list.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)).map((d) => ({ ...d, tally: tallyCalls(d.calls) }));
+  const bank = await bankFor(store, user, null);
+  return list.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)).map((d) => ({ ...d, tally: tallyCalls(d.calls, bank.all) }));
 });
 on("POST", "/api/ai/strategy", ["supervisor", "manager"], async ({ user, body }, { store, ai }) => {
-  const ctx = await aiContext(user, store, body.agent_id);
-  if (!C.BEHAVIOR_BY_ID[body.behavior]) throw new HttpError(400, "Pick one of the 7 core behaviors.");
+  const { bank, ...ctx } = await aiContext(user, store, body.agent_id);
+  mustUse(bank, body.behavior);
   return AI.strategy(ai, { ...ctx, behaviorId: body.behavior, rootCause: body.root_cause });
 });
 on("POST", "/api/ai/quiz", ["supervisor", "manager"], async ({ user, body }, { store, ai }) => {
-  const ctx = await aiContext(user, store, body.agent_id);
-  if (!C.BEHAVIOR_BY_ID[body.behavior]) throw new HttpError(400, "Pick one of the 7 core behaviors.");
-  const q = await AI.quiz(ai, { behaviorId: body.behavior, agent: ctx.agent, summary: ctx.summary, count: Math.min(8, Math.max(3, Number(body.count) || 5)), focus: body.focus });
+  const { bank, ...ctx } = await aiContext(user, store, body.agent_id);
+  mustUse(bank, body.behavior);
+  const q = await AI.quiz(ai, { behaviors: ctx.behaviors, behaviorId: body.behavior, agent: ctx.agent, summary: ctx.summary, count: Math.min(8, Math.max(3, Number(body.count) || 5)), focus: body.focus });
   if (body.preview) return q;
   // Saving straight away (no review) keeps only questions with a known answer.
   const questions = q.questions.filter((x) => Number.isInteger(x.a)).map(({ ai_a, ...x }) => x);
@@ -684,10 +777,10 @@ on("POST", "/api/ai/quiz", ["supervisor", "manager"], async ({ user, body }, { s
   return saved;
 });
 // The supervisor reviews every question and picks the right answer before the quiz reaches the agent.
-function cleanQuiz(body) {
+function cleanQuiz(body, bank) {
   const title = String(body.title || "").trim().slice(0, 120);
   if (!title) throw new HttpError(400, "Give the quiz a title.");
-  if (!C.BEHAVIOR_BY_ID[body.behavior]) throw new HttpError(400, "Pick one of the 7 core behaviors.");
+  mustUse(bank, body.behavior);
   const list = Array.isArray(body.questions) ? body.questions : [];
   if (!list.length || list.length > 10) throw new HttpError(400, "A quiz needs between 1 and 10 questions.");
   const questions = list.map((x, i) => {
@@ -705,7 +798,7 @@ function cleanQuiz(body) {
 }
 on("POST", "/api/quizzes", ["supervisor", "manager"], async ({ user, body }, { store }) => {
   const a = await mustSeeAgent(user, store, body.agent_id);
-  const { title, questions } = cleanQuiz(body);
+  const { title, questions } = cleanQuiz(body, await bankFor(store, a));
   const saved = await store.insert("quizzes", { agent_id: a.id, supervisor_id: supervisorIdFor(user, a), behavior: body.behavior, title, questions, source: ["ai", "offline", "manual"].includes(body.source) ? body.source : "manual", status: "assigned", answers: null, score: null });
   await notifyQuiz(store, user, saved);
   return saved;
@@ -717,18 +810,19 @@ on("POST", "/api/roleplay-assignments", ["supervisor", "manager"], async ({ user
   const a = await mustSeeAgent(user, store, body.agent_id);
   const channel = body.channel === "text" ? "text" : "voice";
   // A scenario the supervisor wrote or edited is used as is when the agent starts; otherwise one is generated then.
+  const bank = await bankFor(store, a);
   let scenario = null;
   if (body.scenario) {
-    const r = cleanScenario({ ...body.scenario, behavior: body.scenario.behavior || body.behavior }, { base: body.scenario.base || {}, channel, userId: user.id });
+    const r = cleanScenario({ ...body.scenario, behavior: body.scenario.behavior || body.behavior }, { base: body.scenario.base || {}, channel, userId: user.id, behaviors: bank.usable });
     if (r.problem) throw new HttpError(400, r.problem);
     scenario = r.scenario;
   }
   const behavior = scenario?.behavior || body.behavior;
-  if (!C.BEHAVIOR_BY_ID[behavior]) throw new HttpError(400, "Pick one of the 7 core behaviors.");
+  mustUse(bank, behavior);
   const call = scenario ? scenario.call_type : C.CALL_TYPES.includes(body.call_type) ? body.call_type : C.CALL_TYPES[0];
   const difficulty = scenario?.difficulty || (["easy", "medium", "hard"].includes(body.difficulty) ? body.difficulty : "medium");
   const ra = await store.insert("roleplay_assignments", { agent_id: a.id, assigned_by: user.id, behavior, call_type: call, difficulty, channel, due_date: body.due_date || null, note: String(body.note || "").slice(0, 300), status: "assigned", scenario });
-  await notify(store, a.id, { type: "roleplay_assigned", title: `${first(user.name)} assigned you a roleplay`, body: `${C.BEHAVIOR_BY_ID[ra.behavior].name} · ${ra.call_type}${ra.due_date ? ` · by ${new Date(`${ra.due_date}T12:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}` : ""}${ra.note ? ` · “${ra.note}”` : ""}`, link: { view: "practice", params: { assignment: ra.id } } });
+  await notify(store, a.id, { type: "roleplay_assigned", title: `${first(user.name)} assigned you a roleplay`, body: `${bank.BY[ra.behavior]?.name || ra.behavior} · ${ra.call_type}${ra.due_date ? ` · by ${new Date(`${ra.due_date}T12:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}` : ""}${ra.note ? ` · “${ra.note}”` : ""}`, link: { view: "practice", params: { assignment: ra.id } } });
   return ra;
 });
 on("GET", "/api/roleplay-assignments", null, async ({ user, query }, { store }) => {
@@ -745,26 +839,29 @@ on("DELETE", "/api/roleplay-assignments/:id", ["supervisor", "manager"], async (
 });
 
 // A draft scenario for the supervisor to review and edit before starting or assigning it. Nothing is saved.
-on("POST", "/api/ai/roleplay/scenario", ["supervisor", "manager"], async ({ body }, { ai }) => {
-  if (!C.BEHAVIOR_BY_ID[body.behavior]) throw new HttpError(400, "Pick one of the 7 core behaviors.");
+on("POST", "/api/ai/roleplay/scenario", ["supervisor", "manager"], async ({ user, body }, { store, ai }) => {
+  const who = body.agent_id ? await mustSeeAgent(user, store, body.agent_id) : user;
+  const bank = await bankFor(store, who);
+  mustUse(bank, body.behavior);
   const channel = body.channel === "voice" ? "voice" : "text";
-  return AI.roleplayStart(ai, { behaviorId: body.behavior, callType: body.call_type, difficulty: body.difficulty, channel });
+  return AI.roleplayStart(ai, { behaviorId: body.behavior, callType: body.call_type, difficulty: body.difficulty, channel, behaviors: bank.usable });
 });
 on("POST", "/api/ai/roleplay", null, async ({ user, body }, { store, ai }) => {
   let agentId = user.role === "agent" ? user.id : body.agent_id || null;
-  if (agentId) await mustSeeAgent(user, store, agentId);
+  const forAgent = agentId ? await mustSeeAgent(user, store, agentId) : null;
+  const bank = await bankFor(store, forAgent || user);
   let channel = body.channel === "voice" ? "voice" : "text";
   let ra = null;
   if (body.assignment_id) { ra = await store.get("roleplay_assignments", body.assignment_id); if (!ra || ra.agent_id !== user.id || ra.status === "done" || ra.status === "cancelled") ra = null; }
   let scenario;
   if (ra?.scenario) scenario = { ...ra.scenario, channel: ra.scenario.channel === "voice" && channel === "voice" ? "voice" : "text" }; // the supervisor's own scenario
   else if (body.scenario && user.role !== "agent") {
-    const r = cleanScenario({ ...body.scenario, behavior: body.scenario.behavior || body.behavior }, { base: body.scenario.base || {}, channel, userId: user.id });
+    const r = cleanScenario({ ...body.scenario, behavior: body.scenario.behavior || body.behavior }, { base: body.scenario.base || {}, channel, userId: user.id, behaviors: bank.usable });
     if (r.problem) throw new HttpError(400, r.problem);
     scenario = r.scenario;
   } else {
-    if (!C.BEHAVIOR_BY_ID[body.behavior]) throw new HttpError(400, "Pick one of the 7 core behaviors.");
-    scenario = await AI.roleplayStart(ai, { behaviorId: body.behavior, callType: body.call_type, difficulty: body.difficulty, channel });
+    mustUse(bank, body.behavior);
+    scenario = await AI.roleplayStart(ai, { behaviorId: body.behavior, callType: body.call_type, difficulty: body.difficulty, channel, behaviors: bank.usable });
   }
   const behavior = scenario.behavior || body.behavior;
   const now = new Date().toISOString();
@@ -790,8 +887,8 @@ async function visiblePractice(user, store) {
 }
 const nameMap = async (store) => Object.fromEntries((await store.list("users")).map((u) => [u.id, u.name]));
 on("GET", "/api/roleplays", null, async ({ user }, { store }) => {
-  const [list, names] = await Promise.all([visiblePractice(user, store), nameMap(store)]);
-  return list.map((r) => practiceRow(r, names));
+  const [list, names, bank] = await Promise.all([visiblePractice(user, store), nameMap(store), bankFor(store, user, null)]);
+  return list.map((r) => practiceRow(r, names, bank.all));
 });
 async function mustSeePractice(user, store, id) {
   const rp = await store.get("roleplays", id);
@@ -803,9 +900,10 @@ async function mustSeePractice(user, store, id) {
 on("GET", "/api/roleplays/:id", null, async ({ user, params }, { store }) => {
   const rp = await mustSeePractice(user, store, params.id);
   const names = await nameMap(store);
+  const bankAll = (await bankFor(store, rp.agent_id ? await store.get("users", rp.agent_id) : user, null)).all;
   const ra = rp.scenario?.assignment_id ? await store.get("roleplay_assignments", rp.scenario.assignment_id) : null;
   return {
-    ...rp, ...practiceRow(rp, names), transcript: undefined, evaluation: rp.evaluation, scenario: rp.scenario, facts: practiceFacts(rp),
+    ...rp, ...practiceRow(rp, names, bankAll), transcript: undefined, evaluation: rp.evaluation, scenario: rp.scenario, facts: practiceFacts(rp, bankAll),
     coach_note_by_name: rp.coach_note_by ? names[rp.coach_note_by] || "" : "", edited_by_name: rp.scenario?.edited_by ? names[rp.scenario.edited_by] || "" : "",
     assignment: ra ? { id: ra.id, assigned_by: names[ra.assigned_by] || "", due_date: ra.due_date, note: ra.note, created_at: ra.created_at } : null,
     can_note: user.role !== "agent" && !!rp.agent_id,
@@ -816,7 +914,7 @@ on("PUT", "/api/roleplays/:id/note", ["supervisor", "manager"], async ({ user, p
   if (!rp.agent_id) throw new HttpError(400, "Notes are for an agent’s practice.");
   const note = String(body.note || "").trim().slice(0, 1000);
   const saved = await store.update("roleplays", rp.id, { coach_note: note || null, coach_note_by: note ? user.id : null, coach_note_at: note ? new Date().toISOString() : null });
-  if (note && rp.agent_id !== user.id) await notify(store, rp.agent_id, { type: "roleplay_note", title: `${first(user.name)} left a note on your practice`, body: `${C.BEHAVIOR_BY_ID[rp.behavior]?.name || ""} · ${rp.scenario?.call_type || ""}`, link: { view: "practice-detail", params: { id: rp.id } } });
+  if (note && rp.agent_id !== user.id) await notify(store, rp.agent_id, { type: "roleplay_note", title: `${first(user.name)} left a note on your practice`, body: `${(await bankFor(store, user, null)).BY[rp.behavior]?.name || ""} · ${rp.scenario?.call_type || ""}`, link: { view: "practice-detail", params: { id: rp.id } } });
   return { ok: true, coach_note: saved.coach_note };
 });
 on("POST", "/api/ai/roleplay/:id/turn", null, async ({ user, params, body }, { store, ai }) => {
@@ -832,14 +930,15 @@ on("POST", "/api/ai/roleplay/:id/turn", null, async ({ user, params, body }, { s
 });
 on("POST", "/api/ai/roleplay/:id/evaluate", null, async ({ user, params }, { store, ai }) => {
   const rp = await store.get("roleplays", params.id); if (!rp || rp.user_id !== user.id) throw new HttpError(404, "Roleplay not found.");
-  const evaluation = await AI.roleplayEvaluate(ai, { scenario: rp.scenario, transcript: rp.transcript });
+  const evalBank = await bankFor(store, rp.agent_id ? await store.get("users", rp.agent_id) : user, null);
+  const evaluation = await AI.roleplayEvaluate(ai, { scenario: rp.scenario, transcript: rp.transcript, behaviors: evalBank.all.filter((b) => b.active || b.id === rp.behavior) });
   const saved = await store.update("roleplays", rp.id, { evaluation, status: "evaluated", ended_at: rp.ended_at || new Date().toISOString() });
   const raId = rp.scenario?.assignment_id;
   if (raId) {
     const ra = await store.get("roleplay_assignments", raId);
     if (ra && ra.status !== "done") {
       await store.update("roleplay_assignments", ra.id, { status: "done", score: evaluation.score, completed_at: new Date().toISOString(), roleplay_id: rp.id });
-      await notify(store, ra.assigned_by, { type: "roleplay_done", title: `${user.name} finished the roleplay: ${evaluation.score}/5`, body: `${C.BEHAVIOR_BY_ID[ra.behavior].name} · ${ra.call_type}`, link: { view: "agent", params: { id: user.id } } });
+      await notify(store, ra.assigned_by, { type: "roleplay_done", title: `${user.name} finished the roleplay: ${evaluation.score}/5`, body: `${evalBank.BY[ra.behavior]?.name || ra.behavior} · ${ra.call_type}`, link: { view: "agent", params: { id: user.id } } });
     }
   }
   return saved;
@@ -848,7 +947,7 @@ on("POST", "/api/ai/roleplay/:id/evaluate", null, async ({ user, params }, { sto
 on("POST", "/api/ai/review", ["supervisor", "manager"], async ({ user, body }, { store, ai }) => {
   const c = await store.get("commitments", body.commitment_id); if (!c) throw new HttpError(404, "Commitment not found.");
   const a = await mustSeeAgent(user, store, c.agent_id);
-  return AI.review(ai, { agent: a, commitment: c, sessions: await store.list("weekly_sessions", { commitment_id: c.id }) });
+  return AI.review(ai, { agent: a, commitment: c, sessions: await store.list("weekly_sessions", { commitment_id: c.id }), behaviors: (await bankFor(store, a)).all });
 });
 
 // ---------- training library ----------

@@ -1,5 +1,5 @@
 // Supervisor views: dashboard, agents, agent detail, DIRECT session list, weekly plan, commitments.
-import { KPIS, QUARTILES, SESSION_TYPES, TOOL_NAMES, BEHAVIORS, COMMITMENT_STATUS } from "../core/constants.js";
+import { KPIS, QUARTILES, SESSION_TYPES, TOOL_NAMES, COMMITMENT_STATUS } from "../core/constants.js";
 import { weekStart, addDays, today } from "../core/util.js";
 import { resetPasswordModal } from "./account.js";
 import { assignRoleplayModal } from "./tools.js";

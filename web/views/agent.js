@@ -1,12 +1,12 @@
 // Agent views: my week (commitment, sessions, self-log), quizzes, progress.
-import { KPIS, BEHAVIOR_BY_ID, SESSION_TYPES } from "../core/constants.js";
-import { esc, $, $$, kpiTile, statusChip, bName, rcName, sName, dateLabel, weekLabel, fmtKpi } from "../ui.js";
+import { KPIS, SESSION_TYPES } from "../core/constants.js";
+import { esc, $, $$, kpiTile, statusChip, bName, rcName, sName, dateLabel, weekLabel, fmtKpi, behaviorOf } from "../ui.js";
 
 const head = (title, sub, actions = "") => `<div class="topline"><div><h1>${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div><div class="row">${actions}</div></div>`;
 
 export async function myWeek(main, _p, { api, go, toast }) {
   const [d, plays] = await Promise.all([api("GET", "/api/dashboard/agent"), api("GET", "/api/roleplay-assignments")]);
-  const c = d.current, b = c ? BEHAVIOR_BY_ID[c.behavior] : null;
+  const c = d.current, b = c ? behaviorOf(c.behavior) || { name: bName(c.behavior), desc: "", sounds: "", how: [] } : null;
   const due = d.quizzes.filter((q) => q.status !== "completed");
   const rps = plays.filter((x) => x.status === "assigned" || x.status === "started");
   main.innerHTML = head(`Hi, ${esc(d.me.name.split(" ")[0])}`, `${weekLabel(d.week)}${d.supervisor ? ` · Supervisor ${esc(d.supervisor)}` : ""}`) +
@@ -15,7 +15,8 @@ export async function myWeek(main, _p, { api, go, toast }) {
     ${c ? `<div class="row"><span class="chip teal">${esc(b.name)}</span></div>
       <div class="sticky mt"><span class="eyebrow">What I agreed to do on my calls</span><p style="font-weight:650;font-size:1.1rem;margin-top:4px">“${esc(c.action)}”</p></div>
       <p class="small mt"><b>Goal:</b> ${c.measure_target} of ${c.measure_total} calls · <b>Checked by:</b> ${esc(c.check_method || "")} · <b>Review:</b> ${dateLabel(c.follow_up_date)}</p>
-      <p class="small muted mt">${esc(b.desc)} Sounds like: ${esc(b.sounds)}</p>
+      <p class="small muted mt">${esc(b.desc)}${b.sounds ? ` Sounds like: ${esc(b.sounds)}` : ""}</p>
+      ${b.how?.length ? `<details class="mt"><summary class="small"><b>How to do it on the call</b></summary><ol class="small steps-ol">${b.how.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>${b.avoid?.length ? `<p class="small"><b>Avoid:</b> ${b.avoid.map(esc).join("; ")}</p>` : ""}</details>` : ""}
       <div class="row mt">${c.agent_ack ? `<span class="chip ok">You acknowledged this commitment</span>` : `<button class="btn primary" id="ack">I agree to this commitment</button>`}</div>
       <hr><div class="spread"><div><span class="eyebrow">My self-log</span><div class="small">Calls where I did it this week</div></div><div class="row"><button class="btn sm" data-d="-1" aria-label="Remove one">−</button><b class="mono" style="font-size:1.6rem">${c.self_hits || 0}</b><button class="btn sm primary" data-d="1">+1 call</button></div></div>
       <p class="small muted mt">Your supervisor checks real calls in Monitor on Wed–Thu. Your log helps you both see the habit forming.</p>`

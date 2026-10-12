@@ -1,6 +1,5 @@
 // Practice log: every roleplay, with the full details of how it went.
-import { BEHAVIORS, BEHAVIOR_BY_ID } from "../core/constants.js";
-import { esc, $, $$, bName, options, sourceTag, icon } from "../ui.js";
+import { esc, $, $$, bName, options, sourceTag, icon, behaviorList, allBehaviors } from "../ui.js";
 
 const head = (title, sub, actions = "") => `<div class="topline"><div><h1>${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ""}</div><div class="row">${actions}</div></div>`;
 const MOOD_CHIP = { calm: "ok", worried: "warn", frustrated: "warn", angry: "bad" };
@@ -23,7 +22,7 @@ export async function log(main, params, { api, go, state }) {
   main.innerHTML = head("Practice log", role === "agent" ? "Every practice call you’ve taken: how it went, your score, and your coach’s notes." : "Every roleplay your team has practiced. Open one to see the full call, the feedback and how it sounded.", `<button class="btn" id="csv">${icon("up")}Export CSV</button>`) +
     `<div class="card"><div class="fgrid">
       ${role === "agent" ? "" : `<label class="f">Agent<select class="in" data-f="who">${options(people, f.who)}</select></label>`}
-      <label class="f">Core behavior<select class="in" data-f="behavior">${options([{ id: "", name: "All behaviors" }, ...BEHAVIORS], f.behavior)}</select></label>
+      <label class="f">Core behavior<select class="in" data-f="behavior">${options([{ id: "", name: "All behaviors" }, ...behaviorList(null, f.behavior)], f.behavior)}</select></label>
       <label class="f">How<select class="in" data-f="mode">${options([{ id: "", name: "Voice and chat" }, { id: "voice", name: "Voice calls" }, { id: "text", name: "Chat" }], "")}</select></label>
       <label class="f">When<select class="in" data-f="period">${options(PERIODS, f.period)}</select></label>
       <label class="f">Status<select class="in" data-f="status">${options([{ id: "", name: "All" }, { id: "scored", name: "Scored" }, { id: "unscored", name: "Not scored yet" }, { id: "low", name: "Scored 1–2 (needs help)" }], "")}</select></label>
@@ -42,7 +41,7 @@ export async function log(main, params, { api, go, state }) {
     const good = scored.length ? Math.round((scored.filter((r) => r.evaluation.score >= 4).length / scored.length) * 100) : null;
     const lens = list.map((r) => r.duration_s).filter((x) => x != null);
     const voice = list.length ? Math.round((list.filter((r) => r.scenario.channel === "voice").length / list.length) * 100) : null;
-    const byB = BEHAVIORS.map((b) => { const xs = list.filter((r) => r.behavior === b.id), sc = xs.filter((r) => r.evaluation); return { b, n: xs.length, avg: sc.length ? sc.reduce((s, r) => s + r.evaluation.score, 0) / sc.length : null }; }).filter((x) => x.n);
+    const byB = allBehaviors().map((b) => { const xs = list.filter((r) => r.behavior === b.id), sc = xs.filter((r) => r.evaluation); return { b, n: xs.length, avg: sc.length ? sc.reduce((s, r) => s + r.evaluation.score, 0) / sc.length : null }; }).filter((x) => x.n);
     $("#out", main).innerHTML = !list.length ? `<div class="card"><div class="empty">No practice matches these filters.${role === "agent" ? " Take a call under Practice and it shows up here." : ""}</div></div>` : `
       <div class="kpis">
         <div class="kpi"><span class="k">Practices</span><span class="v">${list.length}</span><span class="meta"><span>${scored.length} scored</span></span></div>

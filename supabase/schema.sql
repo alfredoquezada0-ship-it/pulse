@@ -68,7 +68,7 @@ create table if not exists coaching_sessions (
   supervisor_id uuid references users(id),
   date date not null,
   status text not null default 'draft' check (status in ('draft','completed')),
-  behavior text check (behavior in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  behavior text,
   root_cause text check (root_cause in ('knowledge','skill','will','tool_process')),
   evidence text,
   kpi_focus text,
@@ -83,7 +83,7 @@ create table if not exists commitments (
   session_id uuid references coaching_sessions(id) on delete set null,
   agent_id uuid not null references users(id) on delete cascade,
   supervisor_id uuid references users(id),
-  behavior text not null check (behavior in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  behavior text not null,
   root_cause text not null check (root_cause in ('knowledge','skill','will','tool_process')),
   week_start date not null,
   action text not null,
@@ -184,7 +184,7 @@ create table if not exists roleplay_assignments (
   id uuid primary key default gen_random_uuid(),
   agent_id uuid not null references users(id) on delete cascade,
   assigned_by uuid references users(id) on delete set null,
-  behavior text not null check (behavior in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  behavior text not null,
   call_type text,
   difficulty text,
   channel text default 'voice',
@@ -310,13 +310,13 @@ create table if not exists diagnoses (
   agent_id uuid not null references users(id) on delete cascade,
   week_start date not null,
   calls jsonb default '[]'::jsonb,   -- the supervisor's call listening: [{ label, marks: { behavior: 'shown'|'missed' }, note }]
-  evidence_top text check (evidence_top in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),  -- most-missed behavior in those calls
-  sup_pick text not null check (sup_pick in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  evidence_top text,  -- most-missed behavior in those calls
+  sup_pick text not null,
   sup_reason text,
-  ai_pick text check (ai_pick in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  ai_pick text,
   ai jsonb,                          -- the AI's second opinion
   agrees boolean,
-  final_pick text check (final_pick in ('lara','ownership','expectations','needs','warm','appreciation','empathy')),
+  final_pick text,
   final_reason text,
   status text not null default 'draft' check (status in ('draft','final')),
   session_id uuid references coaching_sessions(id) on delete set null,
@@ -327,3 +327,32 @@ create table if not exists diagnoses (
 create index if not exists idx_diagnoses_sup on diagnoses(supervisor_id, week_start);
 create index if not exists idx_diagnoses_agent on diagnoses(agent_id, week_start);
 alter table diagnoses enable row level security;
+
+-- Behavior bank per manager (same as migrations/009):
+create table if not exists behaviors (
+  id uuid primary key default gen_random_uuid(),
+  manager_id uuid not null references users(id) on delete cascade,
+  key text not null,                 -- what sessions, commitments and roleplays store (the 7 built-in ones keep their ids)
+  name text not null,
+  full_name text,
+  description text,
+  when_in_call jsonb default '[]'::jsonb,
+  how jsonb default '[]'::jsonb,         -- how the manager wants it done on the call, step by step
+  sounds jsonb default '[]'::jsonb,      -- lines the agent can say word for word
+  avoid jsonb default '[]'::jsonb,
+  driver text,                           -- the member complaint it prevents
+  kpis jsonb default '[]'::jsonb,
+  keywords jsonb default '[]'::jsonb,    -- words in survey comments that point to it
+  actions jsonb default '[]'::jsonb,     -- on-call actions for SMART commitments
+  listen_for jsonb default '[]'::jsonb,  -- what supervisors listen for when monitoring
+  lobs jsonb default '[]'::jsonb,        -- empty = every LOB
+  active boolean default true,
+  position int default 0,
+  ai_drafted boolean default false,
+  updated_by uuid references users(id) on delete set null,
+  created_at timestamptz default now(),
+  updated_at timestamptz,
+  unique (manager_id, key)
+);
+create index if not exists idx_behaviors_manager on behaviors(manager_id, position);
+alter table behaviors enable row level security;

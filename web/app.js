@@ -1,6 +1,6 @@
 // PULSE web app: shell, sign-in and navigation.
 import { init, state, api, demoUsers, signInDemo, signInEmail, signOut, resetLocalDemo } from "./api.js";
-import { esc, $, $$, icon, toast } from "./ui.js";
+import { esc, $, $$, icon, toast, setBank } from "./ui.js";
 import * as Sup from "./views/supervisor.js";
 import * as Tools from "./views/tools.js";
 import * as Mgr from "./views/manager.js";
@@ -10,17 +10,18 @@ import { createNotifier } from "./views/notify.js";
 import { startSessionWatch, expiredReason } from "./session.js";
 import * as Lead from "./views/leaders.js";
 import * as Practice from "./views/practice.js";
+import * as Bank from "./views/bank.js";
 
 const NAV = {
   supervisor: [
     ["Coach", [["sup-dash", "Dashboard", "home"], ["agents", "My agents", "users"], ["prep", "Coaching prep", "spark"], ["sessions", "DIRECT sessions", "clip"]]],
     ["Follow up", [["weekly", "Weekly plan", "cal"], ["commitments", "Commitments", "check"], ["my-coaching", "My coaching", "target"]]],
     ["Practice", [["roleplay", "Roleplay", "chat"], ["practice-log", "Practice log", "list"], ["quizzes", "Quizzes", "quiz"]]],
-    ["Learn & data", [["training", "Training", "book"], ["upload", "Data upload", "up"]]],
+    ["Learn & data", [["bank", "Our behaviors", "list"], ["training", "Training", "book"], ["upload", "Data upload", "up"]]],
   ],
   manager: [
     ["Operations", [["mgr-overview", "Overview", "home"], ["leaders", "Supervisor coaching", "users"], ["inspection", "Daily inspection", "eye"], ["effect", "Effectiveness", "chart"], ["agents", "My agents", "users"], ["practice-log", "Practice log", "list"]]],
-    ["Setup", [["goals", "KPI goals", "target"], ["training", "Training", "book"], ["upload", "Data upload", "up"]]],
+    ["Setup", [["bank", "Behavior bank", "list"], ["goals", "KPI goals", "target"], ["training", "Training", "book"], ["upload", "Data upload", "up"]]],
   ],
   agent: [
     ["My coaching", [["my-week", "My week", "home"], ["my-quizzes", "Quizzes", "quiz"], ["practice", "Practice", "chat"], ["practice-log", "Practice log", "list"], ["my-progress", "My progress", "chart"], ["training", "Training", "book"]]],
@@ -33,7 +34,7 @@ const VIEWS = {
   "mgr-overview": Mgr.overview, inspection: Mgr.inspection, effect: Mgr.effectiveness, goals: Mgr.goals,
   leaders: Lead.leaders, leader: Lead.leader, "leader-session": Lead.leaderSession, "my-coaching": Lead.myCoaching,
   "my-week": Agent.myWeek, "my-quizzes": Agent.myQuizzes, practice: Tools.roleplay, "my-progress": Agent.myProgress,
-  "practice-log": Practice.log, "practice-detail": Practice.detail,
+  "practice-log": Practice.log, "practice-detail": Practice.detail, bank: Bank.page,
 };
 
 let route = { name: null, params: {} };
@@ -164,10 +165,11 @@ const needsPassword = () => state.user?.must_change_password && state.config.aut
 const setPassword = () => renderSetPassword({ state, api, onDone: start, onSignOut: () => endSession() });
 window.addEventListener("pulse:set-password", () => { if (state.user) { state.user.must_change_password = true; leave(); setPassword(); } });
 
-function start() {
+async function start() {
   watch?.stop();
   watch = startSessionWatch(state.config.session, { onWarn: idleWarning, onExpire: (reason) => endSession(reason) });
   if (needsPassword()) return setPassword();
+  try { setBank(await api("GET", "/api/behaviors")); } catch {} // the manager's behavior bank; the 7 core behaviors if it can't load
   renderShell();
   let saved = null; try { saved = JSON.parse(sessionStorage.getItem("pulse-route") || "null"); } catch {}
   if (saved && saved.user !== state.user.id) saved = null; // only reopen your own last page, never someone else's

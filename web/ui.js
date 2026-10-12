@@ -1,12 +1,24 @@
 // UI helpers: escaping, formatting, small components.
-import { KPI_BY_ID, BEHAVIOR_BY_ID, ROOT_CAUSE_BY_ID, SESSION_TYPE_BY_ID, QUARTILES } from "./core/constants.js";
+import { KPI_BY_ID, ROOT_CAUSE_BY_ID, SESSION_TYPE_BY_ID, QUARTILES } from "./core/constants.js";
+import { DEFAULT_BEHAVIORS, DEFAULT_BY_ID, forLob, byKey } from "./core/bank.js";
 import { parseDate } from "./core/util.js";
 
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const $ = (s, r = document) => r.querySelector(s);
 export const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 
-export const bName = (id) => BEHAVIOR_BY_ID[id]?.name || "—";
+// The signed-in person's behavior bank (their manager's), loaded at sign-in. Falls back to the 7 core behaviors.
+let BANK = DEFAULT_BEHAVIORS, BANK_BY = DEFAULT_BY_ID, BANK_INFO = { editable: false, manager: null };
+export function setBank(info) {
+  if (!info?.behaviors?.length) return;
+  BANK = info.behaviors; BANK_BY = { ...DEFAULT_BY_ID, ...byKey(BANK) }; BANK_INFO = info;
+}
+export const bankInfo = () => BANK_INFO;
+export const allBehaviors = () => BANK;
+// Active behaviors for a LOB (all active ones when no LOB), plus `keep` if it's a retired one still in use.
+export const behaviorList = (lob, keep) => { const l = forLob(BANK, lob); return keep && !l.some((b) => b.id === keep) && BANK_BY[keep] ? [...l, BANK_BY[keep]] : l; };
+export const behaviorOf = (id) => BANK_BY[id] || null;
+export const bName = (id) => BANK_BY[id]?.name || (id ? String(id) : "—");
 export const rcName = (id) => ROOT_CAUSE_BY_ID[id]?.name || "—";
 export const sName = (id) => SESSION_TYPE_BY_ID[id]?.name || id;
 export const qName = (id) => QUARTILES.find((q) => q.id === id)?.name || "—";

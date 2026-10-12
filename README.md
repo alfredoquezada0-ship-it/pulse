@@ -64,6 +64,18 @@ Run `supabase/migrations/006_notifications_and_leader_coaching.sql` once to add 
 4. **Auto-generated quizzes** on the agent’s opportunity. Whatever the supervisor writes in **Focus** leads: every question is built around it (for example “giving timelines on claim-status calls”). The supervisor reviews the draft, edits any question or option, and picks the right answer for each one before assigning it (for AI quizzes no answer is pre-selected; the AI’s pick shows only as a hint).
 5. **Friday review assistant.** Suggests the outcome, what to recognize, what to hold accountable, and next week’s step.
 
+### Behavior bank (set by each manager)
+
+Each manager owns the list of behaviors their supervisors coach: **Setup › Behavior bank**. It starts as a copy of the 7 core behaviors, and the manager can edit them, add new ones, reorder them and retire them. For each behavior the manager writes:
+
+- what it is, which **lines of business** it applies to (none ticked = all) and **when in the call** it happens;
+- **how to do it on the call**, step by step, **what it sounds like** (lines the agent can say word for word) and what to **avoid**;
+- **why it matters** (the member complaint it prevents) and the **KPIs** it moves;
+- **on-call actions** for SMART commitments, what supervisors **listen for**, and survey words that point to it.
+
+**Suggest with AI** drafts all of it from a name and a sentence (plus any notes); the manager edits before saving.
+Supervisors and agents only see the active behaviors for their LOB (**Our behaviors** for supervisors, and in Training and My week for agents). Every behavior picker, the call-listening grid, quizzes, roleplays, scoring and the AI’s prompts use the manager’s bank and follow what the manager wrote. Retired behaviors leave the pickers but keep their name in past coaching. Run `supabase/migrations/009_behavior_bank.sql` once.
+
 ### Roleplay scenarios the supervisor controls
 
 On **Roleplay**, a supervisor or manager can click **Review and edit the scenario first** (or **Write or edit the scenario first** in the Assign roleplay window on an agent’s page). The AI drafts a scenario, and the supervisor can change:
