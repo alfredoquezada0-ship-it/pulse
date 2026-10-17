@@ -1,3 +1,11 @@
 node_modules/
 data/
 .env
+.env.*
+!.env.example
+# Real rosters and KPI exports have employee data: never commit them.
+roster/
+*.xlsx
+*.xls
+*.csv
+!tests/fixtures/*.xlsx
