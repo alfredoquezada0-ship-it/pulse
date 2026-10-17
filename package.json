@@ -22,7 +22,7 @@
     "security": "npm run check-secrets && npm audit --omit=dev && npm test"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.117.0",
+    "@supabase/supabase-js": "2.117.3",
     "cors": "2.8.5",
     "express": "4.22.3"
   }
