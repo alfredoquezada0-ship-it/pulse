@@ -16,8 +16,10 @@ function personalBits({ name = "", email = "" } = {}) {
 export const passwordProblems = (pw, who) => PASSWORD_RULES.filter((r) => !r.test(String(pw || ""), who)).map((r) => r.text);
 
 // A temporary password for resets: easy to read out loud, no look-alike characters.
+// Temporary passwords: easy to read out, hard to guess (about 35 bits), and people must change them at first sign-in.
 export function tempPassword() {
-  const words = ["Coach", "Pulse", "Direct", "Smart", "Bright", "Steady", "Clear", "Warm"];
-  const n = () => (globalThis.crypto?.getRandomValues ? globalThis.crypto.getRandomValues(new Uint32Array(1))[0] : Math.floor(Math.random() * 2 ** 32));
-  return `${words[n() % words.length]}${words[n() % words.length]}${String(n() % 9000 + 1000)}`;
+  const words = ["Coach", "Pulse", "Direct", "Smart", "Bright", "Steady", "Clear", "Warm", "Focus", "Kind", "Swift", "Solid", "Calm", "Sharp", "Brave", "Fresh"];
+  const n = () => globalThis.crypto.getRandomValues(new Uint32Array(1))[0];
+  const letters = "abcdefghjkmnpqrstuvwxyz";
+  return `${words[n() % 16]}-${words[n() % 16]}-${String(n() % 9000 + 1000)}${letters[n() % letters.length]}${letters[n() % letters.length]}`;
 }

@@ -87,8 +87,8 @@ export async function signInDemo(userId) {
   state.token = d.token; ls.set(LS_TOKEN, d.token); state.user = d.user; markSignedIn(); return d.user;
 }
 
-export async function signInEmail(email, password) {
-  const { data, error } = await state.supabase.auth.signInWithPassword({ email, password });
+export async function signInEmail(email, password, captchaToken) {
+  const { data, error } = await state.supabase.auth.signInWithPassword({ email, password, ...(captchaToken ? { options: { captchaToken } } : {}) });
   if (error) throw new ApiError(401, error.message);
   state.token = data.session.access_token;
   state.user = await api("GET", "/api/me");

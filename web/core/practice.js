@@ -1,12 +1,13 @@
 // Roleplay practice: the scenario a supervisor can write or edit, and the facts shown in the practice log.
 // Shared by the server and the browser's local mode.
 import { DEFAULT_BEHAVIORS, byKey } from "./bank.js";
+import { scrubPII } from "./sanitize.js";
 import { spoken, cueFor } from "./ai.js";
 import { deliveryMetrics } from "./delivery.js";
 
 export const MOODS = ["calm", "worried", "frustrated", "angry"];
 export const DIFFICULTIES = ["easy", "medium", "hard"];
-const str = (v, max) => String(v ?? "").replace(/\s+/g, " ").trim().slice(0, max);
+const str = (v, max) => scrubPII(String(v ?? "").replace(/\s+/g, " ").trim()).slice(0, max);
 
 // Checks a scenario the supervisor wrote or edited. Returns { scenario } or { problem }.
 // base: the generated scenario it started from (keeps source and ai_by so the log shows where it came from).

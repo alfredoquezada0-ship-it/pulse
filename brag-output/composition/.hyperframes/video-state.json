@@ -1,0 +1,1830 @@
+{
+  "version": 1,
+  "historyId": "552ff371-0f5c-4128-aef5-c675e7649ba7",
+  "currentRevision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+  "pendingChanges": false,
+  "files": {
+    "AGENTS.md": {
+      "hash": "1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\1d\\1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5"
+    },
+    "CLAUDE.md": {
+      "hash": "1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\1d\\1d4f0c8ca2507b94fd7c9df709fff01416adbd51a0f922b9d6ed2f40129147d5"
+    },
+    "assets/audio-data.js": {
+      "hash": "cee8585ea854e407c225f9aeac57db1fd0c1253cf4d557082895f9d69ef21ac4",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\ce\\cee8585ea854e407c225f9aeac57db1fd0c1253cf4d557082895f9d69ef21ac4"
+    },
+    "assets/fonts/BricolageGrotesque-var.woff2": {
+      "hash": "a79fdb52d4a5c76552452f69202add96e287401fff03d3e8c0e38b4dcb5a99cd",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\a7\\a79fdb52d4a5c76552452f69202add96e287401fff03d3e8c0e38b4dcb5a99cd"
+    },
+    "assets/fonts/IBMPlexMono-500.woff2": {
+      "hash": "01d285447409c8a588692162439a038b8cbd7871309ee20267b0d2d91c6e8e22",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\01\\01d285447409c8a588692162439a038b8cbd7871309ee20267b0d2d91c6e8e22"
+    },
+    "assets/fonts/IBMPlexMono-600.woff2": {
+      "hash": "0d1f0b8d0722224e32e9f28261bdc86c79115be73444ae5eceb73976a1bcdf83",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\0d\\0d1f0b8d0722224e32e9f28261bdc86c79115be73444ae5eceb73976a1bcdf83"
+    },
+    "assets/fonts/InstrumentSans-var.woff2": {
+      "hash": "2ee17598a98d8a59e4df8152d015bec9ab8e4d5672cc0ab42bef806b568e3971",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\2e\\2ee17598a98d8a59e4df8152d015bec9ab8e4d5672cc0ab42bef806b568e3971"
+    },
+    "assets/music/cues/happy-beats-business-moves-vol-11-by-ende-dot-app.music-cues.json": {
+      "hash": "4926bd36b9b6e1e19ad9eb8e789e974b9b60ba934e337e29769ebeed4333dbbf",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\49\\4926bd36b9b6e1e19ad9eb8e789e974b9b60ba934e337e29769ebeed4333dbbf"
+    },
+    "assets/music/cues/happy-beats-business-moves-vol-11-by-ende-dot-app.music-cues.md": {
+      "hash": "ea1217856f777779a4c122776626053e3417be325569bd155176032aaed2cf8b",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\ea\\ea1217856f777779a4c122776626053e3417be325569bd155176032aaed2cf8b"
+    },
+    "assets/sfx/impact/impactBell_heavy_000.ogg": {
+      "hash": "94b8bb5f2d43ab65e4bcc32b28562416e9bc2c51d9fd4be1e333660ee52f977f",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\94\\94b8bb5f2d43ab65e4bcc32b28562416e9bc2c51d9fd4be1e333660ee52f977f"
+    },
+    "assets/sfx/impact/impactBell_heavy_003.ogg": {
+      "hash": "5572ccdeb3b62373b86fa955355b3a222c36e815f0636ba16165189a21cf2514",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\55\\5572ccdeb3b62373b86fa955355b3a222c36e815f0636ba16165189a21cf2514"
+    },
+    "assets/sfx/impact/impactBell_heavy_004.ogg": {
+      "hash": "49fe4fafa2001bd0d312976796824571ca8429851f285997e1327d17bb34fd00",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\49\\49fe4fafa2001bd0d312976796824571ca8429851f285997e1327d17bb34fd00"
+    },
+    "assets/sfx/impact/impactSoft_medium_001.ogg": {
+      "hash": "7642a4fd43e547afe4f7adfadb3dabb681c0ff512f52c1674bae30a726841faf",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\76\\7642a4fd43e547afe4f7adfadb3dabb681c0ff512f52c1674bae30a726841faf"
+    },
+    "assets/sfx/impact/impactSoft_medium_002.ogg": {
+      "hash": "5069e3571a77d7f7aae9ef71d0364aa245fb7d64a7c8cc9956f221d03088c089",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\50\\5069e3571a77d7f7aae9ef71d0364aa245fb7d64a7c8cc9956f221d03088c089"
+    },
+    "assets/sfx/impact/impactSoft_medium_003.ogg": {
+      "hash": "5c4a1f35fde7e14046931da7bc3d1b23736541b7190ba107e08a379c4ca43cd6",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\5c\\5c4a1f35fde7e14046931da7bc3d1b23736541b7190ba107e08a379c4ca43cd6"
+    },
+    "assets/sfx/impact/impactSoft_medium_004.ogg": {
+      "hash": "b0a4dea90eed47accf50b768beff1166f2f1486fb139e4d025b2427637624bca",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\b0\\b0a4dea90eed47accf50b768beff1166f2f1486fb139e4d025b2427637624bca"
+    },
+    "assets/sfx/interface/bong_001.ogg": {
+      "hash": "d21d0f0b782445db579d11e2506b24cd1ac9d664ee33aeaf807761aa7b6fd710",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\d2\\d21d0f0b782445db579d11e2506b24cd1ac9d664ee33aeaf807761aa7b6fd710"
+    },
+    "assets/sfx/interface/click_002.ogg": {
+      "hash": "adcd1f4adc35f1b41bc1b5bbefeff7aa44f2f3f0d96d3199b544140c7c1e761c",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\ad\\adcd1f4adc35f1b41bc1b5bbefeff7aa44f2f3f0d96d3199b544140c7c1e761c"
+    },
+    "assets/sfx/interface/click_003.ogg": {
+      "hash": "2fa929138bc3a0f432696588f66eac94b8f6d463905ec8808c6461ce4b054292",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\2f\\2fa929138bc3a0f432696588f66eac94b8f6d463905ec8808c6461ce4b054292"
+    },
+    "assets/sfx/interface/click_005.ogg": {
+      "hash": "a3ee7ebb036bc3cdc218ae52bb27548c4f49bcf07505274f8b61b1af8236acc2",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\a3\\a3ee7ebb036bc3cdc218ae52bb27548c4f49bcf07505274f8b61b1af8236acc2"
+    },
+    "assets/sfx/interface/drop_001.ogg": {
+      "hash": "692ee3a6f1821402ca649ff735bee9591dc4846c8098fc7d6a90fd15fa57c1af",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\69\\692ee3a6f1821402ca649ff735bee9591dc4846c8098fc7d6a90fd15fa57c1af"
+    },
+    "assets/sfx/interface/drop_002.ogg": {
+      "hash": "4ac4d1cef7e936965cbf795852ca2020300b9e2ba7daa59f2bf4f1f7bf416218",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\4a\\4ac4d1cef7e936965cbf795852ca2020300b9e2ba7daa59f2bf4f1f7bf416218"
+    },
+    "assets/sfx/interface/drop_003.ogg": {
+      "hash": "43d086d50f90493a98cd2e09aa6dbf150d164f1578e1ec768d21cb185571ad87",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\43\\43d086d50f90493a98cd2e09aa6dbf150d164f1578e1ec768d21cb185571ad87"
+    },
+    "assets/sfx/interface/error_005.ogg": {
+      "hash": "3f75b11df5b06d68d2c25fbf0e9c9d9e7dd9250562a4007ee34856b8a309a2ae",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\3f\\3f75b11df5b06d68d2c25fbf0e9c9d9e7dd9250562a4007ee34856b8a309a2ae"
+    },
+    "assets/sfx/interface/switch_002.ogg": {
+      "hash": "6fc395be2ad1f99ce318a5d28f98fb76dbeb676d83a0b28239d8c1fb90736180",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\6f\\6fc395be2ad1f99ce318a5d28f98fb76dbeb676d83a0b28239d8c1fb90736180"
+    },
+    "assets/sfx/keyboard/keypress-001.wav": {
+      "hash": "7b873548c399b9aa0efbe63052fe1344c5317a9b23455b8be3523f47d434daf1",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\7b\\7b873548c399b9aa0efbe63052fe1344c5317a9b23455b8be3523f47d434daf1"
+    },
+    "assets/sfx/keyboard/keypress-004.wav": {
+      "hash": "29e1aea1fb841a0663ce75e9d83e675ddc7ae5cef00c623bdda65a72604fde7e",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\29\\29e1aea1fb841a0663ce75e9d83e675ddc7ae5cef00c623bdda65a72604fde7e"
+    },
+    "assets/sfx/keyboard/keypress-007.wav": {
+      "hash": "522834f471e6c2935fd1e6a28042c0864925556efbec32c36d7c7a98026d4bfc",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\52\\522834f471e6c2935fd1e6a28042c0864925556efbec32c36d7c7a98026d4bfc"
+    },
+    "assets/sfx/keyboard/keypress-010.wav": {
+      "hash": "3a65bf93ec554b068b0a64d11d2bb521cd54e7a9e7ef3362a670efb1e410f0dc",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\3a\\3a65bf93ec554b068b0a64d11d2bb521cd54e7a9e7ef3362a670efb1e410f0dc"
+    },
+    "assets/sfx/keyboard/keypress-013.wav": {
+      "hash": "a73d12a22403fe7b63a3da41ff07f13f956e3a30b397196288262d467f1e28c3",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\a7\\a73d12a22403fe7b63a3da41ff07f13f956e3a30b397196288262d467f1e28c3"
+    },
+    "assets/sfx/keyboard/keypress-016.wav": {
+      "hash": "181e3c5d28d2a1ed0e953f5668391ef1f9b7cd577d33058fb62bd18473b45791",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\18\\181e3c5d28d2a1ed0e953f5668391ef1f9b7cd577d33058fb62bd18473b45791"
+    },
+    "assets/sfx/keyboard/keypress-019.wav": {
+      "hash": "9cdb32c0074eaa114f8740e80bdfc28b1b44b4c6789371e1ec872e185e92d49e",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\9c\\9cdb32c0074eaa114f8740e80bdfc28b1b44b4c6789371e1ec872e185e92d49e"
+    },
+    "assets/sfx/keyboard/keypress-022.wav": {
+      "hash": "8cf602c150e338a94e9c19dcf68b1d80af5adb311c84ec20590a6ab0359b91c5",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\8c\\8cf602c150e338a94e9c19dcf68b1d80af5adb311c84ec20590a6ab0359b91c5"
+    },
+    "assets/sfx/ui/click2.ogg": {
+      "hash": "c394b46bc6737f7f7edfbfa3031ce621b7a43d498d456d6198364eee9cd3e306",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\c3\\c394b46bc6737f7f7edfbfa3031ce621b7a43d498d456d6198364eee9cd3e306"
+    },
+    "assets/vendor/gsap.min.js": {
+      "hash": "c174bfce53a729418d57a8ad8625e7247c793a22fef8e2851e3cfa3de9cd8280",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\c1\\c174bfce53a729418d57a8ad8625e7247c793a22fef8e2851e3cfa3de9cd8280"
+    },
+    "hyperframes.json": {
+      "hash": "53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\53\\53dbce1e19aa713cbb12ee0bc4d206143b45ab15e6ffbfcaa8f69572d4d24d50"
+    },
+    "index.html": {
+      "hash": "5a93410de43da49e19528520f3f771a5f638dfb5a0ebcd3108f8eec65f914d6b",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\5a\\5a93410de43da49e19528520f3f771a5f638dfb5a0ebcd3108f8eec65f914d6b"
+    },
+    "meta.json": {
+      "hash": "c5c15659dbcd3a802851b943e24acd5e1e3487f7c0d5b4634fe7042995c21cc7",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\c5\\c5c15659dbcd3a802851b943e24acd5e1e3487f7c0d5b4634fe7042995c21cc7"
+    },
+    "package.json": {
+      "hash": "70dbdd2c3c27efb081ea57c87ab8cef7b82ad08bade3870430effd7630c52ab8",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\70\\70dbdd2c3c27efb081ea57c87ab8cef7b82ad08bade3870430effd7630c52ab8"
+    },
+    "assets/music/happy-beats-business-moves-vol-11-by-ende-dot-app.mp3": {
+      "hash": "364a546834db4c0c2e3b3240eb6df03e98b7362230154b04c5c614442f6660d7",
+      "content": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\36\\364a546834db4c0c2e3b3240eb6df03e98b7362230154b04c5c614442f6660d7"
+    }
+  },
+  "revisions": {
+    "5808298b-85b2-4643-901a-464a75e09ec7": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792254226021,
+      "endedAt": 1792254226028,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\b9\\b974d18db286bf8eea42a8235b79bf0f257f068f231b43f306263ea44cfb6304",
+          "after": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\2f\\2f736a67acbf3ec86856deafac22204c84640258126e4f0c0c4166c5c70ac5a8"
+        }
+      }
+    },
+    "3f8781ba-497f-480c-a6f7-bb7b39824955": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792254361861,
+      "endedAt": 1792254361863,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\2f\\2f736a67acbf3ec86856deafac22204c84640258126e4f0c0c4166c5c70ac5a8",
+          "after": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\b7\\b7cf196d242de6551877f1683a17c66b2d52a60488c5789ce7cf4f2a52f0d8ab"
+        }
+      }
+    },
+    "f4c58168-1cf3-40c6-83ec-8189cb4b503e": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792254412152,
+      "endedAt": 1792254412154,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\b7\\b7cf196d242de6551877f1683a17c66b2d52a60488c5789ce7cf4f2a52f0d8ab",
+          "after": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\d1\\d1a93ecebe9047e9d382c4623fa077f4eac3b4cef36ead6700df8062f828f367"
+        }
+      }
+    },
+    "e75d8c83-6179-4ab9-b986-8d3fdf6ed600": {
+      "actor": {
+        "kind": "outside",
+        "name": "Outside"
+      },
+      "label": "Changed outside the app",
+      "startedAt": 1792254582777,
+      "endedAt": 1792254582779,
+      "files": {
+        "index.html": {
+          "before": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\d1\\d1a93ecebe9047e9d382c4623fa077f4eac3b4cef36ead6700df8062f828f367",
+          "after": "C:\\Users\\alfre\\.cache\\hyperframes\\history\\552ff371-0f5c-4128-aef5-c675e7649ba7\\blobs\\5a\\5a93410de43da49e19528520f3f771a5f638dfb5a0ebcd3108f8eec65f914d6b"
+        }
+      }
+    }
+  },
+  "checks": {
+    "latest": {
+      "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+      "id": "23a715cd-2491-42f5-8e04-d9ff72d1762f"
+    },
+    "revisions": {
+      "5808298b-85b2-4643-901a-464a75e09ec7": [
+        {
+          "id": "7567549b-ca20-489e-b311-c9735f70d8d4",
+          "scope": "project",
+          "metadata": {
+            "ok": false,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1792254249288,
+          "contentHash": "84d25c2c5f6ec29a4aad750279c79031f6a44b56ffdd1b7207c3f87366aa019b",
+          "revision": "5808298b-85b2-4643-901a-464a75e09ec7",
+          "inputFingerprint": "53118b02fee19fe392a85ee4408a8d7e272ddbf81c8f0fa9256b1dec65ef60c4",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "f258b074-1671-4b4c-a930-1c9442c86fa5"
+        }
+      ],
+      "3f8781ba-497f-480c-a6f7-bb7b39824955": [
+        {
+          "id": "2f03fa2b-0fda-44d0-b1a7-76c474d76544",
+          "scope": "project",
+          "metadata": {
+            "ok": false,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1792254380880,
+          "contentHash": "b4e15b654f390b452982d8ed5ff3596b9d0a3c5d856c4f70ce10c73d347e2c9b",
+          "revision": "3f8781ba-497f-480c-a6f7-bb7b39824955",
+          "inputFingerprint": "c8641b7165e43b57effe4ad92f2caadca4bd1036bbae3e55cd5dcea2d69102c2",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "f258b074-1671-4b4c-a930-1c9442c86fa5"
+        }
+      ],
+      "f4c58168-1cf3-40c6-83ec-8189cb4b503e": [
+        {
+          "id": "182df20a-af39-4eb6-b9ef-d79dcc3dae10",
+          "scope": "project",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1792254432874,
+          "contentHash": "637570e7aa6bd7ede841075a4f16062c8e56ef35fd2d6759afba9c6bb367222e",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision",
+          "status": "cleaned",
+          "cleanedAfterRender": "f258b074-1671-4b4c-a930-1c9442c86fa5"
+        }
+      ],
+      "e75d8c83-6179-4ab9-b986-8d3fdf6ed600": [
+        {
+          "id": "23a715cd-2491-42f5-8e04-d9ff72d1762f",
+          "scope": "project",
+          "report": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\.hyperframes\\artifacts\\checks\\23a715cd-2491-42f5-8e04-d9ff72d1762f.json",
+          "metadata": {
+            "ok": true,
+            "browserSkipped": false,
+            "options": {
+              "samples": 9,
+              "atTransitions": false,
+              "maxIssues": 80,
+              "collapseStatic": true,
+              "tolerance": 2,
+              "timeout": 3000,
+              "contrast": true,
+              "strict": false,
+              "snapshots": false,
+              "browserGpuMode": "auto"
+            }
+          },
+          "createdAt": 1792254630756,
+          "contentHash": "2113641e1fc7ebe14b67939ea619ba25a7a74924f221f8631239a0ebe8ca798c",
+          "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+          "inputFingerprint": "5995ade99c95eba72a78afc92ae1e0ac3a0739b7e4eee6a9af7348fad2460cde",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": []
+  },
+  "snapshots": {
+    "latest": {
+      "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+      "id": "5f33426e-d303-491d-8142-03add36c63a6-6"
+    },
+    "revisions": {
+      "f4c58168-1cf3-40c6-83ec-8189cb4b503e": [
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-0",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-00-at-0.4s.png",
+          "time": 0.4,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466175,
+          "contentHash": "b63616d83ae6204f237f2dbf77ffc416910de9eba0cf25695d8a7ef3934199ac",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-1",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-01-at-1.75s.png",
+          "time": 1.75,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466176,
+          "contentHash": "627f6ca88ec0de0e181d9c069d471269ddb3eeefb81ad5beca16da502d3ad4f7",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-2",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-02-at-3s.png",
+          "time": 3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466177,
+          "contentHash": "285fb0d12317ea08cccfb01699596a4d5ff277340ca7362a475815d7a5728ca1",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-3",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-03-at-5.2s.png",
+          "time": 5.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466178,
+          "contentHash": "7a6849f65503e9782de3019dee454c0a055e2bf423c5925d23e7d95e1c739779",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-4",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-04-at-7.7s.png",
+          "time": 7.7,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466180,
+          "contentHash": "86789d8481292e0cec1d89fc58c347b76226ff31044896081bf7be4e436fbdf2",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-5",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-05-at-8.2s.png",
+          "time": 8.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466181,
+          "contentHash": "ce59eec6327b48b6bb014a5f27c1284f5e1bbacf41ff3dbd5e1cff5ce050c921",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-6",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-06-at-8.9s.png",
+          "time": 8.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466182,
+          "contentHash": "20f624f896bfc5d47d89950d13be41263f8c3b4543940209d1d3c0115cdaf8e8",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-7",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-07-at-10.2s.png",
+          "time": 10.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466183,
+          "contentHash": "bd2ded54956734a6b72b39f4a63599b205497e3a52fb42444fb860043eccefea",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-8",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-08-at-13.1s.png",
+          "time": 13.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466185,
+          "contentHash": "4a62d87fe742519f620c80fc499de0ad63d1b2090bdf438831e22667f67eaa20",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-9",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-09-at-14.1s.png",
+          "time": 14.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466186,
+          "contentHash": "8df6c46e65b68c7bc16fdef79f3d66b5deeeda54cdc381f3d6bbcf1b029a844d",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-10",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-10-at-14.7s.png",
+          "time": 14.7,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466188,
+          "contentHash": "f1551e499480f82ee9f56f2cd05db3bdadb0cfa264ffede9fb30712a387d60c0",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-11",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-11-at-16.2s.png",
+          "time": 16.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466190,
+          "contentHash": "46f0834617e5b1b0e59166093fe1d35cece2b6660dc96cd2ce1496a140eb2399",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-12",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-12-at-17.9s.png",
+          "time": 17.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466192,
+          "contentHash": "5ce749273d5c5ab3ea7650504b4aee8491c4df599d13b795f052618122b16a7c",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-13",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-13-at-18.6s.png",
+          "time": 18.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466194,
+          "contentHash": "1ed79e90b4de6c362be0ace1f029613deabd1c922f4da4ef03d2102ff2e414ee",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-14",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-14-at-19.7s.png",
+          "time": 19.7,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466196,
+          "contentHash": "fda93fc204db4eca947891858441dae70cb34202854c2441ff5f63acd1857a69",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-15",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-15-at-21.6s.png",
+          "time": 21.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466198,
+          "contentHash": "ce129875fd75422281cb6f4db709495f9310cdbe34409b33731f10001c6c2f80",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-16",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-16-at-22.5s.png",
+          "time": 22.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466201,
+          "contentHash": "7a7bae2456518ee38f9a2a643b36dda950a21d71d3a2df42082629c52fc76c7f",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-17",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-17-at-23.4s.png",
+          "time": 23.4,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466203,
+          "contentHash": "d796f5906b6bb62d2ff7c177c9d0662dd59d19200ded10e8ca964aabc74084ef",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-18",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-18-at-24.9s.png",
+          "time": 24.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466206,
+          "contentHash": "70927090a31bdb6451cd3069436917921dd53267d25006a0628a8aa74aae2ba3",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-19",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-19-at-26.4s.png",
+          "time": 26.4,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466210,
+          "contentHash": "98e68f363a521060f55f1056e16e3a4d6300ef560d0e823b3176d200aefa10d0",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-20",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-20-at-27.6s.png",
+          "time": 27.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466213,
+          "contentHash": "f64ec963650eb12bfae8b9dd297d6dc0c77f93447fd5242d392fdeb4e9e2c7d2",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "10c43f4f-3f67-4a65-b154-44ddd8867015-21",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps2\\frame-21-at-28.6s.png",
+          "time": 28.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254466216,
+          "contentHash": "dae59c7f55f6426ddb4edb4bde160f08bfedde78f42f18a6671abdbc747b056e",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-0",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-00-at-30.9s.png",
+          "time": 30.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511630,
+          "contentHash": "f42e9e375c2707712146c1d2cd25ce88ef7f193d14cec3ab2a0406242d322edc",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-1",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-01-at-31.5s.png",
+          "time": 31.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511634,
+          "contentHash": "a21b447a7db795ee5a1015b3a0058fe6d295c18ee58d0fa21663fa0f370d452b",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-2",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-02-at-32.3s.png",
+          "time": 32.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511636,
+          "contentHash": "70dbe9fdf55789b0b654dfb561878e8d16d130dcc4b582673cf15fbffa439e45",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-3",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-03-at-33.1s.png",
+          "time": 33.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511639,
+          "contentHash": "56e7e149a85f9eadfcf8b0b192eb3e76a5c6fcceaa868ef7493a20d7443b8c34",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-4",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-04-at-34.6s.png",
+          "time": 34.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511642,
+          "contentHash": "82de0a79f526911d96322f48279d8a1225eb93ecb96e69e2769e75d1c1734d5b",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-5",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-05-at-35.5s.png",
+          "time": 35.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511644,
+          "contentHash": "5451f5ed82d2b738c10088acd346415040c490f880daadaa6bc89cc6ef018cb0",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-6",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-06-at-36.1s.png",
+          "time": 36.1,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511647,
+          "contentHash": "76aa01d820bfd2e33b6ebc0cbcdda417cfbc3616ce2191cc22e2825529614b1c",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-7",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-07-at-36.6s.png",
+          "time": 36.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511651,
+          "contentHash": "f868ad39787c1dc1ddd6b395ab324a27761501fbe13ae43cb02d179564a205c2",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-8",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-08-at-37.6s.png",
+          "time": 37.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511655,
+          "contentHash": "d3ea397ae6b3a940f079ce4edac1df4fe2dfe67466f820fb9a99dade91d7c077",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-9",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-09-at-39.3s.png",
+          "time": 39.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511658,
+          "contentHash": "e496877e3b2961164351582304445dab3c526e496c01ab1aca870593f5a57b6b",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-10",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-10-at-40.3s.png",
+          "time": 40.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511664,
+          "contentHash": "dd440acc42503c5027bd3e5196b515c4cfb3980837f49f6b33951029b7331a3c",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-11",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-11-at-41.8s.png",
+          "time": 41.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511667,
+          "contentHash": "018997b306b75a85f0c32e8c35641ca022822750c26e3defef7bd386092dbbc4",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-12",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-12-at-43.2s.png",
+          "time": 43.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511671,
+          "contentHash": "30d0fdf90acf407acfa8459994ce27afb9e79822dcec9dcc90e38eadda8863a3",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-13",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-13-at-45.6s.png",
+          "time": 45.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511676,
+          "contentHash": "d234d5701ddfc740527c2ce3146a3eb5df5f938c3c028b6c668f9d5c66d1bb12",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-14",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-14-at-46.6s.png",
+          "time": 46.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511679,
+          "contentHash": "e9125a68a47342b28d6752fb04fc02b0522a79cd36cf97fe53b595fb3a106055",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-15",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-15-at-47.6s.png",
+          "time": 47.6,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511682,
+          "contentHash": "745e4323df16057dd145f78380b18215a5a00b717daa211c7cc14412fdc7b159",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-16",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-16-at-49.7s.png",
+          "time": 49.7,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511685,
+          "contentHash": "fb673a5ddf2ba65401bf08cb8239e02e73920b05d0cb93d1266bb1279709968a",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-17",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-17-at-50.4s.png",
+          "time": 50.4,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511688,
+          "contentHash": "eb800b3bc6601421e2f4f61af52240a417eee4473e4d81f55629fb0658f41175",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-18",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-18-at-51.4s.png",
+          "time": 51.4,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511691,
+          "contentHash": "ecd8b282ef121c3d895ee1d784cc44837efce3bdef019cd6707fa5bd7daa6f89",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-19",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-19-at-54s.png",
+          "time": 54,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511694,
+          "contentHash": "2c884667986e830674dfdb53cdbef85b6181827f74bf1d1900c11d5c935eb8b1",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-20",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-20-at-54.5s.png",
+          "time": 54.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511697,
+          "contentHash": "fe1710da5465a003dd227c91c6f7f3b7e2593e4922455b98e95a810d2732961a",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-21",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-21-at-55.4s.png",
+          "time": 55.4,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511700,
+          "contentHash": "eb8957cb556a5bc12f8b590b5ea42c7d1d91d483905ef541866f869865b9a881",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-22",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-22-at-56.7s.png",
+          "time": 56.7,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511703,
+          "contentHash": "82e8c26230c8a2dccb9fd5cfa83347cc4d06380fbabd4ddef8202ee3df5a6287",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-23",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-23-at-57.4s.png",
+          "time": 57.4,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511706,
+          "contentHash": "65708610359cbcd75919f351b30aaee066bbaf04aa2cef94ed38b4248ed18009",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "67c5906b-0685-4aa5-b417-a5a3cbd5e56d-24",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps3\\frame-24-at-59.9s.png",
+          "time": 59.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254511710,
+          "contentHash": "64dac82a22a82f1d2e9b3688560242d753fbd165b2672efb7c974176fff36ebb",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "crop",
+          "id": "28f4909a-51fb-4efe-be74-d51d6ba8b522-0",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snapz2\\frame-00-at-29.5s.png",
+          "time": 29.5,
+          "metadata": {
+            "width": 1000,
+            "height": 500,
+            "crop": {
+              "x": 1400,
+              "y": 300,
+              "width": 500,
+              "height": 250
+            },
+            "zoom": {
+              "kind": "region",
+              "region": {
+                "x": 1400,
+                "y": 300,
+                "width": 500,
+                "height": 250
+              }
+            },
+            "zoomScale": 2,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254547668,
+          "contentHash": "68f43a9def87058077e593f393ac69a9e32769e91e48350b07d02c078737fd65",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "crop",
+          "id": "28f4909a-51fb-4efe-be74-d51d6ba8b522-1",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snapz2\\frame-01-at-30.85s.png",
+          "time": 30.85,
+          "metadata": {
+            "width": 1000,
+            "height": 500,
+            "crop": {
+              "x": 1400,
+              "y": 300,
+              "width": 500,
+              "height": 250
+            },
+            "zoom": {
+              "kind": "region",
+              "region": {
+                "x": 1400,
+                "y": 300,
+                "width": 500,
+                "height": 250
+              }
+            },
+            "zoomScale": 2,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254547672,
+          "contentHash": "aa26c4682cf4894dadaed1036dafafe104489f3bd53a3109ca492a681015ff5d",
+          "revision": "f4c58168-1cf3-40c6-83ec-8189cb4b503e",
+          "inputFingerprint": "fc7f90933ba785ba330d17dd438495561fe69e2c5823b0e5df9e580d6e9075da",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ],
+      "e75d8c83-6179-4ab9-b986-8d3fdf6ed600": [
+        {
+          "scope": "full",
+          "id": "5f33426e-d303-491d-8142-03add36c63a6-0",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps4\\frame-00-at-0.9s.png",
+          "time": 0.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254592325,
+          "contentHash": "2f2cf615b3bc0f154064e832c9178fdb9e429f63f53366af68c31da934bd5811",
+          "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+          "inputFingerprint": "5995ade99c95eba72a78afc92ae1e0ac3a0739b7e4eee6a9af7348fad2460cde",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "5f33426e-d303-491d-8142-03add36c63a6-1",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps4\\frame-01-at-2.2s.png",
+          "time": 2.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254592332,
+          "contentHash": "cf1839e5bc18c4d52982f42f6efa3cd7b0b16650c80ffddb0ba34f597e89fb84",
+          "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+          "inputFingerprint": "5995ade99c95eba72a78afc92ae1e0ac3a0739b7e4eee6a9af7348fad2460cde",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "5f33426e-d303-491d-8142-03add36c63a6-2",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps4\\frame-02-at-8.2s.png",
+          "time": 8.2,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254592337,
+          "contentHash": "c3b7a11b3457dce39b7e0392127fe6c621df30e7d2fd35c5b54082465f2d3f7c",
+          "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+          "inputFingerprint": "5995ade99c95eba72a78afc92ae1e0ac3a0739b7e4eee6a9af7348fad2460cde",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "5f33426e-d303-491d-8142-03add36c63a6-3",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps4\\frame-03-at-29.5s.png",
+          "time": 29.5,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254592341,
+          "contentHash": "0030533a56813ab0fb12d287d421d4cee82ae63e53d39799f4a23622949fddd9",
+          "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+          "inputFingerprint": "5995ade99c95eba72a78afc92ae1e0ac3a0739b7e4eee6a9af7348fad2460cde",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "5f33426e-d303-491d-8142-03add36c63a6-4",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps4\\frame-04-at-31.9s.png",
+          "time": 31.9,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254592346,
+          "contentHash": "1ad5137a6cedc8c384762107679fc0f01d564cbccc770221c265ccdf4f7b68b2",
+          "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+          "inputFingerprint": "5995ade99c95eba72a78afc92ae1e0ac3a0739b7e4eee6a9af7348fad2460cde",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "5f33426e-d303-491d-8142-03add36c63a6-5",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps4\\frame-05-at-33.3s.png",
+          "time": 33.3,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254592351,
+          "contentHash": "fd593fda650ecc01df7c48ade7e9552d19106ff9e1594115d955f3991a67eba0",
+          "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+          "inputFingerprint": "5995ade99c95eba72a78afc92ae1e0ac3a0739b7e4eee6a9af7348fad2460cde",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        },
+        {
+          "scope": "full",
+          "id": "5f33426e-d303-491d-8142-03add36c63a6-6",
+          "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps4\\frame-06-at-47.8s.png",
+          "time": 47.8,
+          "metadata": {
+            "width": 1920,
+            "height": 1080,
+            "zoomScale": 1,
+            "browserGpuMode": "auto",
+            "warnings": [],
+            "partial": false
+          },
+          "createdAt": 1792254592355,
+          "contentHash": "05229a01ba77aa3f885b54f4a7ebc3b569e8fcb700f3a565af723877ca59a480",
+          "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600",
+          "inputFingerprint": "5995ade99c95eba72a78afc92ae1e0ac3a0739b7e4eee6a9af7348fad2460cde",
+          "inputScope": "local-project-files",
+          "attribution": "recorded-revision"
+        }
+      ]
+    },
+    "unversioned": [
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-0",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-00-at-6.5s.png",
+        "time": 6.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127239,
+        "contentHash": "0506208b5c030e84f1a09e8919d3b6549e63563fbf4a39f59fd837ccd85b6604",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-1",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-01-at-12.9s.png",
+        "time": 12.9,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127239,
+        "contentHash": "776234017aca984283415c170102ebd6674c95d4abf783aaa7a6a14a4ce873d2",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-2",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-02-at-16.9s.png",
+        "time": 16.9,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127239,
+        "contentHash": "457025d4729f42398d0f56c1ff22c6c7efdc2f6d6ec71bafe88a8cfd6dae9d3f",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-3",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-03-at-20.9s.png",
+        "time": 20.9,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127239,
+        "contentHash": "efac64e09fb96840e0f027609f505c4f4518f8b8fd0275b7afee104afb166914",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-4",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-04-at-27s.png",
+        "time": 27,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127240,
+        "contentHash": "85516aede9e3b529956773965374ca35c75e4a65625854e9d83fd197f72adccb",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-5",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-05-at-30s.png",
+        "time": 30,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127240,
+        "contentHash": "0286c4e8ace578b799a95861fc51d52b7f1151cc01c06dd7eb012822bed2a92f",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-6",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-06-at-33.5s.png",
+        "time": 33.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127241,
+        "contentHash": "aea152e6899a0c9b9410e5eb6e0e9822a1f071572820c914da07a196b8870da3",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-7",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-07-at-35.6s.png",
+        "time": 35.6,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127241,
+        "contentHash": "8cd15ac67061b6ecc43262f0ddc2f9a1c14d1754a02f8dbc224cbcc5713421fa",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-8",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-08-at-38.5s.png",
+        "time": 38.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127242,
+        "contentHash": "1c654b1d35cf6afe47178e90530a1df1a107dddecb30b3968ca999c808f28e7b",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-9",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-09-at-44s.png",
+        "time": 44,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127242,
+        "contentHash": "07eb9ec9e94b7f7cb030f0eaa7e3cce480b440b17fb4a420a909caf957de9d5e",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-10",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-10-at-48.2s.png",
+        "time": 48.2,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127243,
+        "contentHash": "9588da384a2e95595912895e3b1f7dad1fd0a5069c720a6b6c72963ac4a7e9c0",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-11",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-11-at-52.5s.png",
+        "time": 52.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127244,
+        "contentHash": "8ae5f1a64783ce71961e2b81c1e7f6cf9ffa18861cadbff545d95de60aa9e601",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "full",
+        "id": "2050c123-b28e-4630-bcdc-5f10c8606059-12",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snaps1\\frame-12-at-59.5s.png",
+        "time": 59.5,
+        "metadata": {
+          "width": 1920,
+          "height": 1080,
+          "zoomScale": 1,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254127245,
+        "contentHash": "f5fe81d2bd90f75ba97d596a303589dfe217fa93cd4d47ecb37a4ed24f70cd1c",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      },
+      {
+        "scope": "crop",
+        "id": "04df8f0c-917b-4c5a-80fa-1ea23f702f83-0",
+        "image": "C:\\Users\\alfre\\AppData\\Local\\Temp\\claude\\C--Users-alfre-downloads\\7583e993-f223-4b83-a26b-bf96c6f6013d\\scratchpad\\snapz\\frame-00-at-26.7s.png",
+        "time": 26.7,
+        "metadata": {
+          "width": 840,
+          "height": 840,
+          "crop": {
+            "x": 1500,
+            "y": 300,
+            "width": 420,
+            "height": 420
+          },
+          "zoom": {
+            "kind": "region",
+            "region": {
+              "x": 1500,
+              "y": 300,
+              "width": 420,
+              "height": 420
+            }
+          },
+          "zoomScale": 2,
+          "browserGpuMode": "auto",
+          "warnings": [],
+          "partial": false
+        },
+        "createdAt": 1792254194091,
+        "contentHash": "1eb2e27bde8f18f058f166238f186a96bb87cc6eb49ba564d753dfee1c1c67d5",
+        "revision": null,
+        "inputFingerprint": "47359c248c67dfeeab390d589d6547385a7386d7c82dfb064764ddc1d3efe50f",
+        "inputScope": "local-project-files",
+        "attribution": "unversioned"
+      }
+    ]
+  },
+  "renders": {
+    "latest": {
+      "id": "f258b074-1671-4b4c-a930-1c9442c86fa5",
+      "completedAt": 1792254825198,
+      "output": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\brag.mp4",
+      "status": "completed",
+      "revision": "e75d8c83-6179-4ab9-b986-8d3fdf6ed600"
+    },
+    "retainedRevisions": [
+      "e75d8c83-6179-4ab9-b986-8d3fdf6ed600"
+    ]
+  },
+  "pendingArtifactCleanup": []
+}

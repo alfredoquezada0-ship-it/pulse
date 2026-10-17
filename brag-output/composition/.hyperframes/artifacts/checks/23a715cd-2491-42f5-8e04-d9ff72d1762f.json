@@ -1,0 +1,839 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 10,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "composition_file_too_large",
+        "severity": "warning",
+        "message": "This HTML composition file has 586 lines. Smaller sub-compositions are easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Split coherent scenes or layers into separate .html files under compositions/, then mount them from the parent with data-composition-src so each file stays small enough to inspect, revise, and validate independently."
+      },
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 1 has 8 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"s1\"> is a timeline element that contains nested <canvas id=\"s1-ghost\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#s1",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"s1\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"s2\"> is a timeline element that contains nested <div id=\"s2-lock\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#s2",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"s2\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"s3\"> is a timeline element that contains nested <canvas id=\"s3-ghost\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#s3",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"s3\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"s4\"> is a timeline element that contains nested <canvas id=\"s4-ghost\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#s4",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"s4\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"s5\"> is a timeline element that contains nested <canvas id=\"s5-ghost\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#s5",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"s5\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"s6\"> is a timeline element that contains nested <canvas id=\"s6-ghost\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#s6",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"s6\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"s7\"> is a timeline element that contains nested <canvas id=\"s7-ghost\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#s7",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"s7\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"s8\"> is a timeline element that contains nested <div id=\"s8-list\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#s8",
+        "dataAttributes": {},
+        "sourceFile": "C:\\Users\\alfre\\Downloads\\pulse-main\\brag-output\\composition\\index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"s8\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 12,
+    "findings": [
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 16.667,
+        "selector": "div.kpis > div:nth-of-type(1) > span:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 820.6,
+          "top": 117.14,
+          "right": 901.14,
+          "bottom": 136.24,
+          "width": 80.54,
+          "height": 19.1
+        },
+        "containerSelector": "div.winbar",
+        "text": "Below goal",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 820.6,
+          "y": 117.14,
+          "width": 80.54,
+          "height": 19.1
+        },
+        "firstSeen": 16.667,
+        "lastSeen": 16.667,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 16.667,
+        "selector": "div.kpis > div:nth-of-type(2) > span:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1149.14,
+          "top": 117.14,
+          "right": 1229.68,
+          "bottom": 136.24,
+          "width": 80.54,
+          "height": 19.1
+        },
+        "containerSelector": "div.winbar",
+        "text": "Below goal",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1149.14,
+          "y": 117.14,
+          "width": 80.54,
+          "height": 19.1
+        },
+        "firstSeen": 16.667,
+        "lastSeen": 16.667,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 16.667,
+        "selector": "div.kpis > div:nth-of-type(3) > span:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1477.68,
+          "top": 117.14,
+          "right": 1558.23,
+          "bottom": 136.24,
+          "width": 80.54,
+          "height": 19.1
+        },
+        "containerSelector": "div.winbar",
+        "text": "Below goal",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1477.68,
+          "y": 117.14,
+          "width": 80.54,
+          "height": 19.1
+        },
+        "firstSeen": 16.667,
+        "lastSeen": 16.667,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 16.667,
+        "selector": "div.kpis > div:nth-of-type(4) > span:nth-of-type(4)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1806.23,
+          "top": 117.14,
+          "right": 1886.77,
+          "bottom": 136.24,
+          "width": 80.54,
+          "height": 19.1
+        },
+        "containerSelector": "div.winbar",
+        "text": "Below goal",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 0.22,
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1806.23,
+          "y": 117.14,
+          "width": 80.54,
+          "height": 19.1
+        },
+        "firstSeen": 16.667,
+        "lastSeen": 16.667,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 30,
+        "selector": "table.tbl.lgrid > tbody:nth-of-type(1) > tr:nth-of-type(1) > td:nth-of-type(2) > span:nth-of-type(1) > button:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1066.7,
+          "top": 331.11,
+          "right": 1083.55,
+          "bottom": 354.11,
+          "width": 16.84,
+          "height": 23
+        },
+        "containerSelector": "table.tbl.lgrid > tbody:nth-of-type(1) > tr:nth-of-type(1) > td:nth-of-type(2) > span:nth-of-type(1) > button:nth-of-type(2)",
+        "text": "—",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {
+          "data-layout-allow-overlap": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1066.7,
+          "y": 331.11,
+          "width": 16.84,
+          "height": 23
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 30,
+        "selector": "table.tbl.lgrid > tbody:nth-of-type(1) > tr:nth-of-type(1) > td:nth-of-type(3) > span:nth-of-type(1) > button:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1277.94,
+          "top": 331.11,
+          "right": 1294.78,
+          "bottom": 354.11,
+          "width": 16.84,
+          "height": 23
+        },
+        "containerSelector": "table.tbl.lgrid > tbody:nth-of-type(1) > tr:nth-of-type(1) > td:nth-of-type(3) > span:nth-of-type(1) > button:nth-of-type(2)",
+        "text": "—",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {
+          "data-layout-allow-overlap": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1277.94,
+          "y": 331.11,
+          "width": 16.84,
+          "height": 23
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 30,
+        "selector": "table.tbl.lgrid > tbody:nth-of-type(1) > tr:nth-of-type(1) > td:nth-of-type(4) > span:nth-of-type(1) > button:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1489.17,
+          "top": 331.11,
+          "right": 1506.02,
+          "bottom": 354.11,
+          "width": 16.84,
+          "height": 23
+        },
+        "containerSelector": "table.tbl.lgrid > tbody:nth-of-type(1) > tr:nth-of-type(1) > td:nth-of-type(4) > span:nth-of-type(1) > button:nth-of-type(2)",
+        "text": "—",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {
+          "data-layout-allow-overlap": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1489.17,
+          "y": 331.11,
+          "width": 16.84,
+          "height": 23
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 30,
+        "selector": "table.tbl.lgrid > tbody:nth-of-type(1) > tr:nth-of-type(2) > td:nth-of-type(2) > span:nth-of-type(1) > button:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1066.7,
+          "top": 395.44,
+          "right": 1083.55,
+          "bottom": 418.44,
+          "width": 16.84,
+          "height": 23
+        },
+        "containerSelector": "table.tbl.lgrid > tbody:nth-of-type(1) > tr:nth-of-type(2) > td:nth-of-type(2) > span:nth-of-type(1) > button:nth-of-type(2)",
+        "text": "—",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {
+          "data-layout-allow-overlap": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1066.7,
+          "y": 395.44,
+          "width": 16.84,
+          "height": 23
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 30,
+        "selector": "tr.top > td:nth-of-type(2) > span:nth-of-type(1) > button:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1066.7,
+          "top": 459.77,
+          "right": 1083.55,
+          "bottom": 482.77,
+          "width": 16.84,
+          "height": 23
+        },
+        "containerSelector": "tr.top > td:nth-of-type(2) > span:nth-of-type(1) > button:nth-of-type(2)",
+        "text": "—",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {
+          "data-layout-allow-overlap": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1066.7,
+          "y": 459.77,
+          "width": 16.84,
+          "height": 23
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 30,
+        "selector": "tr.top > td:nth-of-type(3) > span:nth-of-type(1) > button:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1277.94,
+          "top": 459.77,
+          "right": 1294.78,
+          "bottom": 482.77,
+          "width": 16.84,
+          "height": 23
+        },
+        "containerSelector": "tr.top > td:nth-of-type(3) > span:nth-of-type(1) > button:nth-of-type(2)",
+        "text": "—",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {
+          "data-layout-allow-overlap": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1277.94,
+          "y": 459.77,
+          "width": 16.84,
+          "height": 23
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "text_occluded",
+        "severity": "info",
+        "time": 30,
+        "selector": "tr.top > td:nth-of-type(4) > span:nth-of-type(1) > button:nth-of-type(1)",
+        "message": "Text is hidden beneath an opaque element.",
+        "rect": {
+          "left": 1489.17,
+          "top": 459.77,
+          "right": 1506.02,
+          "bottom": 482.77,
+          "width": 16.84,
+          "height": 23
+        },
+        "containerSelector": "tr.top > td:nth-of-type(4) > span:nth-of-type(1) > button:nth-of-type(2)",
+        "text": "—",
+        "fixHint": "Give the text its own zone, raise its stacking order above the covering element, or mark intentional layering with data-layout-allow-occlusion.",
+        "coveredFraction": 1,
+        "dataAttributes": {
+          "data-layout-allow-overlap": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1489.17,
+          "y": 459.77,
+          "width": 16.84,
+          "height": 23
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 36.201,
+        "selector": "#s5-smart > div:nth-of-type(1) > div:nth-of-type(1) > h3:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 743.92,
+          "top": 159,
+          "right": 1020.75,
+          "bottom": 189,
+          "width": 276.83,
+          "height": 30
+        },
+        "containerSelector": "#s5-week > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > b:nth-of-type(1)",
+        "text": "T · SMART commitment",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 743.92,
+          "y": 159,
+          "width": 276.83,
+          "height": 30
+        },
+        "firstSeen": 36.201,
+        "lastSeen": 36.201,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          36.201
+        ]
+      }
+    ],
+    "duration": 60,
+    "samples": [
+      3.333,
+      10,
+      16.667,
+      23.333,
+      30,
+      36.667,
+      43.333,
+      50,
+      56.667
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 12,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 7,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 4.41:1; WCAG AA requires 4.5:1.",
+        "text": "CSAT",
+        "fg": "rgb(86,100,108)",
+        "bg": "rgb(208,221,227)",
+        "ratio": 4.41,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(85,98,106)",
+        "large": false,
+        "selector": "div > section:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(2) > div > div > main > div:nth-of-type(2) > div:nth-of-type(2) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1117.182861328125,
+          "y": -4.7811431884765625,
+          "width": 265.7808837890625,
+          "height": 24.239410400390625
+        },
+        "time": 16.667,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 4.43:1; WCAG AA requires 4.5:1.",
+        "text": "▲ 0.1 pts",
+        "fg": "rgb(23,107,66)",
+        "bg": "rgb(201,215,222)",
+        "ratio": 4.43,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(23,105,65)",
+        "large": false,
+        "selector": "div > section:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(2) > div > div > main > div:nth-of-type(2) > div:nth-of-type(2) > span:nth-of-type(3) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1313.528564453125,
+          "y": 77.31736755371094,
+          "width": 69.4351806640625,
+          "height": 26.179428100585938
+        },
+        "time": 16.667,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 3.96:1; WCAG AA requires 4.5:1.",
+        "text": "DD FCR",
+        "fg": "rgb(86,100,108)",
+        "bg": "rgb(193,211,217)",
+        "ratio": 3.96,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(79,91,99)",
+        "large": false,
+        "selector": "div > section:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(2) > div > div > main > div:nth-of-type(2) > div:nth-of-type(3) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1445.7261962890625,
+          "y": -4.7811431884765625,
+          "width": 265.78076171875,
+          "height": 24.239410400390625
+        },
+        "time": 16.667,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 4.09:1; WCAG AA requires 4.5:1.",
+        "text": "▲ 0.4 pts",
+        "fg": "rgb(23,107,66)",
+        "bg": "rgb(189,208,214)",
+        "ratio": 4.09,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(21,99,61)",
+        "large": false,
+        "selector": "div > section:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(2) > div > div > main > div:nth-of-type(2) > div:nth-of-type(3) > span:nth-of-type(3) > span:nth-of-type(2)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1637.7015380859375,
+          "y": 77.31736755371094,
+          "width": 73.805419921875,
+          "height": 26.179428100585938
+        },
+        "time": 16.667,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 4.17:1; WCAG AA requires 4.5:1.",
+        "text": "AHT",
+        "fg": "rgb(86,100,108)",
+        "bg": "rgb(200,216,222)",
+        "ratio": 4.17,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(81,95,102)",
+        "large": false,
+        "selector": "div > section:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(2) > div > div > main > div:nth-of-type(2) > div:nth-of-type(4) > span:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1774.2694091796875,
+          "y": -4.7811431884765625,
+          "width": 265.7808837890625,
+          "height": 24.239410400390625
+        },
+        "time": 16.667,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 4.32:1; WCAG AA requires 4.5:1.",
+        "text": "Sessions held so far",
+        "fg": "rgb(86,100,108)",
+        "bg": "rgb(206,219,224)",
+        "ratio": 4.32,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(84,97,105)",
+        "large": false,
+        "selector": "div > section:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(2) > div > div > main > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1799.553466796875,
+          "y": 275.34722900390625,
+          "width": 207.7938232421875,
+          "height": 19.10162353515625
+        },
+        "time": 16.667,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 4.36:1; WCAG AA requires 4.5:1.",
+        "text": "/ 12 due",
+        "fg": "rgb(86,100,108)",
+        "bg": "rgb(207,220,226)",
+        "ratio": 4.36,
+        "requiredRatio": 4.5,
+        "suggestedColor": "rgb(84,98,105)",
+        "large": false,
+        "selector": "div > section:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(2) > div > div > main > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div > span",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 1846.7105712890625,
+          "y": 321.0546569824219,
+          "width": 117.8927001953125,
+          "height": 27.287994384765625
+        },
+        "time": 16.667,
+        "times": [
+          16.667
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      3.333,
+      16.667,
+      30,
+      43.333,
+      56.667
+    ],
+    "checked": 190,
+    "passed": 183
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  }
+}

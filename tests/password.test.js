@@ -24,7 +24,8 @@ test("password rules: length, letters and a number, not the person's name or log
   assert.equal(passwordProblems("short1", who).length, 1);
   assert.ok(passwordProblems("sunriseonly", who).some((p) => /number/.test(p)));
   assert.ok(passwordProblems("Jordy2026!", who).some((p) => /name/.test(p)));
-  assert.match(tempPassword(), /^[A-Za-z]+\d{4}$/);
+  assert.match(tempPassword(), /^[A-Z][a-z]+-[A-Z][a-z]+-\d{4}[a-z]{2}$/);
+  assert.equal(passwordProblems(tempPassword(), who).length, 0);
 });
 
 test("a temporary password blocks everything until the person sets their own", async () => {

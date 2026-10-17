@@ -137,6 +137,10 @@ Every AI feature has a **rule-based fallback**. Without a key, or when the free 
 
 ---
 
+## Security
+
+See [SECURITY.md](SECURITY.md): how PULSE covers a 20-point web security checklist, and how everything sent to and received from the AI is sanitized (personal data scrubbed, prompt-injection fencing, AI answers reduced to plain text). Before pushing, run `npm run security`.
+
 ## Run it locally (5 minutes)
 
 Requirements: Node.js 22+ (24 recommended). Check your Gemini key any time with `npm run check-ai`.

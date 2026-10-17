@@ -1,0 +1,23 @@
+# Runs on every push and pull request: tests, a secret scan, and a dependency vulnerability scan.
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: No secrets or employee data in the repo
+        run: npm run check-secrets
+      - name: Tests
+        run: npm test
+      - name: Known vulnerabilities in dependencies
+        run: npm audit --omit=dev --audit-level=high

@@ -34,3 +34,5 @@ services:
         generateValue: true
       - key: CORS_ORIGIN
         sync: false
+      - key: TURNSTILE_SITE_KEY
+        sync: false

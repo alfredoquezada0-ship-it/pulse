@@ -12,12 +12,23 @@ import { createOpenAICompat, createOllama } from "./ai/openai-compat.js";
 import { createAIChain } from "./ai/chain.js";
 import { createAuth, issueDemoToken } from "./auth.js";
 import { createClient } from "@supabase/supabase-js";
+import { securityHeaders, forceHttps, rateLimiter, clientIp, cleanBody } from "./security.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const env = process.env;
 // Supabase renamed its keys: accept the new names (secret / publishable) and the legacy ones (service_role / anon).
 env.SUPABASE_SERVICE_ROLE_KEY ||= env.SUPABASE_SECRET_KEY || "";
 env.SUPABASE_ANON_KEY ||= env.SUPABASE_PUBLISHABLE_KEY || "";
+
+// Fields that never leave the server: the link to the sign-in account and the roster matching key.
+const PRIVATE_FIELDS = new Set(["auth_user_id", "roster_key", "updated_by"]);
+export function trimResponse(v, depth = 0) {
+  if (depth > 12 || v == null || typeof v !== "object") return v;
+  if (Array.isArray(v)) return v.map((x) => trimResponse(x, depth + 1));
+  const out = {};
+  for (const [k, x] of Object.entries(v)) if (!PRIVATE_FIELDS.has(k)) out[k] = trimResponse(x, depth + 1);
+  return out;
+}
 
 export function createApp(opts = {}) {
   const useSupabase = !!(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) && !opts.forceMemory;
@@ -26,6 +37,10 @@ export function createApp(opts = {}) {
     : createFileStore(opts.dataFile === undefined ? path.join(here, "..", "data", "local-db.json") : opts.dataFile));
   const authMode = opts.authMode || env.AUTH_MODE || (useSupabase ? "supabase" : "demo");
   const secret = env.APP_SECRET || "pulse-dev-secret-change-me";
+  // Deployed, demo sign-in tokens must be signed with a real secret, or anyone could forge one.
+  if ((env.RENDER === "true" || env.NODE_ENV === "production") && authMode === "demo" && (!env.APP_SECRET || env.APP_SECRET.length < 24)) {
+    throw new Error("Set APP_SECRET to a long random string (24+ characters) before running demo sign-in on a server. For real people use AUTH_MODE=supabase.");
+  }
   const ai = opts.ai !== undefined ? opts.ai : createAIFromEnv(env);
   // Sessions: signed out after SESSION_IDLE_MINUTES without activity (in the browser) and after SESSION_MAX_HOURS since sign-in (enforced here too).
   const session = { idleMinutes: Math.max(1, Number(env.SESSION_IDLE_MINUTES || 30)), maxHours: Math.max(1, Number(env.SESSION_MAX_HOURS || 12)) };
@@ -35,9 +50,23 @@ export function createApp(opts = {}) {
 
   const app = express();
   app.disable("x-powered-by");
+  app.set("query parser", "simple"); // ?a[b]=1 stays a plain string: no objects sneaking into filters
+  // HTTPS only on Render (it sets RENDER=true) or when FORCE_HTTPS=true; plain http stays for your own computer.
+  const https = env.FORCE_HTTPS === "true" || (env.RENDER === "true" && env.FORCE_HTTPS !== "false");
+  app.use(forceHttps({ enabled: https }));
+  app.use(securityHeaders({ supabaseUrl: authMode === "supabase" ? env.SUPABASE_URL : "", webDir: path.join(here, "..", "web"), https, captcha: !!env.TURNSTILE_SITE_KEY }));
+  // Cross-origin calls only from the origins you list (a separate frontend, e.g. on Vercel). Same-site needs none.
   const origins = (env.CORS_ORIGIN || "").split(",").map((s) => s.trim()).filter(Boolean);
-  app.use(cors({ origin: origins.length ? origins : true }));
-  app.use(express.json({ limit: "8mb" })); // roster files are sent as sheet rows
+  app.use("/api", cors({ origin: origins.length ? origins : false }));
+  // Request limits: everyone per IP; tighter on sign-in and password routes.
+  const perIp = rateLimiter({ windowMs: 60000, max: Number(env.API_REQUESTS_PER_MINUTE || 300) });
+  const authIp = rateLimiter({ windowMs: 10 * 60000, max: 20, message: "Too many sign-in or password attempts. Wait 10 minutes and try again." });
+  app.use("/api", perIp.mw(clientIp));
+  for (const p of ["/api/auth", "/api/me/password", "/api/people/:id/reset-password"]) app.use(p, authIp.mw(clientIp));
+  // Bodies: roster and KPI files are sent as rows (up to 8 MB); everything else is small.
+  app.use(["/api/roster", "/api/upload"], express.json({ limit: "8mb" }));
+  app.use("/api", express.json({ limit: "300kb" }));
+  app.use("/api", cleanBody());
 
   // Simple per-user limiter for AI routes, to stay inside the free tier.
   const hits = new Map();
@@ -48,8 +77,9 @@ export function createApp(opts = {}) {
     list.push(now); hits.set(userId, list);
   };
 
+  // Public: only what the sign-in page needs. Error details from AI providers stay in the server logs.
   app.get("/api/config", (_req, res) => res.json({
-    authMode, session, store: store.kind, ai: ai ? { provider: ai.name, model: ai.model, providers: ai.providers || [ai.name], fast: ai.fastProviders || [ai.name], lastProvider: ai.stats.lastProvider || null, lastError: ai.stats.lastError } : { provider: "offline" },
+    authMode, session, store: store.kind, captchaSiteKey: env.TURNSTILE_SITE_KEY || null, ai: ai ? { provider: ai.name, providers: ai.providers || [ai.name], fast: ai.fastProviders || [ai.name] } : { provider: "offline" },
     supabaseUrl: authMode === "supabase" ? env.SUPABASE_URL : null, supabaseAnonKey: authMode === "supabase" ? env.SUPABASE_ANON_KEY : null,
   }));
 
@@ -63,7 +93,7 @@ export function createApp(opts = {}) {
     const user = await store.get("users", req.body?.user_id);
     if (!user || user.active === false) return res.status(404).json({ error: "User not found." });
     if (user.source === "roster" && !demoRoster(req)) return res.status(403).json({ error: "Real people sign in with their own login. Set AUTH_MODE=supabase on the server." });
-    res.json({ token: issueDemoToken(user.id, secret, session.maxHours), user });
+    res.json({ token: issueDemoToken(user.id, secret, session.maxHours), user: trimResponse(user) });
   });
 
   app.all("/api/*", async (req, res) => {
@@ -72,7 +102,7 @@ export function createApp(opts = {}) {
       if (demo && user?.source === "roster" && !demoRoster(req)) user = null;
       if (user && req.path.startsWith("/api/ai/") && req.method === "POST") limitAI(user.id);
       const data = await handle({ method: req.method, path: req.path, query: req.query, body: req.body, user }, { store, ai, demo, demoRoster: demoRoster(req), passwords });
-      res.json(data ?? null);
+      res.json(trimResponse(data ?? null));
     } catch (e) {
       const status = e.status || 500;
       if (status >= 500) console.error(`[error] ${req.method} ${req.path}:`, e);

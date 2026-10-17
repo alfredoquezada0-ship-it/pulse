@@ -16,11 +16,14 @@
     "check-ai": "node check-ai.js",
     "create-logins": "node supabase/create-logins.js",
     "import-roster": "node scripts/import-roster.js",
-    "doctor": "node scripts/doctor.js"
+    "doctor": "node scripts/doctor.js",
+    "check-secrets": "node scripts/check-secrets.js",
+    "audit": "npm audit --omit=dev",
+    "security": "npm run check-secrets && npm audit --omit=dev && npm test"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.117.0",
     "cors": "2.8.5",
-    "express": "4.21.2"
+    "express": "4.22.3"
   }
 }

@@ -1,6 +1,7 @@
 // Supervisor-first diagnosis: the supervisor listens to 3–5 calls, marks which of the 7 behaviors showed up or
 // were missing, picks the behavior to coach, and only then sees the AI's second opinion.
 import { DEFAULT_BEHAVIORS as BEHAVIORS, byKey } from "./bank.js";
+import { scrubPII } from "./sanitize.js";
 
 export const MIN_CALLS = 3, MAX_CALLS = 5;
 const MARKS = new Set(["shown", "missed"]);
@@ -10,9 +11,9 @@ export function cleanCalls(input, behaviors = BEHAVIORS) {
   const BY = byKey(behaviors);
   const list = Array.isArray(input) ? input.slice(0, MAX_CALLS) : [];
   const calls = list.map((c, i) => ({
-    label: String(c?.label || `Call ${i + 1}`).trim().slice(0, 80) || `Call ${i + 1}`,
+    label: scrubPII(String(c?.label || `Call ${i + 1}`).trim()).slice(0, 80) || `Call ${i + 1}`,
     marks: Object.fromEntries(Object.entries(c?.marks || {}).filter(([b, m]) => BY[b] && MARKS.has(m))),
-    note: String(c?.note || "").trim().slice(0, 500),
+    note: scrubPII(String(c?.note || "").trim()).slice(0, 500),
   })).filter((c) => Object.keys(c.marks).length);
   if (calls.length < MIN_CALLS) return { calls, problem: `Mark what you heard on at least ${MIN_CALLS} calls (listen to 3–5 before choosing).` };
   return { calls };

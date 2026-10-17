@@ -778,7 +778,12 @@ export async function upload(main, params, { api, toast, state }) {
         ${kind === "kpis" && agents.length ? `<p class="small muted mt">The download lists your agents with their CCMS, supervisor and this week’s Monday. Fill in the numbers in Excel, save as CSV and upload it here.</p>` : ""}</div>
       <div class="card"><h3>Agents (${agents.length})</h3><div class="small" style="max-height:240px;overflow:auto">${agents.map((a) => `<div>${esc(a.name)} · <span class="mono">${esc(a.employee_id || a.email || "")}</span></div>`).join("")}</div></div></div></div>`;
     $("#tpl", pane).textContent = TEMPLATES[kind];
-    $("#file", pane).onchange = async (e) => { const f = e.target.files[0]; if (f) { $("#paste", pane).value = await f.text(); preview(); } };
+    $("#file", pane).onchange = async (e) => {
+      const f = e.target.files[0]; if (!f) return;
+      if (!/\.(csv|txt)$/i.test(f.name)) { e.target.value = ""; return toast("Choose a .csv file.", "err"); }
+      if (f.size > 5 * 1024 * 1024) { e.target.value = ""; return toast("That file is larger than 5 MB. Split it by week.", "err"); }
+      $("#paste", pane).value = await f.text(); preview();
+    };
     const preview = () => {
       rows = parseCSV($("#paste", pane).value);
       if (!rows.length) { $("#pv", pane).innerHTML = `<div class="empty">No rows found. The first line must be the header.</div>`; $("#up", pane).disabled = true; return; }
@@ -823,7 +828,13 @@ export async function upload(main, params, { api, toast, state }) {
       try {
         const { readXlsx, browserInflate } = await import("../core/xlsx.js");
         files = [];
+        // Only Excel workbooks, up to 6 files of 10 MB each. They're read here in the browser; only the rows are sent.
+        if (list.length > 6) throw new Error("Choose up to 6 EDB files at a time.");
         for (const f of list) {
+          if (!/\.xlsx$/i.test(f.name)) throw new Error(`${f.name} isn’t an Excel (.xlsx) file.`);
+          if (f.size > 10 * 1024 * 1024) throw new Error(`${f.name} is larger than 10 MB.`);
+          const head = new Uint8Array(await f.slice(0, 4).arrayBuffer());
+          if (head[0] !== 0x50 || head[1] !== 0x4b) throw new Error(`${f.name} isn’t a real .xlsx file.`); // .xlsx files are zip archives ("PK")
           const wb = await readXlsx(new Uint8Array(await f.arrayBuffer()), browserInflate);
           files.push({ name: f.name, sheets: wb.sheets.map((sh) => ({ name: sh.name, rows: sh.rows.map((r) => r.slice(0, 40)) })) });
         }

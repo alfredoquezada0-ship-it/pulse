@@ -7,6 +7,7 @@ import { HttpError, today, weekStart, addDays, coachingWeek } from "./util.js";
 import { cleanVoice } from "./delivery.js";
 import { cleanScenario, practiceFacts, practiceRow } from "./practice.js";
 import { cleanCalls, tallyCalls, callLines, calibration } from "./diagnosis.js";
+import { scrubPII } from "./sanitize.js";
 import { DEFAULT_BEHAVIORS, defaultRows, normalize, forLob, byKey, cleanBehavior, newKey, MAX_ACTIVE } from "./bank.js";
 import { parseRoster, rosterTree, applyRoster, fold, emailLocal } from "./roster.js";
 import { passwordProblems } from "./password.js";
@@ -77,6 +78,28 @@ async function summariesFor(agents, store) {
   return { goals, rows, sums: S.assignQuartiles(sums) };
 }
 const supervisorIdFor = (user, agent) => (user.role === "supervisor" ? user.id : agent.supervisor_id);
+
+// ---------- input checks shared by the routes ----------
+const isDate = (v) => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T12:00:00Z`));
+// Free text people type is stored without member identifiers (IDs, phones, emails, DOBs…).
+const text = (v, max) => scrubPII(String(v ?? "").trim()).slice(0, max);
+function int(v, min, max, label) {
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < min || n > max) throw new HttpError(400, `${label} must be a whole number from ${min} to ${max}.`);
+  return n;
+}
+function dateOr(v, fallback, label) {
+  if (v == null || v === "") return fallback;
+  if (!isDate(String(v).slice(0, 10))) throw new HttpError(400, `${label} isn’t a valid date (YYYY-MM-DD).`);
+  return String(v).slice(0, 10);
+}
+// A commitment as the supervisor wrote it: only these fields, each checked.
+function commitmentFields(c = {}) {
+  const action = text(c.action, 500);
+  const total = int(c.measure_total ?? 5, 1, 100, "The number of calls");
+  const target = int(c.measure_target ?? total, 1, total, "The target");
+  return { action, measure_target: target, measure_total: total, check_method: text(c.check_method, 300), follow_up_date: dateOr(c.follow_up_date, null, "The follow-up date") };
+}
 
 // ---------- behavior bank ----------
 // Every person works with their manager's bank (agents and supervisors through their manager), filtered by LOB.
@@ -263,7 +286,13 @@ on("GET", "/api/dashboard/agent", ["agent"], async ({ user }, { store }) => {
 
 // ---------- KPI goals and uploads ----------
 on("GET", "/api/goals", null, async (_, { store }) => store.list("kpi_goals"));
-on("PATCH", "/api/goals/:id", ["manager"], async ({ params, body }, { store }) => store.update("kpi_goals", params.id, { goal: Number(body.goal) }));
+on("PATCH", "/api/goals/:id", ["manager"], async ({ params, body }, { store }) => {
+  const g = await store.get("kpi_goals", params.id); if (!g) throw new HttpError(404, "Goal not found.");
+  const k = C.KPI_BY_ID[g.kpi], v = Number(body.goal);
+  const [min, max] = g.kpi === "aht" ? [30, 3600] : [k?.min ?? 0, k?.max ?? 100];
+  if (!Number.isFinite(v) || v < min || v > max) throw new HttpError(400, `The ${k?.name || "KPI"} goal must be between ${min} and ${max}.`);
+  return store.update("kpi_goals", g.id, { goal: v });
+});
 
 // Rows from KPI or survey exports are matched by CCMS, by email (PULSE or client email, same name before the @),
 // or by full name ("Last, First" or "First Last").
@@ -295,6 +324,7 @@ on("POST", "/api/upload/kpis", ["manager", "supervisor"], async ({ user, body },
   const find = agentMatcher(agents);
   const existing = await store.list("kpi_weekly", { agent_id: agents.map((a) => a.id) });
   let added = 0, updated = 0, blank = 0; const skipped = [];
+  if ((body.rows || []).length > 50000) throw new HttpError(413, "Up to 50,000 rows per upload. Split the file by week.");
   for (const [i, r] of (body.rows || []).entries()) {
     const a = find(r);
     if (!a) { skipped.push(`Row ${i + 2}: ${rowWho(r)} isn’t on your team`); continue; }
@@ -314,10 +344,15 @@ on("POST", "/api/upload/verbatims", ["manager", "supervisor"], async ({ user, bo
   const agents = await scopedAgents(user, store);
   const find = agentMatcher(agents);
   const rows = []; const skipped = [];
+  if ((body.rows || []).length > 20000) throw new HttpError(413, "Up to 20,000 comments per upload. Split the file.");
   (body.rows || []).forEach((r, i) => {
     const a = find(r);
     if (!a || !r.text) { skipped.push(`Row ${i + 2}: ${!a ? "agent not on your team" : "no text"}`); return; }
-    rows.push({ agent_id: a.id, date: (r.date || today()).slice(0, 10), score: r.score === "" || r.score == null ? null : Number(r.score), text: r.text });
+    const score = r.score === "" || r.score == null ? null : Number(r.score);
+    if (score != null && (!Number.isFinite(score) || score < 0 || score > 10)) { skipped.push(`Row ${i + 2}: score must be 0–10`); return; }
+    const date = isDate(String(r.date || "").slice(0, 10)) ? String(r.date).slice(0, 10) : today();
+    // Member comments are scrubbed before they're stored: names of IDs, phones, emails, dates of birth and card numbers are removed.
+    rows.push({ agent_id: a.id, date, score, text: scrubPII(text(r.text, 2000)) });
   });
   if (rows.length) await store.insertMany("verbatims", rows);
   return { added: rows.length, skipped };
@@ -470,7 +505,9 @@ on("POST", "/api/leader-commitments/:id/review", ["manager"], async ({ user, par
   const sup = await mustSeeSupervisor(user, store, c.supervisor_id);
   if (!["met", "partial", "not_met"].includes(body.status)) throw new HttpError(400, "Choose Met, Partially met or Not met.");
   const measured = (await supMetricsFor(store, sup, 1, c.week_start))[0].metrics[c.behavior]?.value ?? null;
-  const saved = await store.update("leader_commitments", c.id, { status: body.status, result_value: body.result_value ?? measured, review_notes: String(body.review_notes || "") });
+  const rv = body.result_value == null || body.result_value === "" ? measured : Number(body.result_value);
+  if (rv != null && (!Number.isFinite(rv) || rv < 0 || rv > 100)) throw new HttpError(400, "The result must be a percentage from 0 to 100.");
+  const saved = await store.update("leader_commitments", c.id, { status: body.status, result_value: rv, review_notes: text(body.review_notes, 2000) });
   const label = { met: "Met", partial: "Partially met", not_met: "Not met" }[body.status];
   await notify(store, sup.id, { type: "leader_review", title: `Your commitment was reviewed: ${label}`, body: `“${c.action}”${saved.result_value != null ? ` · measured ${Math.round(saved.result_value)}% (target ${c.measure_target}%)` : ""}${body.review_notes ? ` · ${body.review_notes}` : ""}`, link: { view: "my-coaching" } });
   return saved;
@@ -494,9 +531,14 @@ on("POST", "/api/sample", ["manager"], async ({ user, body }, { store }) => {
 // ---------- roster (EDB files) ----------
 // The browser reads the .xlsx files and sends their sheets; the same parser runs in the CLI (npm run import-roster).
 const rosterInput = (body) => {
-  const files = (body.files || []).map((f) => ({ name: String(f.name || ""), sheets: (f.sheets || []).map((sh) => ({ name: String(sh.name || ""), rows: Array.isArray(sh.rows) ? sh.rows : [] })) }));
+  if ((body.files || []).length > 6) throw new HttpError(400, "Up to 6 roster files at a time.");
+  // Sheets arrive as rows of cells: only text and numbers, up to 40 columns and 20,000 rows per sheet.
+  const cell = (v) => (typeof v === "number" && Number.isFinite(v) ? v : v == null ? "" : String(v).slice(0, 300));
+  const files = (body.files || []).map((f) => ({ name: String(f.name || "").slice(0, 200), sheets: (Array.isArray(f.sheets) ? f.sheets.slice(0, 20) : []).map((sh) => ({ name: String(sh.name || "").slice(0, 100), rows: (Array.isArray(sh.rows) ? sh.rows.slice(0, 20000) : []).map((r) => (Array.isArray(r) ? r.slice(0, 40).map(cell) : [])) })) }));
   if (!files.length) throw new HttpError(400, "Choose at least one roster file (.xlsx).");
-  return parseRoster(files, { domain: body.domain || "pulse.com" });
+  const domain = String(body.domain || "pulse.com").trim().toLowerCase();
+  if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(domain)) throw new HttpError(400, "The login domain should look like pulse.com.");
+  return parseRoster(files, { domain });
 };
 on("POST", "/api/roster/preview", ["manager"], async ({ body }, { store }) => {
   const parsed = rosterInput(body);
@@ -536,9 +578,16 @@ on("POST", "/api/sessions", ["supervisor", "manager"], async ({ user, body }, { 
 });
 on("PATCH", "/api/sessions/:id", ["supervisor", "manager"], async ({ user, params, body }, { store }) => {
   const s = await store.get("coaching_sessions", params.id); if (!s) throw new HttpError(404, "Session not found.");
-  await mustSeeAgent(user, store, s.agent_id);
-  const allowed = ["date", "behavior", "root_cause", "evidence", "kpi_focus", "notes", "ai"];
-  return store.update("coaching_sessions", s.id, Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k))));
+  const a = await mustSeeAgent(user, store, s.agent_id);
+  if (s.status === "completed") throw new HttpError(409, "This session is completed.");
+  const patch = {};
+  if ("date" in body) patch.date = dateOr(body.date, s.date, "The date");
+  if ("behavior" in body) { if (body.behavior) mustUse(await bankFor(store, a), body.behavior); patch.behavior = body.behavior || null; }
+  if ("root_cause" in body) { if (body.root_cause && !C.ROOT_CAUSE_BY_ID[body.root_cause]) throw new HttpError(400, "Unknown root cause."); patch.root_cause = body.root_cause || null; }
+  if ("kpi_focus" in body) patch.kpi_focus = C.KPI_BY_ID[body.kpi_focus] ? body.kpi_focus : null;
+  if ("evidence" in body) patch.evidence = text(body.evidence, 4000);
+  if ("notes" in body) patch.notes = Object.fromEntries(C.DIRECT_STEPS.map((d) => [d.id, text(body.notes?.[d.id], 4000)]));
+  return store.update("coaching_sessions", s.id, patch);
 });
 // Completing a session creates the SMART commitment and the week's four sessions.
 on("POST", "/api/sessions/:id/complete", ["supervisor", "manager"], async ({ user, params, body }, { store }) => {
@@ -551,6 +600,7 @@ on("POST", "/api/sessions/:id/complete", ["supervisor", "manager"], async ({ use
   const ok = bank.usable.some((b) => b.id === c.behavior) || (c.behavior === s.behavior && inBank && (!inBank.lobs?.length || inBank.lobs.includes(a.lob)));
   if (!c.behavior || !ok) throw new HttpError(400, "Pick one of your team’s behaviors.");
   if (!c.root_cause || !C.ROOT_CAUSE_BY_ID[c.root_cause]) throw new HttpError(400, "Mark the root cause.");
+  Object.assign(c, commitmentFields(c));
   const check = S.smartCheck(c);
   if (!check.ok && !body.force) throw new HttpError(422, "The commitment isn’t SMART yet: " + check.checks.filter((x) => !x.ok).map((x) => `${x.name} (${x.tip})`).join(" "));
   const missingNotes = C.DIRECT_STEPS.filter((d) => !(s.notes || {})[d.id]);
@@ -558,15 +608,16 @@ on("POST", "/api/sessions/:id/complete", ["supervisor", "manager"], async ({ use
   const supId = supervisorIdFor(user, a);
   const commitment = await store.insert("commitments", {
     session_id: s.id, agent_id: a.id, supervisor_id: supId, behavior: c.behavior, root_cause: c.root_cause, week_start: c.week_start,
-    action: c.action, measure_target: Number(c.measure_target), measure_total: Number(c.measure_total), check_method: c.check_method, follow_up_date: c.follow_up_date,
+    ...commitmentFields(c),
     evidence: s.evidence, status: "open", monitor_hits: null, monitor_total: null, self_hits: 0, agent_ack: false, agent_ack_at: null, review_notes: "",
   });
   const existing = (await store.list("weekly_sessions", { agent_id: a.id, week_start: c.week_start })).filter((e) => !e.sample); // never build real coaching on sample rows
   const planned = S.planWeek(commitment, supId).map((p) => {
     const ex = existing.find((e) => e.type === p.type);
     if (ex) return null; // keep sessions already planned
-    if (p.type === "setting_goals") return { ...p, planned_date: c.week_start === weekStart(s.date) ? s.date : p.planned_date, status: "held", tool: (body.tools || {}).setting_goals || p.tool }; // this session is the Setting Goals session
-    return { ...p, tool: (body.tools || {})[p.type] || p.tool };
+    const tool = C.TOOL_NAMES.includes((body.tools || {})[p.type]) ? body.tools[p.type] : p.tool;
+    if (p.type === "setting_goals") return { ...p, planned_date: c.week_start === weekStart(s.date) ? s.date : p.planned_date, status: "held", tool }; // this session is the Setting Goals session
+    return { ...p, tool };
   }).filter(Boolean);
   if (planned.length) await store.insertMany("weekly_sessions", planned);
   for (const ex of existing) if (!ex.commitment_id) await store.update("weekly_sessions", ex.id, { commitment_id: commitment.id });
@@ -585,9 +636,13 @@ on("GET", "/api/commitments", null, async ({ user, query }, { store }) => {
 on("POST", "/api/commitments/smart-check", null, async ({ body }) => S.smartCheck(body));
 on("PATCH", "/api/commitments/:id", ["supervisor", "manager"], async ({ user, params, body }, { store }) => {
   const c = await store.get("commitments", params.id); if (!c) throw new HttpError(404, "Commitment not found.");
-  await mustSeeAgent(user, store, c.agent_id);
-  const allowed = ["action", "measure_target", "measure_total", "check_method", "follow_up_date", "monitor_hits", "monitor_total", "behavior", "root_cause"];
-  return store.update("commitments", c.id, Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k))));
+  const a = await mustSeeAgent(user, store, c.agent_id);
+  const patch = commitmentFields({ ...c, ...Object.fromEntries(["action", "measure_target", "measure_total", "check_method", "follow_up_date"].filter((k) => k in body).map((k) => [k, body[k]])) });
+  if ("monitor_total" in body) patch.monitor_total = body.monitor_total == null ? null : int(body.monitor_total, 0, 100, "Calls checked");
+  if ("monitor_hits" in body) patch.monitor_hits = body.monitor_hits == null ? null : int(body.monitor_hits, 0, patch.monitor_total ?? c.monitor_total ?? 100, "Calls where it happened");
+  if ("behavior" in body && body.behavior !== c.behavior) { mustUse(await bankFor(store, a), body.behavior); patch.behavior = body.behavior; }
+  if ("root_cause" in body) { if (!C.ROOT_CAUSE_BY_ID[body.root_cause]) throw new HttpError(400, "Unknown root cause."); patch.root_cause = body.root_cause; }
+  return store.update("commitments", c.id, patch);
 });
 on("POST", "/api/commitments/:id/ack", ["agent"], async ({ user, params }, { store }) => {
   const c = await store.get("commitments", params.id); if (!c || c.agent_id !== user.id) throw new HttpError(404, "Commitment not found.");
@@ -595,7 +650,8 @@ on("POST", "/api/commitments/:id/ack", ["agent"], async ({ user, params }, { sto
 });
 on("POST", "/api/commitments/:id/self-log", ["agent"], async ({ user, params, body }, { store }) => {
   const c = await store.get("commitments", params.id); if (!c || c.agent_id !== user.id) throw new HttpError(404, "Commitment not found.");
-  return store.update("commitments", c.id, { self_hits: Math.max(0, (c.self_hits || 0) + (Number(body.delta) || 1)) });
+  const delta = Number(body.delta) < 0 ? -1 : 1; // one call at a time
+  return store.update("commitments", c.id, { self_hits: Math.min(999, Math.max(0, (c.self_hits || 0) + delta)) });
 });
 on("POST", "/api/commitments/:id/review", ["supervisor", "manager"], async ({ user, params, body }, { store }) => {
   const c = await store.get("commitments", params.id); if (!c) throw new HttpError(404, "Commitment not found.");
@@ -604,7 +660,9 @@ on("POST", "/api/commitments/:id/review", ["supervisor", "manager"], async ({ us
   const ws = await store.list("weekly_sessions", { commitment_id: c.id });
   const monitor = ws.find((w) => w.type === "monitor");
   const warning = !monitor || monitor.status !== "held" ? "Monitor wasn’t marked as held, so this result has no call evidence." : null;
-  const updated = await store.update("commitments", c.id, { status: body.status, monitor_hits: body.monitor_hits ?? c.monitor_hits, monitor_total: body.monitor_total ?? c.monitor_total ?? c.measure_total, review_notes: body.review_notes || "" });
+  const mTotal = body.monitor_total == null ? c.monitor_total ?? c.measure_total : int(body.monitor_total, 0, 100, "Calls checked");
+  const mHits = body.monitor_hits == null ? c.monitor_hits : int(body.monitor_hits, 0, mTotal || 100, "Calls where it happened");
+  const updated = await store.update("commitments", c.id, { status: body.status, monitor_hits: mHits, monitor_total: mTotal, review_notes: text(body.review_notes, 2000) });
   const kudos = ws.find((w) => w.type === "kudos_accountability");
   if (kudos && kudos.status !== "held") await store.update("weekly_sessions", kudos.id, { status: "held", planned_date: kudos.planned_date || today(), tool: body.tool || kudos.tool });
   const label = { met: "Met", partial: "Partially met", not_met: "Not met" }[body.status];
@@ -626,12 +684,20 @@ on("GET", "/api/weekly", ["supervisor", "manager", "agent"], async ({ user, quer
 on("POST", "/api/weekly", ["supervisor"], async ({ user, body }, { store }) => {
   const a = await mustSeeAgent(user, store, body.agent_id);
   if (!C.SESSION_TYPE_BY_ID[body.type]) throw new HttpError(400, "Unknown session type.");
+  if (body.commitment_id) { const c = await store.get("commitments", body.commitment_id); if (!c || c.agent_id !== a.id) throw new HttpError(400, "That commitment isn’t this agent’s."); }
+  body.planned_date = dateOr(body.planned_date, today(), "The planned date");
+  if (body.planned_time && !/^\d{2}:\d{2}$/.test(String(body.planned_time))) throw new HttpError(400, "Use a time like 14:30.");
+  if (body.tool && !C.TOOL_NAMES.includes(body.tool)) throw new HttpError(400, "Pick one of the 8 coaching tools.");
   return store.insert("weekly_sessions", { supervisor_id: user.id, agent_id: a.id, commitment_id: body.commitment_id || null, week_start: weekStart(body.planned_date || today()), type: body.type, planned_date: body.planned_date, planned_time: body.planned_time || "", tool: body.tool || "", status: "planned", reason: "" });
 });
 on("PATCH", "/api/weekly/:id", ["supervisor"], async ({ user, params, body }, { store }) => {
   const w = await store.get("weekly_sessions", params.id); if (!w || w.supervisor_id !== user.id) throw new HttpError(404, "Session not found.");
   const allowed = ["planned_date", "planned_time", "tool", "status", "reason", "notes"];
   const patch = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)));
+  if ("planned_date" in patch) patch.planned_date = dateOr(patch.planned_date, w.planned_date, "The planned date");
+  if (patch.planned_time && !/^\d{2}:\d{2}$/.test(String(patch.planned_time))) throw new HttpError(400, "Use a time like 14:30.");
+  if ("reason" in patch) patch.reason = text(patch.reason, 500);
+  if ("notes" in patch) patch.notes = typeof patch.notes === "string" ? text(patch.notes, 4000) : null;
   if (patch.status && !["planned", "held", "rescheduled", "missed"].includes(patch.status)) throw new HttpError(400, "Unknown status.");
   if (patch.tool && !C.TOOL_NAMES.includes(patch.tool)) throw new HttpError(400, "Pick one of the 8 coaching tools.");
   if (patch.status === "missed" && !(patch.reason || w.reason)) throw new HttpError(400, "Add a reason for the missed session.");
@@ -652,7 +718,7 @@ on("GET", "/api/quizzes", null, async ({ user }, { store }) => {
 on("POST", "/api/quizzes/:id/submit", ["agent"], async ({ user, params, body }, { store }) => {
   const q = await store.get("quizzes", params.id); if (!q || q.agent_id !== user.id) throw new HttpError(404, "Quiz not found.");
   if (q.status === "completed") throw new HttpError(409, "You already finished this quiz.");
-  const answers = (body.answers || []).map(Number);
+  const answers = q.questions.map((x, i) => { const v = Number((body.answers || [])[i]); return Number.isInteger(v) && v >= 0 && v < x.o.length ? v : null; });
   const right = q.questions.filter((x, i) => answers[i] === x.a).length;
   const done = await store.update("quizzes", q.id, { answers, score: Math.round((right / q.questions.length) * 100), status: "completed", completed_at: new Date().toISOString() });
   await notify(store, q.supervisor_id, { type: "quiz_done", title: `${user.name} finished a quiz: ${done.score}%`, body: q.title, link: { view: "agent", params: { id: user.id } } });
@@ -730,7 +796,7 @@ on("POST", "/api/behaviors/suggest", ["manager"], async ({ user, body }, { store
 on("POST", "/api/diagnoses", ["supervisor", "manager"], async ({ user, body }, { store, ai }) => {
   const { bank, ...ctx } = await aiContext(user, store, body.agent_id);
   mustUse(bank, body.sup_pick, "Choose the behavior you would coach.");
-  const reason = String(body.sup_reason || "").trim().slice(0, 1000);
+  const reason = text(body.sup_reason, 1000);
   if (reason.length < 15) throw new HttpError(400, "Say in a sentence why: what you heard on the calls.");
   const { calls, problem } = cleanCalls(body.calls, bank.usable);
   if (problem) throw new HttpError(400, problem);
@@ -749,7 +815,7 @@ on("POST", "/api/diagnoses/:id/final", ["supervisor", "manager"], async ({ user,
   const d = await mustSeeDiagnosis(user, store, params.id);
   const bank = await bankFor(store, await store.get("users", d.agent_id));
   mustUse(bank, body.final_pick, "Choose the behavior you’ll coach.");
-  const reason = String(body.final_reason || "").trim().slice(0, 1000);
+  const reason = text(body.final_reason, 1000);
   if (body.final_pick !== d.sup_pick && reason.length < 10) throw new HttpError(400, "You changed your pick: say what changed your mind.");
   return { ...(await store.update("diagnoses", d.id, { final_pick: body.final_pick, final_reason: reason || d.sup_reason, status: "final" })), tally: tallyCalls(d.calls, bank.usable) };
 });
@@ -778,21 +844,21 @@ on("POST", "/api/ai/quiz", ["supervisor", "manager"], async ({ user, body }, { s
 });
 // The supervisor reviews every question and picks the right answer before the quiz reaches the agent.
 function cleanQuiz(body, bank) {
-  const title = String(body.title || "").trim().slice(0, 120);
+  const title = text(body.title, 120);
   if (!title) throw new HttpError(400, "Give the quiz a title.");
   mustUse(bank, body.behavior);
   const list = Array.isArray(body.questions) ? body.questions : [];
   if (!list.length || list.length > 10) throw new HttpError(400, "A quiz needs between 1 and 10 questions.");
   const questions = list.map((x, i) => {
     const n = i + 1;
-    const q = String(x?.q || "").trim().slice(0, 500);
-    const o = (Array.isArray(x?.o) ? x.o : []).map((t) => String(t ?? "").trim().slice(0, 300));
+    const q = text(x?.q, 500);
+    const o = (Array.isArray(x?.o) ? x.o : []).map((t) => text(t, 300));
     if (!q) throw new HttpError(400, `Question ${n} has no text.`);
     if (o.length < 2 || o.length > 4 || o.some((t) => !t)) throw new HttpError(400, `Question ${n} needs 2 to 4 answer options, none of them empty.`);
     if (new Set(o.map((t) => t.toLowerCase())).size !== o.length) throw new HttpError(400, `Question ${n} has the same option twice.`);
     const a = x?.a == null || x.a === "" ? NaN : Number(x.a);
     if (!Number.isInteger(a) || a < 0 || a >= o.length) throw new HttpError(400, `Choose the right answer for question ${n}.`);
-    return { q, o, a, why: String(x?.why || "").trim().slice(0, 400) };
+    return { q, o, a, why: text(x?.why, 400) };
   });
   return { title, questions };
 }
@@ -912,7 +978,7 @@ on("GET", "/api/roleplays/:id", null, async ({ user, params }, { store }) => {
 on("PUT", "/api/roleplays/:id/note", ["supervisor", "manager"], async ({ user, params, body }, { store }) => {
   const rp = await mustSeePractice(user, store, params.id);
   if (!rp.agent_id) throw new HttpError(400, "Notes are for an agent’s practice.");
-  const note = String(body.note || "").trim().slice(0, 1000);
+  const note = text(body.note, 1000);
   const saved = await store.update("roleplays", rp.id, { coach_note: note || null, coach_note_by: note ? user.id : null, coach_note_at: note ? new Date().toISOString() : null });
   if (note && rp.agent_id !== user.id) await notify(store, rp.agent_id, { type: "roleplay_note", title: `${first(user.name)} left a note on your practice`, body: `${(await bankFor(store, user, null)).BY[rp.behavior]?.name || ""} · ${rp.scenario?.call_type || ""}`, link: { view: "practice-detail", params: { id: rp.id } } });
   return { ok: true, coach_note: saved.coach_note };
@@ -920,9 +986,9 @@ on("PUT", "/api/roleplays/:id/note", ["supervisor", "manager"], async ({ user, p
 on("POST", "/api/ai/roleplay/:id/turn", null, async ({ user, params, body }, { store, ai }) => {
   const rp = await store.get("roleplays", params.id); if (!rp || rp.user_id !== user.id) throw new HttpError(404, "Roleplay not found.");
   if (rp.status !== "active") throw new HttpError(409, "This roleplay has ended.");
-  const text = String(body.text || "").trim().slice(0, 1500); if (!text) throw new HttpError(400, "Say or type what you’d say to the member.");
+  const said = text(body.text, 1500); if (!said) throw new HttpError(400, "Say or type what you’d say to the member.");
   const voice = rp.scenario?.channel === "voice" ? cleanVoice(body.voice) : null;
-  const transcript = [...rp.transcript, { who: "agent", text, ...(voice ? { voice } : {}), at: new Date().toISOString() }];
+  const transcript = [...rp.transcript, { who: "agent", text: said, ...(voice ? { voice } : {}), at: new Date().toISOString() }];
   const r = await AI.roleplayTurn(ai, { scenario: rp.scenario, transcript });
   const at = new Date().toISOString();
   transcript.push({ who: "member", text: r.reply, mood: r.mood, at, ...(r.ai_by ? { ai_by: r.ai_by } : {}) });

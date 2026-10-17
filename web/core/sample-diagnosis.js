@@ -23,7 +23,7 @@ export function buildDiagnoses({ sessions, commitments, seed = "dx" }) {
   const out = [];
   for (const s of sessions) {
     const c = commitments.find((x) => x.session_id === s.id);
-    if (!c || r() < 0.2) continue; // not every past session went through the new prep flow
+    if (!c || (r() < 0.2 && out.length)) continue; // not every past session went through the new prep flow (but at least one did)
     const coached = c.behavior;
     const switched = r() < 0.15; // the supervisor changed their pick after the AI's second opinion
     const others = BEHAVIORS.filter((b) => b.id !== coached).map((b) => b.id);

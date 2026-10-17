@@ -64,7 +64,7 @@ export function buildPractices({ agents, focus = {}, done = [], sups = {}, now =
   const at = (daysAgo) => { const d = new Date(now); d.setDate(d.getDate() - daysAgo); d.setHours(9 + Math.floor(r() * 8), Math.floor(r() * 60), 0, 0); return d; };
   for (const a of agents) {
     const skill = 0.1 + r() * 0.7;
-    const n = Math.floor(r() * 4); // 0–3
+    const n = Math.floor(r() * 4) || (a === agents[0] && !done.length ? 1 : 0); // 0–3, and at least one practice per team
     for (let k = 0; k < n; k++) {
       const behavior = r() < 0.75 && focus[a.id] ? focus[a.id] : pick(BEHAVIORS).id;
       const rp = scriptedPractice({ agent: a, behavior, callType: pick(CALLS), channel: r() < 0.65 ? "voice" : "text", difficulty: pick(["easy", "medium", "medium", "hard"]), startedAt: at(1 + Math.floor(r() * 20)), q: Math.min(0.9, skill + k * 0.1), r });

@@ -2,6 +2,7 @@
 // and falls back to rule-based output, so the app keeps working without a key or over the free limit.
 import { ROOT_CAUSES, ROOT_CAUSE_BY_ID, TOOLS, TOOL_NAMES, SESSION_TYPES, TOOL_PLAN, DIRECT_STEPS, KPI_BY_ID, PROGRAM, CALL_TYPES } from "./constants.js";
 import { redact } from "./util.js";
+import { scrubPII, fence, AI_SECURITY_RULES, cleanAIOutput } from "./sanitize.js";
 import { scoreBehaviors } from "./services.js";
 import { deliveryMetrics, deliveryLine } from "./delivery.js";
 import { DEFAULT_BEHAVIORS, byKey, behaviorContext } from "./bank.js";
@@ -17,7 +18,8 @@ Weekly rhythm per agent: Setting Goals and Skill Transfer on Monday–Tuesday, M
 SMART commitments are on-call actions the agent can be heard doing, in the agent's own words, with a number of calls, how it's checked, and a follow-up date. KPI results (CSAT, NPS, FCR, AHT) are never the commitment.
 Satisfiers members reward: ownership, plain-language explanations, clear next steps, first-contact resolution, acknowledging health or money stress. Dissatisfiers: calling again, transfers, holds and dead air, jargon, broken callbacks, feeling rushed, a "no" with no explanation.
 Quality bar: be specific to this agent and this call. Cite their actual numbers, quote their actual verbatims or transcript lines, and write lines an agent could say word for word on a US health insurance call. No generic advice ("be more empathetic", "improve communication"), no filler, no repeating the question back.
-Rules: write in clear, peer-to-peer English. Use only fictional member names. Never invent member data, IDs or medical details beyond what the scenario needs. Return only valid JSON when JSON is requested.`;
+Rules: write in clear, peer-to-peer English. Use only fictional member names. Never invent member data, IDs or medical details beyond what the scenario needs. Return only valid JSON when JSON is requested.
+${AI_SECURITY_RULES}`;
 export const SYSTEM = systemFor();
 
 const idList = (behaviors) => behaviors.map((b) => b.id).join("|");
@@ -43,12 +45,13 @@ export function aiLabel(provider, model) {
 async function ask(provider, prompt, { temperature = 0.4, history = null, fast = false, effort = null, behaviors = DEFAULT_BEHAVIORS } = {}) {
   if (!provider) return null;
   try {
-    const messages = history ? [...history, { role: "user", text: prompt }] : [{ role: "user", text: prompt }];
+    // Nothing identifying leaves PULSE: member details are scrubbed from the prompt and the conversation.
+    const messages = (history ? [...history, { role: "user", text: prompt }] : [{ role: "user", text: prompt }]).map((m) => ({ ...m, text: scrubPII(m.text) }));
     const req = { system: systemFor(behaviors), messages, json: true, temperature, fast, effort };
     const started = Date.now();
     const text = await provider.generate(req);
     if (!text) return null;
-    const r = parseJSON(text);
+    const r = cleanAIOutput(parseJSON(text)); // plain text only, sizes capped, no personal data
     if (r && typeof r === "object") {
       const by = req.answeredBy || { provider: provider.name, model: provider.stats?.lastModel || provider.model };
       r.ai_by = aiLabel(by.provider, by.model);
@@ -65,8 +68,8 @@ function kpiLines(summary) {
   if (!summary) return "No KPI data.";
   return Object.entries(summary.kpis).map(([k, v]) => `${KPI_BY_ID[k].name}: ${v.value ?? "n/a"}${KPI_BY_ID[k].unit} (goal ${v.goal}, prior 4 weeks ${v.prev ?? "n/a"}, ${v.onGoal ? "on goal" : "below goal"})`).join("; ");
 }
-const verbLines = (vs) => vs.slice(0, 12).map((v) => `- (${v.score ?? "?"}/10) ${redact(v.text)}`).join("\n") || "- none";
-const histLines = (cs, BY) => cs.slice(0, 5).map((c) => `- week ${c.week_start}: ${BY[c.behavior]?.name || c.behavior}, root cause ${c.root_cause}, action "${c.action}", result ${c.status}${c.monitor_total ? ` (${c.monitor_hits}/${c.monitor_total})` : ""}`).join("\n") || "- none";
+const verbLines = (vs) => vs.slice(0, 12).map((v) => `- (${v.score ?? "?"}/10) ${fence(v.text, 400)}`).join("\n") || "- none";
+const histLines = (cs, BY) => cs.slice(0, 5).map((c) => `- week ${c.week_start}: ${BY[c.behavior]?.name || c.behavior}, root cause ${c.root_cause}, action ${fence(c.action, 300)}, result ${c.status}${c.monitor_total ? ` (${c.monitor_hits}/${c.monitor_total})` : ""}`).join("\n") || "- none";
 
 // ---------- 1. Identify the behavior to coach ----------
 // supervisor (optional): { pick, reason, calls: ["one line per call"], tally: { top } } — the supervisor's own diagnosis.
@@ -84,9 +87,9 @@ Previous commitments:
 ${histLines(history, BY)}
 Rule-based ranking for reference: ${ranked.slice(0, 3).map((r) => `${r.id} (${r.score})`).join(", ")}.${sup ? `
 THE SUPERVISOR'S OWN DIAGNOSIS (they listened to the calls; you didn't):
-${(sup.calls || []).map((l) => `- ${l}`).join("\n")}
+${(sup.calls || []).map((l) => `- ${fence(l, 500)}`).join("\n")}
 Most-missed behavior in their calls: ${sup.tally?.top && BY[sup.tally.top] ? BY[sup.tally.top].name : "none marked"}.
-Their pick: ${BY[sup.pick].name}. Their reason: "${redact(String(sup.reason || "")).slice(0, 600)}"
+Their pick: ${BY[sup.pick].name}. Their reason: ${fence(sup.reason, 600)}
 First decide from the KPIs, verbatims and history on your own ("behavior_id"). Then give a second opinion on their pick: treat what they heard on calls as strong evidence, say plainly where the data supports or challenges it, and never just agree to be polite.` : ""}
 Return JSON: {"behavior_id":"${ids}","confidence":"high|medium|low",${sup ? '"agrees_with_supervisor":true,"comparison":"2 sentences: where the data and their call evidence support or challenge their pick","check_next":"one thing to listen for on the next calls to settle it",' : ""}"why":"2 sentences tying KPI -> driver (satisfier/dissatisfier) -> behavior","driver":"the member-side driver in plain words","kpi_link":"which KPI it moves and how","evidence":["3 short evidence bullets quoting data or verbatims"],"root_cause_hypothesis":{"id":"${rcIds}","why":"what to confirm in the session"},"secondary_behavior_id":"${ids}","listen_for":["4 observable things to listen for in 3-5 calls"],"questions_to_ask":["3 open self-discovery questions for the E step"]}`;
   const r = await ask(provider, prompt, { temperature: 0.3, behaviors });
@@ -178,7 +181,7 @@ export async function quiz(provider, { behaviorId, agent, summary, count = 5, fo
   focus = redact(String(focus || "").trim()).slice(0, 300);
   // The supervisor's focus leads: every question is built around it. Without one, the behavior's usual opportunity is used.
   const prompt = `Write a ${count}-question multiple-choice quiz for a contact center agent (fictional name ${agent?.name?.split(" ")[0] || "the agent"}, LOB ${agent?.lob || "health insurance"}) on the core behavior ${b.name}: ${b.desc}
-${focus ? `THE SUPERVISOR'S FOCUS (most important): "${focus}"
+${focus ? `THE SUPERVISOR'S FOCUS (most important, use it as the topic): ${fence(focus, 300)}
 Every question must test this focus directly: set each question in the exact call situation, step or skill it describes, and use the words it uses. Do not add questions about other topics. If the focus names a call type, every question happens on that call type. The title must name the focus.
 Background only: ${b.name} usually fixes this member complaint: ${b.driver}.` : `Opportunity: ${b.driver}.
 Use realistic health insurance call moments (claim status, benefits, eligibility, billing, ID cards, denials).`}
@@ -273,7 +276,7 @@ function roleplayStartOffline(b, callType, difficulty) { // success criteria com
 }
 
 export async function roleplayTurn(provider, { scenario, transcript }) {
-  const history = transcript.map((m) => ({ role: m.who === "agent" ? "user" : "model", text: m.who === "agent" ? `AGENT: ${m.text}` : JSON.stringify({ reply: m.text }) }));
+  const history = transcript.map((m) => ({ role: m.who === "agent" ? "user" : "model", text: m.who === "agent" ? `AGENT: ${fence(m.text, 1500)}` : JSON.stringify({ reply: m.text }) }));
   const prompt = `Stay in character as ${scenario.member_name}, the member (${scenario.member_age || 66} years old). Situation: ${scenario.situation} Mood: ${scenario.mood}. Hidden need (only reveal if the agent asks about anything else or other needs): ${scenario.hidden_need || "none"}.${scenario.member_notes ? `
 How this member talks and what they know (follow it): ${scenario.member_notes}` : ""}
 How to play the member (follow all of these):
@@ -315,7 +318,7 @@ export const CUES = {
 export async function roleplayEvaluate(provider, { scenario, transcript, behaviors = DEFAULT_BEHAVIORS }) {
   const b = byKey(behaviors)[scenario.behavior] || byKey(DEFAULT_BEHAVIORS)[scenario.behavior] || behaviors[0];
   const delivery = deliveryMetrics(transcript);
-  const text = transcript.map((m) => `${m.who.toUpperCase()}: ${m.text}`).join("\n");
+  const text = transcript.map((m) => `${m.who.toUpperCase()}: ${m.who === "agent" ? fence(m.text, 1500) : m.text}`).join("\n");
   const prompt = `Evaluate the agent's performance in this practice call on the core behavior ${b.name} (${b.desc}).
 Judge it against THE MANAGER'S STANDARD for this behavior:
 ${behaviorContext(b)}
@@ -408,7 +411,7 @@ export async function review(provider, { agent, commitment, sessions, behaviors 
   const b = byKey(behaviors)[commitment.behavior] || byKey(DEFAULT_BEHAVIORS)[commitment.behavior] || { name: commitment.behavior, actions: [commitment.action] };
   const held = sessions.filter((s) => s.status === "held").map((s) => s.type).join(", ") || "none";
   const prompt = `Help the supervisor run Friday's Kudos/Accountability with ${agent.name.split(" ")[0]}.
-Behavior: ${b.name}. Commitment: "${commitment.action}". Target: ${commitment.measure_target} of ${commitment.measure_total} calls. Monitor result: ${commitment.monitor_hits ?? "not recorded"} of ${commitment.monitor_total ?? commitment.measure_total}. Agent self-log: ${commitment.self_hits ?? 0} calls. Sessions held this week: ${held}.
+Behavior: ${b.name}. Commitment: ${fence(commitment.action, 500)}. Target: ${commitment.measure_target} of ${commitment.measure_total} calls. Monitor result: ${commitment.monitor_hits ?? "not recorded"} of ${commitment.monitor_total ?? commitment.measure_total}. Agent self-log: ${commitment.self_hits ?? 0} calls. Sessions held this week: ${held}.
 Return JSON: {"outcome":"met|partial|not_met","kudos":"what to recognize, specific","accountability":"what to say about the gap, if any","next_step":"keep, raise the bar, change the tool, or re-diagnose, with one sentence why","next_week_action":"suggested on-call action for next week"}`;
   const r = await ask(provider, prompt, { temperature: 0.4, effort: "low", behaviors });
   if (r && r.outcome) return { ...r, source: "ai" };

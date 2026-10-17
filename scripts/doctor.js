@@ -33,7 +33,18 @@ const cols = [
   ["users", "auth_user_id", "002_link_logins_by_uid.sql"], ["users", "employee_id,roster_key,active,sub_lob,in_production,source", "003_roster.sql"],
   ["users", "must_change_password", "004_first_password.sql"], ["kpi_weekly", "sample", "005_sample_data.sql"], ["coaching_sessions", "sample", "005_sample_data.sql"],
 ];
+const newer = [["notifications", "id", "006_notifications_and_leader_coaching.sql"], ["roleplays", "coach_note", "007_practice_log.sql"], ["diagnoses", "id", "008_supervisor_diagnosis.sql"], ["behaviors", "id", "009_behavior_bank.sql"]];
+cols.push(...newer);
 for (const [t, c, mig] of cols) { const { error } = await db.from(t).select(c).limit(1); error ? fail(`${t}.${c.split(",")[0]}… missing → run supabase/migrations/${mig}`) : ok(`${t}: ${c.split(",").length > 1 ? "roster columns" : c}`); }
+
+// The browser's public key must not be able to read any table (row-level security, migration 010).
+const publishable = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
+if (publishable && !globalThis.__pulseDoctorClient) {
+  const pub = createClient(url, publishable, { auth: { persistSession: false, autoRefreshToken: false } });
+  const open = [];
+  for (const t of [...tables, "notifications", "roleplay_assignments", "leader_sessions", "leader_commitments", "diagnoses", "behaviors"]) { const { data, error } = await pub.from(t).select("id").limit(1); if (!error && data?.length) open.push(t); }
+  open.length ? fail(`the public key can read ${open.join(", ")} → run supabase/migrations/010_lock_down.sql`) : ok("the public key can’t read any table (row-level security is on)");
+}
 
 console.log("\n3. People");
 let users = [];

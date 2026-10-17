@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>PULSE — brag</title>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/audio-data.js"></script>
+    <style>
+      @font-face { font-family: "Bricolage Grotesque"; src: url(assets/fonts/BricolageGrotesque-var.woff2) format("woff2"); font-weight: 500 800; font-display: block; }
+      @font-face { font-family: "Instrument Sans"; src: url(assets/fonts/InstrumentSans-var.woff2) format("woff2"); font-weight: 400 700; font-display: block; }
+      @font-face { font-family: "IBM Plex Mono"; src: url(assets/fonts/IBMPlexMono-500.woff2) format("woff2"); font-weight: 500; font-display: block; }
+      @font-face { font-family: "IBM Plex Mono"; src: url(assets/fonts/IBMPlexMono-600.woff2) format("woff2"); font-weight: 600; font-display: block; }
+
+      /* ---- PULSE app stylesheet (web/styles.css), scoped under .pa ---- */
+      /* PULSE · same visual family as the supervisor training guides:
+         light blue-gray board, white cards, deep teal accent, sticky-note yellow for AI and reveals. */
+      .pa{
+        --bg:#E4EAF0; --surface:#FFFFFF; --surface-2:#F1F4F7; --line:#D0D9E1;
+        --ink:#14212A; --ink-2:#44545F; --ink-3:#66767F;
+        --teal:#0B5C63; --teal-ink:#FFFFFF; --teal-soft:#D9ECEC; --teal-text:#0A5258;
+        --sticky:#FBE38A; --sticky-ink:#3A3110; --sticky-edge:#E6C64F;
+        --ok:#1D7A4C; --ok-soft:#DCF0E4; --warn:#9A5B00; --warn-soft:#FBEBD0; --bad:#B23A2B; --bad-soft:#F7E0DB;
+        --ok-strong:#1D7A4C; --bad-strong:#B23A2B;
+        --shadow:0 10px 24px -14px rgba(25,45,60,.45);
+        --f-display:"Bricolage Grotesque",sans-serif;
+        --f-body:"Instrument Sans",sans-serif;
+        --f-mono:"IBM Plex Mono",monospace;
+      }
+      .pa, .pa *{box-sizing:border-box}
+      .pa [hidden]{display:none!important}
+      .pa{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5}
+      .pa button,.pa input,.pa select,.pa textarea{font:inherit;color:inherit}
+      .pa h1,.pa h2,.pa h3,.pa h4{font-family:var(--f-display);margin:0;letter-spacing:-.015em;line-height:1.15;text-wrap:balance}
+      .pa p{margin:0}
+      .pa a{color:var(--teal-text)}
+      .pa .muted{color:var(--ink-3)} .pa .small{font-size:.86rem}
+      .pa .mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+      
+      /* Shell */
+      .pa .shell{display:grid;grid-template-columns:236px minmax(0,1fr);min-height:0}
+      .pa .side{align-self:start;background:var(--surface);border-right:1px solid var(--line);padding:18px 14px;display:flex;flex-direction:column;gap:18px;position:relative;top:0;height:auto;overflow:auto}
+      .pa .brand{display:flex;align-items:center;gap:10px;padding:0 6px}
+      .pa .brand .mark{width:34px;height:34px;border-radius:8px;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:800}
+      .pa .brand b{font-family:var(--f-display);font-size:1.25rem;letter-spacing:.02em}
+      .pa .brand small{display:block;color:var(--ink-3);font-size:.72rem;line-height:1.2}
+      .pa .nav{display:flex;flex-direction:column;gap:2px}
+      .pa .nav .grp{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-weight:700;padding:12px 10px 4px}
+      .pa .nav button{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--ink-2);font-weight:550}
+      .pa .nav button:hover{background:var(--surface-2);color:var(--ink)}
+      .pa .nav button[aria-current="page"]{background:var(--teal-soft);color:var(--teal-text)}
+      .pa .nav button:focus-visible{outline:3px solid var(--teal)}
+      .pa .nav .ic{width:18px;height:18px;flex:none}
+      .pa .who{margin-top:auto;border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+      .pa .who .name{font-weight:650}
+      .pa .role-chip{display:inline-block;font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700;padding:2px 8px;border-radius:4px;background:var(--teal-soft);color:var(--teal-text)}
+      .pa .main{min-width:0;padding-block:24px 48px;padding-inline:clamp(16px,3vw,36px)}
+      .pa .topline{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;justify-content:space-between;margin-bottom:20px}
+      .pa .topline h1{font-size:clamp(1.5rem,2.6vw,2.1rem);font-weight:750}
+      .pa .topline .sub{color:var(--ink-2);margin-top:4px}
+      .pa .mode-banner{font-size:.8rem;background:var(--sticky);color:var(--sticky-ink);padding:6px 12px;border-radius:6px;margin-bottom:16px}
+      .pa .mobile-top{display:none}
+      
+      /* Cards, grids */
+      .pa .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0}
+      .pa .card h3{font-size:1.05rem;margin-bottom:10px}
+      .pa .card-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+      .pa .card-h h3{margin:0}
+      .pa .grid{display:grid;gap:14px}
+      .pa .g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))}
+      .pa .g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+      .pa .g-main{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+      .pa .g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+      .pa .kpis.k3{grid-template-columns:repeat(auto-fit,minmax(min(100%,118px),1fr))}
+      .pa .kpis.k3 .v{font-size:1.5rem}
+      .pa .tbl.compact{min-width:0}
+      .pa .stack{display:flex;flex-direction:column;gap:14px}
+      .pa .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+      .pa .spread{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+      .pa .mt{margin-top:14px} .pa .mt2{margin-top:22px}
+      .pa .eyebrow{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-3);font-weight:700}
+      .pa hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+      
+      /* KPI tiles */
+      .pa .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:12px}
+      .pa .kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+      .pa .kpi .k{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:700}
+      .pa .kpi .v{font-family:var(--f-display);font-size:1.9rem;font-weight:750;line-height:1;font-variant-numeric:tabular-nums}
+      .pa .kpi .meta{display:flex;justify-content:space-between;gap:6px;font-size:.8rem;color:var(--ink-2);flex-wrap:wrap}
+      .pa .delta.up{color:var(--ok)} .pa .delta.down{color:var(--bad)}
+      .pa .spark{display:block;width:100%;height:34px}
+      .pa .spark .ln{fill:none;stroke:var(--teal);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+      .pa .spark .goal{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
+      .pa .spark .end{fill:var(--teal);stroke:var(--surface);stroke-width:2}
+      .pa .spark .hit{fill:transparent}
+      
+      /* Chips and status */
+      .pa .chip{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;font-weight:650;padding:2px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);white-space:nowrap}
+      .pa .chip.teal{background:var(--teal-soft);border-color:transparent;color:var(--teal-text)}
+      .pa .chip.ok{background:var(--ok-soft);border-color:transparent;color:var(--ink)} .pa .chip.ok::before{content:"✓";color:var(--ok);font-weight:800}
+      .pa .chip.warn{background:var(--warn-soft);border-color:transparent;color:var(--ink)} .pa .chip.warn::before{content:"!";color:var(--warn);font-weight:800}
+      .pa .chip.bad{background:var(--bad-soft);border-color:transparent;color:var(--ink)} .pa .chip.bad::before{content:"✕";color:var(--bad);font-weight:800}
+      .pa .chip.plain::before{content:none}
+      .pa .chip.sticky{background:var(--sticky);border-color:transparent;color:var(--sticky-ink)}
+      .pa .q-top{background:var(--ok-soft)} .pa .q-on_goal{background:var(--teal-soft)} .pa .q-bottom{background:var(--warn-soft)} .pa .q-outlier{background:var(--bad-soft)}
+      
+      /* Buttons and forms */
+      .pa .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem;text-decoration:none;white-space:nowrap}
+      .pa .btn:hover:not([disabled]){border-color:var(--teal)}
+      .pa .btn.primary{background:var(--teal);border-color:var(--teal);color:var(--teal-ink)}
+      .pa .btn.ghost{background:transparent;border-color:transparent;color:var(--teal-text)}
+      .pa .btn.sm{padding:5px 10px;font-size:.82rem}
+      .pa .btn[disabled]{opacity:.45;cursor:not-allowed}
+      .pa .btn.ai::before{content:"✦";font-size:.9em}
+      .pa label.f{display:flex;flex-direction:column;gap:4px;font-size:.78rem;font-weight:650;color:var(--ink-2);min-width:0}
+      .pa input.in,.pa select.in,.pa textarea.in{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.92rem;font-weight:400;color:var(--ink);width:100%;min-width:0}
+      .pa textarea.in{resize:vertical;min-height:70px;line-height:1.45}
+      .pa .fgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+      .pa .fgrid .wide{grid-column:1/-1}
+      .pa .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+      .pa .seg button{border:0;background:var(--surface);padding:6px 10px;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--ink-2)}
+      .pa .seg button+button{border-left:1px solid var(--line)}
+      .pa .seg button[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink)}
+      
+      /* Tables */
+      .pa .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+      .pa table.tbl{width:100%;border-collapse:collapse;font-size:.88rem;min-width:640px}
+      .pa .tbl th,.pa .tbl td{padding:10px 12px;text-align:left;border-top:1px solid var(--line);vertical-align:middle}
+      .pa .tbl thead th{border-top:0;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:700;background:var(--surface-2)}
+      .pa .tbl tbody tr.click{cursor:pointer}
+      .pa .tbl tbody tr.click:hover{background:var(--surface-2)}
+      .pa .tbl td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+      .pa .cell-bad{color:var(--bad);font-weight:650} .pa .cell-ok{color:var(--ok);font-weight:650}
+      
+      /* Lists */
+      .pa .list{display:flex;flex-direction:column}
+      .pa .li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+      .pa .li:first-child{border-top:0;padding-top:0}
+      .pa .li .grow{flex:1;min-width:0}
+      .pa .li .t{font-weight:650}
+      .pa .dot{width:10px;height:10px;border-radius:50%;flex:none;margin-top:6px}
+      .pa .dot.high{background:var(--bad)} .pa .dot.medium{background:var(--warn)} .pa .dot.low{background:var(--ink-3)}
+      
+      /* Sticky (AI output, reveals) */
+      .pa .sticky{background:var(--sticky);color:var(--sticky-ink);border-radius:6px;padding:14px 16px;box-shadow:0 1px 0 var(--sticky-edge)}
+      .pa .sticky .eyebrow{color:var(--sticky-ink);opacity:.75}
+      .pa .ai-card{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+      .pa .ai-card .ai-h{background:var(--sticky);color:var(--sticky-ink);padding:12px 16px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+      .pa .ai-card .ai-b{padding:16px}
+      .pa .src{font-family:var(--f-mono);font-size:.7rem;opacity:.75}
+      
+      /* Quartile board */
+      .pa .board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+      .pa .lane{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+      .pa .lane-h{display:flex;justify-content:space-between;gap:6px;font-weight:700;font-family:var(--f-display)}
+      .pa .lane-h small{font-family:var(--f-body);font-weight:500;color:var(--ink-3);font-size:.74rem}
+      .pa .ticket{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;text-align:left;width:100%}
+      .pa .ticket:hover{border-color:var(--teal)}
+      .pa .ticket b{display:block;font-size:.88rem}
+      .pa .ticket span{font-size:.76rem;color:var(--ink-3)}
+      
+      /* Weekly plan grid */
+      .pa .wk{display:grid;grid-template-columns:180px repeat(4,minmax(170px,1fr));gap:8px;min-width:900px}
+      .pa .wk-wrap{overflow-x:auto}
+      .pa .wk .hd{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:700;padding:4px 6px}
+      .pa .wk .hd b{display:block;color:var(--ink);font-family:var(--f-display);font-size:.95rem;text-transform:none;letter-spacing:0}
+      .pa .wk .ag{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;font-weight:650;display:flex;flex-direction:column;gap:4px}
+      .pa .cell{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:6px}
+      .pa .cell.held{border-color:var(--ok);background:var(--ok-soft)}
+      .pa .cell.missed{border-color:var(--bad);background:var(--bad-soft)}
+      .pa .cell.rescheduled{border-color:var(--warn);background:var(--warn-soft)}
+      .pa .cell.none{border-style:dashed;background:transparent;justify-content:center;align-items:center;color:var(--ink-3);font-size:.8rem}
+      .pa .cell select,.pa .cell input{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:.8rem;width:100%}
+      .pa .cell .st{display:flex;gap:4px;flex-wrap:wrap}
+      .pa .cell .st button{border:1px solid var(--line);background:var(--surface);border-radius:6px;font-size:.72rem;padding:2px 6px;cursor:pointer;font-weight:600}
+      .pa .cell .st button[aria-pressed="true"]{background:var(--teal);color:var(--teal-ink);border-color:var(--teal)}
+      
+      /* DIRECT session */
+      .pa .steps{display:grid;gap:10px}
+      .pa .step{display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+      .pa .step .L{font-family:var(--f-display);font-weight:800;font-size:2rem;color:var(--teal);line-height:1}
+      .pa .step .nm{font-weight:700}
+      .pa .sugg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+      .pa .sugg button{border:0;background:var(--sticky);color:var(--sticky-ink);border-radius:6px;padding:4px 8px;font-size:.78rem;cursor:pointer;text-align:left}
+      .pa .sugg button.avoid{background:var(--bad-soft);color:var(--ink);cursor:default}
+      .pa .smart{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,92px),1fr));gap:6px}
+      .pa .smart div{border-radius:8px;padding:8px;border:1px solid var(--line);background:var(--surface-2);font-size:.74rem;overflow-wrap:anywhere;line-height:1.3}
+      .pa .smart div b{font-family:var(--f-display);font-size:1.2rem;display:block}
+      .pa .smart .ok{background:var(--ok-soft);border-color:var(--ok)}
+      .pa .smart .no{background:var(--bad-soft);border-color:var(--bad)}
+      
+      /* Chat (roleplay) */
+      .pa .chat{display:flex;flex-direction:column;gap:8px;max-height:460px;overflow:auto;padding:4px}
+      .pa .msg{max-width:78%;padding:10px 12px;border-radius:12px;line-height:1.45}
+      .pa .msg.member{background:var(--surface-2);border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+      .pa .msg.agent{background:var(--teal);color:var(--teal-ink);align-self:flex-end;border-bottom-right-radius:4px}
+      .pa .msg .w{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;opacity:.7;display:block;margin-bottom:2px}
+      
+      /* Quiz */
+      .pa .qq{border-top:1px solid var(--line);padding-top:12px;margin-top:12px}
+      .pa .qq:first-child{border-top:0;margin-top:0;padding-top:0}
+      .pa .opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer;margin-top:6px}
+      .pa .opt:hover{border-color:var(--teal)}
+      .pa .opt[aria-pressed="true"]{border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+      .pa .opt.right{border-color:var(--ok);background:var(--ok-soft)} .pa .opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+      .pa .opt .k{font-family:var(--f-mono);font-size:.76rem;width:22px;height:22px;border-radius:5px;background:var(--surface-2);display:grid;place-items:center;flex:none}
+      
+      /* Bars */
+      .pa .bars{display:flex;flex-direction:column;gap:8px}
+      .pa .bar-row{display:grid;grid-template-columns:150px minmax(0,1fr) 54px;gap:10px;align-items:center;font-size:.86rem}
+      .pa .bar-track{height:12px;background:var(--surface-2);border-radius:4px;overflow:hidden}
+      .pa .bar-fill{height:100%;background:var(--teal);border-radius:0 4px 4px 0}
+      
+      /* Login */
+      .pa .login{min-height:0;display:grid;place-items:center;padding:24px 16px}
+      .pa .login-card{width:min(100%,760px);background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:clamp(20px,4vw,36px);box-shadow:var(--shadow)}
+      .pa .login h1{font-size:clamp(2rem,5vw,3rem);font-weight:800}
+      .pa .login h1 span{color:var(--teal)}
+      .pa .pick{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:8px}
+      .pa .pick button{text-align:left;border:1px solid var(--line);background:var(--surface-2);border-radius:10px;padding:10px 12px;cursor:pointer}
+      .pa .pick button:hover{border-color:var(--teal)}
+      .pa .pick b{display:block}
+      .pa .pick span{font-size:.78rem;color:var(--ink-3)}
+      
+      /* Toast + modal */
+      .pa .toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;z-index:50}
+      .pa .toast{background:var(--ink);color:var(--bg);padding:10px 14px;border-radius:8px;box-shadow:var(--shadow);font-size:.88rem;max-width:360px}
+      .pa .toast.err{background:var(--bad-strong);color:#FFFFFF}
+      .pa .overlay{position:fixed;inset:0;background:rgba(10,20,26,.45);display:grid;place-items:center;padding:16px;z-index:40}
+      .pa .modal{background:var(--surface);border-radius:14px;padding:20px;width:min(100%,640px);max-height:88vh;overflow:auto;box-shadow:var(--shadow)}
+      .pa .empty{border:1px dashed var(--line);border-radius:10px;padding:18px;color:var(--ink-3);text-align:center}
+      .pa .loading{color:var(--ink-3);padding:30px 0;text-align:center}
+      .pa .verb{border-left:0;background:var(--surface-2);border-radius:8px;padding:10px 12px;font-size:.9rem}
+      .pa .verb .sc{font-family:var(--f-mono);font-size:.74rem;color:var(--ink-3)}
+      
+      /* ---------- Voice roleplay ---------- */
+      .pa .modes{border:0;padding:0;margin:0;display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr))}
+      .pa .modes legend{margin-bottom:8px}
+      .pa .modes label{position:relative;cursor:pointer}
+      .pa .modes input{position:absolute;opacity:0;pointer-events:none}
+      .pa .modes label>span{display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface-2)}
+      .pa .modes label>span .ic{grid-row:span 2;width:22px;height:22px;color:var(--teal-text)}
+      .pa .modes small{color:var(--ink-3);font-size:.8rem;line-height:1.3}
+      .pa .modes input:checked+span{border-color:var(--teal);background:var(--teal-soft);box-shadow:inset 0 0 0 1px var(--teal)}
+      .pa .modes input:focus-visible+span{outline:3px solid var(--teal);outline-offset:2px}
+      .pa .modes input:disabled+span{opacity:.5;cursor:not-allowed}
+      
+      .pa .callbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+      .pa .callbar .t{font-weight:650}
+      .pa .avatar{position:relative;width:54px;height:54px;flex:none;border-radius:50%;background:var(--teal);color:var(--teal-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:750;font-size:1.05rem}
+      .pa .avatar::before,.pa .avatar::after{content:"";position:absolute;inset:0;border-radius:50%;border:2px solid var(--teal);opacity:0}
+      .pa .avatar[data-state="speaking"]::before{animation:ring 1.4s ease-out infinite}
+      .pa .avatar[data-state="speaking"]::after{animation:ring 1.4s ease-out .7s infinite}
+      .pa .avatar[data-state="thinking"]{animation:breathe 1.2s ease-in-out infinite}
+      .pa .avatar[data-state="listening"]{background:var(--surface);color:var(--teal-text);box-shadow:inset 0 0 0 2px var(--teal)}
+      @keyframes ring{from{transform:scale(1);opacity:.7}to{transform:scale(1.6);opacity:0}}
+      @keyframes breathe{50%{opacity:.55}}
+      
+      .pa .mic{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:10px 18px 10px 14px;background:var(--teal);color:var(--teal-ink);font-weight:700;font-size:.95rem;cursor:pointer;min-height:44px}
+      .pa .mic .ic{width:20px;height:20px}
+      .pa .mic[aria-pressed="true"]{background:var(--bad);color:var(--surface);box-shadow:0 0 0 0 var(--bad);animation:live 1.5s ease-out infinite}
+      .pa .mic[disabled]{opacity:.45;cursor:not-allowed;animation:none}
+      @keyframes live{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 55%,transparent)}100%{box-shadow:0 0 0 12px transparent}}
+      
+      .pa .heard{margin-top:10px;border:1px dashed var(--teal);border-radius:10px;padding:8px 12px;background:var(--teal-soft);color:var(--ink);display:flex;flex-direction:column;gap:2px}
+      .pa .heard[hidden]{display:none}
+      .pa .msg .w{display:flex;align-items:center;gap:6px}
+      .pa .msg .replay{all:unset;cursor:pointer;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;color:var(--teal-text)}
+      .pa .msg .replay:hover{background:var(--teal-soft)}
+      .pa .msg .replay:focus-visible{outline:2px solid var(--teal)}
+      .pa .msg .replay .ic{width:14px;height:14px}
+      .pa .msg .vm{display:block;font-size:.7rem;opacity:.8;margin-top:4px;font-family:var(--f-mono)}
+      .pa .msg .vm.slow{font-weight:700}
+      .pa .msg .vm.slow::before{content:"! "}
+      .pa .chat.nocap .msg.member .tx{filter:blur(6px);cursor:pointer;user-select:none}
+      .pa .chat.nocap .msg.member .tx.shown{filter:none;user-select:auto}
+      .pa .chat[hidden]{display:none}
+      
+      .pa .vset{border-top:1px solid var(--line);padding-top:10px}
+      .pa .vset summary{cursor:pointer;font-weight:650;color:var(--ink-2)}
+      .pa .vset input[type=range]{width:100%;accent-color:var(--teal)}
+      .pa .checks{grid-column:1/-1;display:flex;flex-direction:column;gap:6px}
+      .pa .ck{display:flex;gap:8px;align-items:flex-start;font-size:.86rem;color:var(--ink-2);cursor:pointer}
+      .pa .ck input{margin-top:3px;accent-color:var(--teal)}
+      
+      .pa .dstats{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));margin:8px 0}
+      .pa .dstats>div{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px}
+      .pa .dstats b{display:block;font-size:1.3rem;line-height:1.1}
+      .pa .dstats small{color:var(--ink-3);font-size:.74rem;line-height:1.25;display:block;margin-top:2px}
+      .pa .dstats .warnv{background:var(--warn-soft);border-color:transparent}
+      .pa .sugg .ml{display:inline-flex;gap:6px;align-items:center}
+      .pa .sugg .ml .ic{width:14px;height:14px;flex:none}
+      .pa .btn .ic{width:16px;height:16px;flex:none}
+      
+      /* ---------- Passwords ---------- */
+      .pa .pw-field{display:flex;gap:6px;align-items:center}
+      .pa .pw-field .in{flex:1}
+      .pa .pw-rules{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:4px;font-size:.86rem;color:var(--ink-2)}
+      .pa .pw-rules li{display:flex;gap:8px;align-items:center}
+      .pa .pw-rules li::before{content:"";width:16px;height:16px;flex:none;border-radius:50%;border:2px solid var(--line)}
+      .pa .pw-rules li.ok{color:var(--ink)}
+      .pa .pw-rules li.ok::before{background:var(--ok);border-color:var(--ok);box-shadow:inset 0 0 0 3px var(--surface)}
+      .pa .modal .sticky .mono{user-select:all}
+      
+      /* ---------- Sample data ---------- */
+      .pa .sample-banner{font-size:.85rem;background:var(--warn-soft);color:var(--ink);border:1px dashed var(--warn);padding:8px 12px;border-radius:8px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+      .pa .switch{display:flex;gap:12px;align-items:center;cursor:pointer;font-size:.92rem}
+      .pa .switch input{position:absolute;opacity:0;width:1px;height:1px}
+      .pa .switch .track{width:46px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none}
+      .pa .switch .track::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.3)}
+      .pa .switch input:checked+.track{background:var(--teal)}
+      .pa .switch input:checked+.track::after{transform:translateX(20px)}
+      .pa .switch input:focus-visible+.track{outline:3px solid var(--teal);outline-offset:2px}
+      .pa .switch input:disabled+.track{opacity:.5}
+      
+      /* ---------- Notifications ---------- */
+      .pa .nbell{all:unset;cursor:pointer;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--ink-2);font-weight:550;position:relative}
+      .pa .nbell:hover{background:var(--surface-2);color:var(--ink)}
+      .pa .nbell:focus-visible{outline:3px solid var(--teal)}
+      .pa .nbell .ic{width:18px;height:18px}
+      .pa .nbadge{margin-left:auto;background:var(--bad);color:var(--surface);font-size:.7rem;font-weight:800;border-radius:999px;padding:1px 7px;min-width:20px;text-align:center}
+      .pa .nbar{background:var(--surface);border:1px solid var(--teal);border-left:5px solid var(--teal);border-radius:10px;padding:10px 12px;margin-bottom:16px;box-shadow:var(--shadow)}
+      .pa .nbar-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+      .pa .nitem{display:flex;align-items:center;gap:10px;padding:8px 4px;border-top:1px solid var(--line);flex-wrap:wrap}
+      .pa .nitem>.ic,.pa .nrow>.ic{width:20px;height:20px;color:var(--teal-text);flex:none}
+      .pa .nitem .grow{min-width:180px}
+      .pa .nitem .t,.pa .nrow .t{font-weight:650;display:block}
+      .pa .nx{all:unset;cursor:pointer;width:28px;height:28px;display:grid;place-items:center;border-radius:6px;color:var(--ink-3);font-size:1.2rem}
+      .pa .nx:hover{background:var(--surface-2);color:var(--ink)}
+      .pa .nx:focus-visible{outline:2px solid var(--teal)}
+      .pa .nowrap{white-space:nowrap}
+      .pa .npanel{width:min(100%,620px);max-height:80vh;overflow:auto}
+      .pa .nrow{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:10px;align-items:flex-start;width:100%;padding:10px;border-radius:8px;border-bottom:1px solid var(--line)}
+      .pa .nrow:hover{background:var(--surface-2)}
+      .pa .nrow:focus-visible{outline:2px solid var(--teal)}
+      .pa .nrow.unread{background:var(--teal-soft)}
+      .pa .nrow .small{display:block}
+      
+      /* ---------- Supervisor coaching ---------- */
+      .pa .sbgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr))}
+      .pa .sb{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface-2);display:flex;flex-direction:column;gap:4px}
+      .pa .sb.sugg-focus{border-color:var(--sticky-edge);box-shadow:inset 0 0 0 1px var(--sticky-edge)}
+      .pa .sb .k{font-weight:700;font-size:.9rem}
+      .pa .sb .v{font-family:var(--f-display);font-size:1.8rem;line-height:1}
+      .pa .sb .v.ok{color:var(--ok)} .pa .sb .v.warn{color:var(--warn)} .pa .sb .v.bad{color:var(--bad)}
+      .pa .mbars{display:flex;align-items:flex-end;gap:3px;height:34px;width:70px}
+      .pa .mbars span{flex:1;background:var(--line);border-radius:2px 2px 0 0;min-height:3px}
+      .pa .mbars span.ok{background:var(--ok)} .pa .mbars span.warn{background:var(--warn)} .pa .mbars span.bad{background:var(--bad)}
+      .pa .progress{position:relative;height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;overflow:visible}
+      .pa .progress span{display:block;height:100%;border-radius:999px;background:var(--teal)}
+      .pa .progress span.ok{background:var(--ok)} .pa .progress span.warn{background:var(--warn)} .pa .progress span.bad{background:var(--bad)}
+      .pa .progress i{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+      .pa details.li1{border-bottom:1px solid var(--line);padding:8px 0}
+      .pa details.li1 summary{cursor:pointer;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+      .pa details.li1 p{margin:4px 0}
+      .pa .li.hl{background:var(--sticky);border-radius:8px;padding-left:8px;padding-right:8px}
+      .pa .nitem{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto auto;align-items:center}
+      .pa .nitem .small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+      .pa .chip.focus{background:var(--sticky);color:var(--sticky-ink);border-color:transparent}
+      
+      /* ---------- Session ---------- */
+      .pa .idle-warn{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);z-index:60;background:var(--surface);color:var(--ink);border:1px solid var(--warn);border-left:5px solid var(--warn);border-radius:10px;padding:12px 14px;box-shadow:var(--shadow);display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:min(92vw,620px)}
+      
+      /* Quiz review: edit questions and pick the right answer */
+      .pa .qe textarea.in{min-height:48px}
+      .pa .qopts{display:grid;gap:6px;margin-top:8px}
+      .pa .qopt{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface)}
+      .pa .qopt input[type=radio]{width:18px;height:18px;accent-color:var(--ok);flex:none;margin:0;cursor:pointer}
+      .pa .qopt .k{font-family:var(--f-mono);font-size:.76rem;width:22px;height:22px;border-radius:5px;background:var(--surface-2);display:grid;place-items:center;flex:none}
+      .pa .qopt .in{border-color:transparent;background:transparent;padding:6px 6px}
+      .pa .qopt .in:focus{background:var(--surface-2);border-color:var(--line)}
+      .pa .qopt.right{border-color:var(--ok);background:var(--ok-soft)}
+      .pa .qopt.right .k{background:var(--ok);color:var(--surface)}
+      
+      /* Scenario editor */
+      .pa .crit{display:flex;gap:8px;align-items:center;margin-top:6px}
+      .pa .crit .k{font-family:var(--f-mono);font-size:.76rem;width:22px;height:22px;border-radius:5px;background:var(--surface-2);display:grid;place-items:center;flex:none}
+      .pa .crit .in{flex:1}
+      .pa h4.eyebrow{margin:24px 0 8px}
+      .pa h4.eyebrow.mt{margin-top:18px}
+      
+      /* Practice log */
+      .pa .li.click{cursor:pointer;border-radius:8px}
+      .pa .li.click:hover{background:var(--surface-2)}
+      .pa .kpi .v.small-v{font-size:1.15rem;line-height:1.3}
+      .pa .kpi .v small{font-size:.9rem;font-weight:600}
+      .pa .pbar{width:90px;height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;flex:none}
+      .pa .pbar span{display:block;height:100%;background:var(--line)}
+      .pa .pbar span.ok{background:var(--ok)} .pa .pbar span.warn{background:var(--warn)} .pa .pbar span.bad{background:var(--bad)}
+      .pa .timeline{display:flex;flex-direction:column;gap:10px;max-height:820px;overflow:auto;padding-right:4px}
+      .pa .tl{border-left:3px solid var(--line);padding:4px 0 4px 12px}
+      .pa .tl.agent{border-left-color:var(--teal)}
+      .pa .tl-h{display:flex;gap:8px;align-items:center;font-size:.8rem;color:var(--ink-2);flex-wrap:wrap}
+      .pa .tl-h .mono{color:var(--ink-3)}
+      .pa .tl p{margin:4px 0 0;line-height:1.5}
+      .pa .tl-m{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-3);margin-top:4px}
+      .pa .tl-m .slow{color:var(--warn);font-weight:700}
+      .pa dl.kv{display:grid;grid-template-columns:minmax(90px,auto) 1fr;gap:8px 12px;margin:0;font-size:.9rem}
+      .pa dl.kv dt{color:var(--ink-3);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700;padding-top:2px}
+      .pa dl.kv dd{margin:0}
+      .pa dl.kv ul{margin:0;padding-left:18px}
+      .pa table.tbl.plog{min-width:560px}
+      .pa .tbl.plog td{vertical-align:top}
+      
+      /* Roleplay feedback: success criteria checklist */
+      .pa .crit-list{list-style:none;padding:0;margin:6px 0 4px;display:grid;gap:6px}
+      .pa .crit-list li{display:flex;gap:10px;align-items:flex-start;font-size:.9rem}
+      .pa .crit-list li b{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;flex:none;margin-top:1px}
+      .pa .crit-list li.met b{background:var(--ok-soft);color:var(--ok)}
+      .pa .crit-list li.miss b{background:var(--bad-soft);color:var(--bad)}
+      .pa .crit-list small{display:block;color:var(--ink-3);font-size:.8rem;margin-top:2px}
+      
+      /* Coaching prep: call listening grid, AI verdict, final choice */
+      .pa table.tbl.lgrid{min-width:520px}
+      .pa .lgrid td,.pa .lgrid th{text-align:center;padding:8px}
+      .pa .lgrid td:first-child,.pa .lgrid th:first-child{text-align:left;white-space:nowrap}
+      .pa .lgrid tr.top td{background:var(--bad-soft)}
+      .pa .lgrid .sm-in{font-size:.8rem;padding:5px 7px;min-width:96px}
+      .pa .lgrid textarea.sm-in{min-height:46px}
+      .pa .mk{width:38px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:800;cursor:pointer;color:var(--ink-3)}
+      .pa .mk:hover{border-color:var(--teal)}
+      .pa .mk.shown{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+      .pa .mk.missed{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+      .pa .miss-n{color:var(--bad);font-weight:700}
+      .pa .verdict{border-radius:10px;padding:12px 14px;border:1px solid var(--line)}
+      .pa .verdict.ok{background:var(--ok-soft);border-color:transparent}
+      .pa .verdict.warn{background:var(--warn-soft);border-color:transparent}
+      .pa .verdict p{margin:6px 0 0}
+      .pa .choice{display:grid;gap:8px}
+      .pa .choice label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;background:var(--surface)}
+      .pa .choice label:has(input:checked){border-color:var(--teal);box-shadow:inset 0 0 0 1px var(--teal)}
+      .pa .choice input{margin-top:3px;accent-color:var(--teal)}
+      .pa .choice span{display:flex;flex-direction:column;gap:2px;flex:1}
+      .pa .choice small{color:var(--ink-2)}
+      .pa .choice select{margin-top:6px;max-width:320px}
+      .pa .kpis.six{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}
+      
+      /* Behavior bank */
+      .pa .bcard.retired{opacity:.7}
+      .pa .mt-s{margin-top:6px}
+      .pa ol.steps-ol{margin:6px 0 0;padding-left:20px;display:grid;gap:3px}
+      .pa .modal.wide-modal{width:min(100%,880px)}
+      .pa .bform .checks-row{border:0;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+      .pa .bform .checks-row legend{margin-bottom:6px;width:100%}
+      .pa .bform .ck{display:inline-flex;gap:6px;align-items:center;font-size:.88rem}
+      .pa .bform .fgrid{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+      .pa .bform legend.f{font-size:.78rem;font-weight:650;color:var(--ink-2)}
+      .pa .bform fieldset.checks-row{margin-top:16px}
+      
+
+      /* ---- Composition ---- */
+      :root {
+        --bg: #E4EAF0; --ink: #14212A; --ink2: #44545F; --teal: #0B5C63; --teal-soft: #D9ECEC;
+        --sticky: #FBE38A; --ok: #1D7A4C; --bad: #B23A2B;
+        --disp: "Bricolage Grotesque", sans-serif; --body: "Instrument Sans", sans-serif; --mono: "IBM Plex Mono", monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--body); }
+
+      .bg { position: absolute; inset: 0; overflow: hidden; }
+      .bg-dots { position: absolute; left: -40px; top: -40px; width: 2000px; height: 1160px; background-image: radial-gradient(circle, rgba(11, 92, 99, 0.2) 1.7px, rgba(11, 92, 99, 0) 2.2px); background-size: 40px 40px; }
+      .bg-glow { position: absolute; border-radius: 50%; }
+      .bg-glow.teal { width: 1500px; height: 1200px; right: -460px; top: -520px; background: radial-gradient(closest-side, rgba(11, 92, 99, 0.3), rgba(11, 92, 99, 0)); }
+      .bg-glow.sun { width: 1200px; height: 950px; left: -420px; bottom: -520px; background: radial-gradient(closest-side, rgba(251, 227, 138, 0.75), rgba(251, 227, 138, 0)); }
+
+      .scene { width: 100%; height: 100%; }
+      .ghostcv { position: absolute; }
+
+      /* Question tag */
+      .tag { position: absolute; left: 120px; top: 92px; display: flex; align-items: center; gap: 18px; }
+      .tag .n { font-family: var(--mono); font-weight: 600; font-size: 28px; line-height: 1; background: var(--teal); color: #fff; border-radius: 10px; padding: 12px 14px; }
+      .tag .q { font-family: var(--disp); font-weight: 750; font-size: 42px; letter-spacing: -0.02em; color: var(--ink); }
+      .tag .sub { font-family: var(--mono); font-weight: 600; font-size: 22px; letter-spacing: 0.12em; color: #0A5258; background: var(--teal-soft); border-radius: 8px; padding: 8px 12px; }
+
+      /* Captions */
+      .cap { position: absolute; left: 120px; top: 300px; width: 540px; font-family: var(--disp); font-weight: 750; font-size: 60px; line-height: 1.07; letter-spacing: -0.025em; color: var(--ink); }
+      .cap em { font-style: normal; color: var(--teal); }
+
+      /* Real UI holders: .ui positions + moves, .z zooms the app markup to video scale */
+      .ui { position: absolute; }
+      .ui .z { position: relative; }
+      .pa { --ink-3: #56646C; --ok: #176B42; }
+      .pa.z { background: transparent; min-height: 0; height: auto; }
+      .ui .card, .ui .ai-card { box-shadow: 0 40px 70px -36px rgba(20, 45, 60, 0.5), 0 2px 0 rgba(20, 45, 60, 0.04); }
+
+      /* Scene 1 — hook */
+      .eyebrow-x { position: absolute; left: 140px; top: 150px; font-family: var(--mono); font-weight: 600; font-size: 26px; letter-spacing: 0.16em; color: #0A5258; }
+      .qlist { position: absolute; left: 140px; top: 214px; display: flex; flex-direction: column; gap: 10px; }
+      .qrow { display: flex; align-items: center; gap: 30px; height: 124px; }
+      .qn { font-family: var(--mono); font-weight: 600; font-size: 30px; color: #fff; background: var(--teal); border-radius: 12px; padding: 12px 14px; line-height: 1; }
+      .qt { font-family: var(--disp); font-weight: 800; font-size: 104px; letter-spacing: -0.035em; line-height: 1; color: var(--ink); }
+      .s1-foot { position: absolute; left: 140px; top: 800px; font-family: var(--body); font-weight: 600; font-size: 44px; color: var(--ink2); }
+      .rail { position: absolute; left: 108px; top: 230px; width: 4px; height: 520px; border-radius: 2px; background: var(--teal); transform-origin: 50% 0; }
+
+      /* Lockup */
+      .lockup { position: absolute; display: flex; align-items: center; gap: 40px; }
+      .lk-mark { width: 176px; height: 176px; border-radius: 36px; background: var(--teal); color: #fff; display: grid; place-items: center; font-family: var(--disp); font-weight: 800; font-size: 116px; line-height: 1; }
+      .lk-word { font-family: var(--disp); font-weight: 800; font-size: 220px; letter-spacing: 0.01em; line-height: 0.9; color: var(--ink); }
+      .lk-word span { color: var(--teal); }
+      .tagline { position: absolute; left: 140px; top: 520px; width: 1120px; font-family: var(--disp); font-weight: 650; font-size: 56px; line-height: 1.12; letter-spacing: -0.02em; color: var(--ink); }
+      .chips { position: absolute; left: 140px; top: 720px; display: flex; gap: 18px; }
+      .xchip { display: block; font-family: var(--body); font-weight: 650; font-size: 34px; padding: 14px 26px; border-radius: 999px; background: #fff; color: #0A5258; border: 3px solid var(--teal); }
+      .xchip b { font-family: var(--mono); font-weight: 600; margin-right: 10px; }
+
+      /* Scene 3 — dashboard window */
+      .win { position: absolute; left: 700px; top: 104px; width: 1120px; height: 872px; border-radius: 20px; background: #fff; overflow: hidden; box-shadow: 0 50px 90px -40px rgba(20, 45, 60, 0.55), 0 0 0 1px rgba(20, 45, 60, 0.08); }
+      .winbar { height: 44px; background: #F1F4F7; border-bottom: 1px solid #D0D9E1; display: flex; align-items: center; gap: 9px; padding: 0 18px; }
+      .winbar i { width: 13px; height: 13px; border-radius: 50%; background: #C9D3DB; display: block; }
+      .winbar span { margin-left: 14px; font-family: var(--mono); font-weight: 500; font-size: 16px; color: #44545F; }
+      .vp { position: absolute; left: 0; top: 44px; width: 1120px; height: 828px; overflow: hidden; background: var(--bg); }
+      .appcanvas { position: absolute; left: 0; top: 0; width: 1500px; transform-origin: 0 0; }
+      .appcanvas .side { height: 1110px; }
+      #s2-side .side { height: 1000px; }
+      .cursor { position: absolute; left: 0; top: 0; width: 46px; height: 46px; }
+
+      /* Scene 4 — listening grid marks */
+      .mkw { position: relative; display: inline-block; }
+      .mkw .mk-on { position: absolute; left: 0; top: 0; }
+      .lockchip { position: absolute; }
+      .crop { max-height: 360px; overflow: hidden; -webkit-mask-image: linear-gradient(#000 78%, transparent); mask-image: linear-gradient(#000 78%, transparent); }
+      .pa .miss-n { display: inline-block; }
+
+      /* Scene 5 — SMART */
+      .pa .fakeTA { min-height: 82px; line-height: 1.45; white-space: pre-wrap; }
+      .pa .fakeTA { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 0.92rem; color: var(--ink); }
+      .fakeTA .lay { display: block; }
+      .fakeTA .l2 { position: absolute; left: 10px; top: 8px; right: 10px; }
+      .caret { display: inline-block; width: 2px; height: 1.15em; background: var(--ink); vertical-align: -0.2em; margin-left: 1px; }
+      #s7-commit .card-h .chip { font-size: 0.95rem; padding: 4px 12px; }
+      .pa .smart .stile { position: relative; display: grid; padding: 0; border: 0; background: none; }
+      .pa .smart .stile > .layer { grid-area: 1 / 1; border-radius: 8px; padding: 8px; border: 1px solid; font-size: 0.74rem; line-height: 1.3; }
+      .pa .smart .stile > .layer b { font-family: var(--disp); font-size: 1.2rem; display: block; }
+      .pa .smart .stile > .layer.neutral { background: #F1F4F7; border-color: #D0D9E1; color: #44545F; }
+      .pa .smart .stile > .layer.bad { background: #F7E0DB; border-color: #B23A2B; }
+      .pa .smart .stile > .layer.good { background: #DCF0E4; border-color: #1D7A4C; }
+
+      /* Scene 8 */
+      .checklist { position: absolute; left: 140px; top: 290px; display: flex; flex-direction: column; gap: 26px; }
+      .crow { display: flex; align-items: center; gap: 24px; }
+      .cbox { width: 64px; height: 64px; border-radius: 14px; border: 4px solid var(--teal); background: #fff; display: grid; place-items: center; position: relative; }
+      .cbox .fill { position: absolute; inset: -4px; border-radius: 14px; background: var(--teal); }
+      .cbox svg { position: relative; width: 40px; height: 40px; }
+      .crow .qt2 { font-family: var(--disp); font-weight: 750; font-size: 58px; letter-spacing: -0.025em; color: var(--ink); }
+      .endline { position: absolute; left: 1010px; top: 640px; width: 800px; font-family: var(--disp); font-weight: 700; font-size: 54px; line-height: 1.1; letter-spacing: -0.02em; color: var(--ink); }
+      .endline em { font-style: normal; color: var(--teal); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="60" data-width="1920" data-height="1080" data-fps="30">
+      <!-- Persistent board background (untimed) -->
+      <div id="bg" class="bg" data-layout-ignore>
+        <div id="bg-dots" class="bg-dots"></div>
+        <div id="glow-teal" class="bg-glow teal"></div>
+        <div id="glow-sun" class="bg-glow sun"></div>
+      </div>
+
+      <!-- 1 · Hook: the four questions -->
+      <section id="s1" class="clip scene" data-start="0" data-duration="7.91" data-track-index="1">
+        <canvas id="s1-ghost" class="ghostcv" width="760" height="980" style="left: 1140px; top: 50px" data-layout-ignore data-glyph="?"></canvas>
+        <div id="s1-rail" class="rail"></div>
+        <div id="s1-eb" class="eyebrow-x">LUNES · 8:00 A.M.</div>
+        <div id="s1-q" class="qlist">
+          <div class="qrow"><span class="qn">01</span><span class="qt">¿A quién coacheo?</span></div>
+          <div class="qrow"><span class="qn">02</span><span class="qt">¿En qué conducta?</span></div>
+          <div class="qrow"><span class="qn">03</span><span class="qt">¿Cómo lo coacheo?</span></div>
+          <div class="qrow"><span class="qn">04</span><span class="qt">¿Funcionó?</span></div>
+        </div>
+        <div id="s1-foot" class="s1-foot">Las cuatro preguntas de todo supervisor.</div>
+      </section>
+
+      <!-- 2 · Reveal: PULSE -->
+      <section id="s2" class="clip scene" data-start="7.91" data-duration="6.31" data-track-index="1">
+        <div id="s2-lock" class="lockup" style="left: 140px; top: 250px">
+          <div id="s2-mark" class="lk-mark">P</div>
+          <div id="s2-word" class="lk-word">PULSE<span>.</span></div>
+        </div>
+        <div id="s2-tag" class="tagline">Inteligencia de coaching para supervisores de contact center.</div>
+        <div id="s2-chips" class="chips">
+          <span class="xchip"><b>7</b>conductas clave</span>
+          <span class="xchip">Modelo DIRECT</span>
+          <span class="xchip">Compromisos SMART</span>
+        </div>
+        <div id="s2-side" class="ui" style="left: 1480px; top: 70px" data-layout-allow-overflow>
+          <div class="pa z" style="zoom: 0.94; width: 236px; height: 1000px"><aside class="side">
+      <div class="brand"><span class="mark">P</span><div><b>PULSE</b><small>Coaching intelligence</small></div></div>
+      <button class="nbell" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span>Notifications</span></button>
+      <nav class="nav"><span class="grp">Coach</span><button aria-current="page"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Dashboard</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0"></path></svg>My agents</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"></path></svg>Coaching prep</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9zM6 6h12v15H6z"></path></svg>DIRECT sessions</button><span class="grp">Follow up</span><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v15H4zM4 10h16M9 3v4M15 3v4"></path></svg>Weekly plan</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg>Commitments</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path></svg>My coaching</button><span class="grp">Practice</span><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"></path></svg>Roleplay</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"></path></svg>Practice log</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9a3 3 0 1 1 4 2.8V14M12 18h.01M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg>Quizzes</button><span class="grp">Learn &amp; data</span><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"></path></svg>Our behaviors</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM19 19v2H6"></path></svg>Training</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>Data upload</button></nav>
+      <div class="who"><div><div class="name">Carla Peña</div><span class="role-chip">supervisor · NPG</span></div>
+        <div class="row"><button class="btn sm">Theme</button><button class="btn sm">Sign out</button></div></div>
+    </aside></div>
+        </div>
+      </section>
+
+      <!-- 3 · 01 ¿A quién coacheo? -->
+      <section id="s3" class="clip scene" data-start="14.22" data-duration="8.43" data-track-index="1">
+        <canvas id="s3-ghost" class="ghostcv" width="640" height="520" style="left: 40px; top: 540px" data-layout-ignore data-glyph="01"></canvas>
+        <div id="s3-tag" class="tag"><span class="n">01</span><span class="q">¿A quién coacheo?</span></div>
+        <div id="s3-c1" class="cap">Tu equipo, ordenado por <em>brecha vs. meta</em>.</div>
+        <div id="s3-c2" class="cap">Luis va primero: <em>Outlier</em> y sin compromiso esta semana.</div>
+        <div id="s3-win" class="win" data-layout-allow-overflow>
+          <div class="winbar"><i></i><i></i><i></i><span>PULSE · Dashboard</span></div>
+          <div id="s3-vp" class="vp">
+            <div id="s3-app" class="pa appcanvas"><div class="shell"><aside class="side">
+      <div class="brand"><span class="mark">P</span><div><b>PULSE</b><small>Coaching intelligence</small></div></div>
+      <button class="nbell" type="button"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span>Notifications</span></button>
+      <nav class="nav"><span class="grp">Coach</span><button aria-current="page"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Dashboard</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 11a4 4 0 1 0-8 0M4 21a8 8 0 0 1 16 0"></path></svg>My agents</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5z"></path></svg>Coaching prep</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6v3H9zM6 6h12v15H6z"></path></svg>DIRECT sessions</button><span class="grp">Follow up</span><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16v15H4zM4 10h16M9 3v4M15 3v4"></path></svg>Weekly plan</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"></path></svg>Commitments</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"></path></svg>My coaching</button><span class="grp">Practice</span><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H8l-4 4z"></path></svg>Roleplay</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"></path></svg>Practice log</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9a3 3 0 1 1 4 2.8V14M12 18h.01M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"></path></svg>Quizzes</button><span class="grp">Learn &amp; data</span><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"></path></svg>Our behaviors</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM19 19v2H6"></path></svg>Training</button><button aria-current="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"></path></svg>Data upload</button></nav>
+      <div class="who"><div><div class="name">Carla Peña</div><span class="role-chip">supervisor · NPG</span></div>
+        <div class="row"><button class="btn sm">Theme</button><button class="btn sm">Sign out</button></div></div>
+    </aside><main class="main"><div class="topline"><div><h1>Hi, Carla</h1><p class="sub">NPG · Week of Oct 12 · 4-week averages vs. goal</p></div><div class="row"><button class="btn primary ai">Prep a coaching session</button></div></div><div class="kpis"><div class="kpi"><span class="k">MES NPS</span><span class="v">21</span>
+    <span class="meta"><span>Goal 36</span><span class="delta up">▲ 2</span></span>
+    <span class="chip bad">Below goal</span></div><div class="kpi"><span class="k">CSAT</span><span class="v">85.0%</span>
+    <span class="meta"><span>Goal 90.0%</span><span class="delta up">▲ 0.1 pts</span></span>
+    <span class="chip bad">Below goal</span></div><div class="kpi"><span class="k">DD FCR</span><span class="v">87.4%</span>
+    <span class="meta"><span>Goal 92.0%</span><span class="delta up">▲ 0.4 pts</span></span>
+    <span class="chip bad">Below goal</span></div><div class="kpi"><span class="k">AHT</span><span class="v">10:13</span>
+    <span class="meta"><span>Goal 10:00</span><span class="delta up">▼ 6s</span></span>
+    <span class="chip bad">Below goal</span></div><div class="kpi"><span class="k">Quality</span><span class="v">87.6%</span>
+    <span class="meta"><span>Goal 90.0%</span><span class="delta up">▲ 0.2 pts</span></span>
+    <span class="chip bad">Below goal</span></div></div>
+  <div class="grid g-main mt">
+    <div class="card"><div class="card-h"><h3>Who to coach first</h3><span class="small muted">Ranked by gap to goal, weighted toward MES NPS and FCR</span></div>
+      <div class="tbl-wrap" style="border:0"><table class="tbl compact"><thead><tr><th>Agent</th><th>Below goal</th><th>MES NPS trend</th><th>This week</th><th></th></tr></thead><tbody>
+      <tr class="click"><td><b>Luis Ortega</b><div class="mt" style="margin-top:4px"><span class="chip plain q-outlier">Outlier</span></div></td>
+        <td><span class="chip bad">MES NPS</span> <span class="chip bad">DD FCR</span> <span class="chip bad">CSAT</span></td>
+        <td style="width:110px"><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" role="img">
+    <line class="goal" x1="0" x2="120" y1="4.0" y2="4.0"><title>Goal 36</title></line>
+    <polyline class="ln" points="4.0,27.2 20.0,22.3 36.0,27.9 52.0,25.8 68.0,23.0 84.0,26.5 100.0,30.0 116.0,23.7" vector-effect="non-scaling-stroke"></polyline>
+    <circle class="hit" cx="4.0" cy="27.2" r="6"><title>Week 1: 3</title></circle><circle class="hit" cx="20.0" cy="22.3" r="6"><title>Week 2: 10</title></circle><circle class="hit" cx="36.0" cy="27.9" r="6"><title>Week 3: 2</title></circle><circle class="hit" cx="52.0" cy="25.8" r="6"><title>Week 4: 5</title></circle><circle class="hit" cx="68.0" cy="23.0" r="6"><title>Week 5: 9</title></circle><circle class="hit" cx="84.0" cy="26.5" r="6"><title>Week 6: 4</title></circle><circle class="hit" cx="100.0" cy="30.0" r="6"><title>Week 7: -1</title></circle><circle class="hit" cx="116.0" cy="23.7" r="6"><title>Week 8: 8</title></circle>
+    <circle class="end" cx="116.0" cy="23.7" r="3.5"></circle>
+  </svg></td>
+        <td><span class="chip plain">No commitment</span></td>
+        <td><button class="btn sm ai">Prep</button></td></tr><tr class="click"><td><b>Marisol Vega</b><div class="mt" style="margin-top:4px"><span class="chip plain q-bottom">Bottom</span></div></td>
+        <td><span class="chip bad">MES NPS</span> <span class="chip bad">CSAT</span> <span class="chip bad">DD FCR</span></td>
+        <td style="width:110px"><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" role="img">
+    <line class="goal" x1="0" x2="120" y1="4.0" y2="4.0"><title>Goal 36</title></line>
+    <polyline class="ln" points="4.0,28.3 20.0,22.2 36.0,24.8 52.0,30.0 68.0,29.1 84.0,24.8 100.0,27.4 116.0,23.1" vector-effect="non-scaling-stroke"></polyline>
+    <circle class="hit" cx="4.0" cy="28.3" r="6"><title>Week 1: 8</title></circle><circle class="hit" cx="20.0" cy="22.2" r="6"><title>Week 2: 15</title></circle><circle class="hit" cx="36.0" cy="24.8" r="6"><title>Week 3: 12</title></circle><circle class="hit" cx="52.0" cy="30.0" r="6"><title>Week 4: 6</title></circle><circle class="hit" cx="68.0" cy="29.1" r="6"><title>Week 5: 7</title></circle><circle class="hit" cx="84.0" cy="24.8" r="6"><title>Week 6: 12</title></circle><circle class="hit" cx="100.0" cy="27.4" r="6"><title>Week 7: 9</title></circle><circle class="hit" cx="116.0" cy="23.1" r="6"><title>Week 8: 14</title></circle>
+    <circle class="end" cx="116.0" cy="23.1" r="3.5"></circle>
+  </svg></td>
+        <td><span class="chip warn">Partially met</span> <span class="small muted">Demonstrate Empathy</span></td>
+        <td><button class="btn sm ai">Prep</button></td></tr><tr class="click"><td><b>Kevin Rosario</b><div class="mt" style="margin-top:4px"><span class="chip plain q-on_goal">On goal</span></div></td>
+        <td><span class="chip bad">MES NPS</span> <span class="chip bad">DD FCR</span> <span class="chip bad">AHT</span></td>
+        <td style="width:110px"><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" role="img">
+    <line class="goal" x1="0" x2="120" y1="4.0" y2="4.0"><title>Goal 36</title></line>
+    <polyline class="ln" points="4.0,30.0 20.0,21.9 36.0,25.9 52.0,27.6 68.0,21.9 84.0,24.3 100.0,17.8 116.0,17.8" vector-effect="non-scaling-stroke"></polyline>
+    <circle class="hit" cx="4.0" cy="30.0" r="6"><title>Week 1: 4</title></circle><circle class="hit" cx="20.0" cy="21.9" r="6"><title>Week 2: 14</title></circle><circle class="hit" cx="36.0" cy="25.9" r="6"><title>Week 3: 9</title></circle><circle class="hit" cx="52.0" cy="27.6" r="6"><title>Week 4: 7</title></circle><circle class="hit" cx="68.0" cy="21.9" r="6"><title>Week 5: 14</title></circle><circle class="hit" cx="84.0" cy="24.3" r="6"><title>Week 6: 11</title></circle><circle class="hit" cx="100.0" cy="17.8" r="6"><title>Week 7: 19</title></circle><circle class="hit" cx="116.0" cy="17.8" r="6"><title>Week 8: 19</title></circle>
+    <circle class="end" cx="116.0" cy="17.8" r="3.5"></circle>
+  </svg></td>
+        <td><span class="chip ok">Met</span> <span class="small muted">Discover Needs</span></td>
+        <td><button class="btn sm ai">Prep</button></td></tr><tr class="click"><td><b>Daniela Cruz</b><div class="mt" style="margin-top:4px"><span class="chip plain q-top">Top</span></div></td>
+        <td><span class="chip bad">DD FCR</span> <span class="chip bad">MES NPS</span></td>
+        <td style="width:110px"><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" role="img">
+    <line class="goal" x1="0" x2="120" y1="15.1" y2="15.1"><title>Goal 36</title></line>
+    <polyline class="ln" points="4.0,17.0 20.0,30.0 36.0,18.9 52.0,22.6 68.0,28.1 84.0,22.6 100.0,13.3 116.0,4.0" vector-effect="non-scaling-stroke"></polyline>
+    <circle class="hit" cx="4.0" cy="17.0" r="6"><title>Week 1: 35</title></circle><circle class="hit" cx="20.0" cy="30.0" r="6"><title>Week 2: 28</title></circle><circle class="hit" cx="36.0" cy="18.9" r="6"><title>Week 3: 34</title></circle><circle class="hit" cx="52.0" cy="22.6" r="6"><title>Week 4: 32</title></circle><circle class="hit" cx="68.0" cy="28.1" r="6"><title>Week 5: 29</title></circle><circle class="hit" cx="84.0" cy="22.6" r="6"><title>Week 6: 32</title></circle><circle class="hit" cx="100.0" cy="13.3" r="6"><title>Week 7: 37</title></circle><circle class="hit" cx="116.0" cy="4.0" r="6"><title>Week 8: 42</title></circle>
+    <circle class="end" cx="116.0" cy="4.0" r="3.5"></circle>
+  </svg></td>
+        <td><span class="chip ok">Met</span> <span class="small muted">LARA</span></td>
+        <td><button class="btn sm ai">Prep</button></td></tr><tr class="click"><td><b>Andrea Polanco</b><div class="mt" style="margin-top:4px"><span class="chip plain q-top">Top</span></div></td>
+        <td><span class="chip bad">CSAT</span> <span class="chip bad">AHT</span></td>
+        <td style="width:110px"><svg class="spark" viewBox="0 0 120 34" preserveAspectRatio="none" role="img">
+    <line class="goal" x1="0" x2="120" y1="9.8" y2="9.8"><title>Goal 36</title></line>
+    <polyline class="ln" points="4.0,30.0 20.0,6.9 36.0,15.6 52.0,4.0 68.0,4.0 84.0,12.7 100.0,4.0 116.0,18.4" vector-effect="non-scaling-stroke"></polyline>
+    <circle class="hit" cx="4.0" cy="30.0" r="6"><title>Week 1: 29</title></circle><circle class="hit" cx="20.0" cy="6.9" r="6"><title>Week 2: 37</title></circle><circle class="hit" cx="36.0" cy="15.6" r="6"><title>Week 3: 34</title></circle><circle class="hit" cx="52.0" cy="4.0" r="6"><title>Week 4: 38</title></circle><circle class="hit" cx="68.0" cy="4.0" r="6"><title>Week 5: 38</title></circle><circle class="hit" cx="84.0" cy="12.7" r="6"><title>Week 6: 35</title></circle><circle class="hit" cx="100.0" cy="4.0" r="6"><title>Week 7: 38</title></circle><circle class="hit" cx="116.0" cy="18.4" r="6"><title>Week 8: 33</title></circle>
+    <circle class="end" cx="116.0" cy="18.4" r="3.5"></circle>
+  </svg></td>
+        <td><span class="chip plain">No commitment</span></td>
+        <td><button class="btn sm ai">Prep</button></td></tr>
+      </tbody></table></div></div>
+    <div class="stack">
+      <div class="card"><div class="card-h"><h3>Weekly rhythm</h3><button class="btn sm ghost">Open plan →</button></div>
+        <div class="spread"><div><span class="eyebrow">Sessions held so far</span><div class="mono" style="font-size:1.8rem;font-weight:700">12<span class="muted" style="font-size:1rem"> / 12 due</span></div></div>
+        <div style="text-align:right"><span class="eyebrow">Planned this week</span><div class="mono" style="font-size:1.2rem">12</div></div></div>
+        <div class="row mt"><span class="chip ok">3/3 commitments acknowledged</span><span class="chip ok">3/3 pass SMART</span></div>
+        <p class="small muted mt">No rhythm issues this week.</p>
+      </div>
+      <div class="card"><h3>Alerts</h3><div class="list"><div class="li"><span class="dot high"></span><div class="grow small">Luis Ortega is in the Outlier group with no commitment this week.</div></div></div></div>
+    </div>
+  </div>
+  <div class="card mt"><div class="card-h"><h3>Performance groups by MES NPS</h3><span class="small muted">Equal groups by rank</span></div>
+    <div class="board"><div class="lane"><div class="lane-h">Top<small>2</small></div><small class="muted">Replicate and recognize</small>
+      <button class="ticket"><b>Daniela Cruz</b><span>NPS 35 · CSAT 90.5%</span></button><button class="ticket"><b>Andrea Polanco</b><span>NPS 36 · CSAT 87.9%</span></button></div><div class="lane"><div class="lane-h">On goal<small>1</small></div><small class="muted">Individual plan toward Top</small>
+      <button class="ticket"><b>Kevin Rosario</b><span>NPS 16 · CSAT 87.8%</span></button></div><div class="lane"><div class="lane-h">Bottom<small>1</small></div><small class="muted">Plan toward On goal</small>
+      <button class="ticket"><b>Marisol Vega</b><span>NPS 11 · CSAT 80.3%</span></button></div><div class="lane"><div class="lane-h">Outlier<small>1</small></div><small class="muted">Same root cause work, more intensive</small>
+      <button class="ticket"><b>Luis Ortega</b><span>NPS 5 · CSAT 78.7%</span></button></div></div></div></main></div></div>
+          </div>
+        </div>
+        <svg id="s3-cur" class="cursor" viewBox="0 0 46 46" data-layout-allow-occlusion><path d="M8 4 L8 38 L17 29 L23 42 L29 39 L23 27 L36 27 Z" fill="#fff" stroke="#14212A" stroke-width="3" stroke-linejoin="round" /></svg>
+      </section>
+
+      <!-- 4 · 02 ¿En qué conducta? -->
+      <section id="s4" class="clip scene" data-start="22.65" data-duration="8.42" data-track-index="1">
+        <canvas id="s4-ghost" class="ghostcv" width="640" height="520" style="left: 40px; top: 540px" data-layout-ignore data-glyph="02"></canvas>
+        <div id="s4-tag" class="tag"><span class="n">02</span><span class="q">¿En qué conducta?</span></div>
+        <div id="s4-c1" class="cap">Escuchas 3 llamadas y <em>marcas lo que oíste</em>.</div>
+        <div id="s4-c2" class="cap">Tú decides primero. La IA da una <em>segunda opinión</em>.</div>
+        <div id="s4-grid" class="ui" style="left: 720px; top: 150px" data-layout-allow-overflow>
+          <div class="pa z" style="zoom: 1.32; width: 810px"><div class="card"><div class="card-h"><h3>Step 1 · What you heard on Luis’s calls</h3><span class="chip ok">3 of 3–5 calls marked</span></div>
+      <p class="small muted">Listen to 3–5 calls. Click a box once if the behavior <b>showed up</b> (✓), twice if it was <b>missing</b> when it should have been there (✕), three times to clear it.</p>
+      <div class="tbl-wrap mt"><table class="tbl lgrid"><thead><tr><th>Behavior</th><th><input class="in sm-in" value="Call 1" maxlength="80"></th><th><input class="in sm-in" value="Call 2" maxlength="80"></th><th><input class="in sm-in" value="Call 3" maxlength="80"></th><th>Missing / showed</th></tr></thead><tbody>
+        <tr class=""><td><b>LARA</b></td><td><button type="button" class="mk shown" data-mk="0:lara">✓</button></td><td><button type="button" class="mk shown" data-mk="1:lara">✓</button></td><td><button type="button" class="mk shown" data-mk="2:lara">✓</button></td><td class="num">✕ 0 · ✓ 3</td></tr><tr class=""><td><b>Take Ownership</b></td><td><button type="button" class="mk shown" data-mk="0:ownership">✓</button></td><td><button type="button" class="mk " data-mk="1:ownership">—</button></td><td><button type="button" class="mk " data-mk="2:ownership">—</button></td><td class="num">✕ 0 · ✓ 1</td></tr><tr class="top"><td><b>Set Clear Expectations</b></td><td><button type="button" class="mk missed" data-mk="0:expectations">✕</button></td><td><button type="button" class="mk missed" data-mk="1:expectations">✕</button></td><td><button type="button" class="mk missed" data-mk="2:expectations">✕</button></td><td class="num"><span class="miss-n">✕ 3</span> · ✓ 0</td></tr><tr class=""><td><b>Discover Needs</b></td><td><button type="button" class="mk " data-mk="0:needs">—</button></td><td><button type="button" class="mk shown" data-mk="1:needs">✓</button></td><td><button type="button" class="mk " data-mk="2:needs">—</button></td><td class="num">✕ 0 · ✓ 1</td></tr><tr class=""><td><b>Be Warm &amp; Friendly</b></td><td><button type="button" class="mk shown" data-mk="0:warm">✓</button></td><td><button type="button" class="mk " data-mk="1:warm">—</button></td><td><button type="button" class="mk shown" data-mk="2:warm">✓</button></td><td class="num">✕ 0 · ✓ 2</td></tr><tr class=""><td><b>Show Appreciation</b></td><td><button type="button" class="mk " data-mk="0:appreciation">—</button></td><td><button type="button" class="mk " data-mk="1:appreciation">—</button></td><td><button type="button" class="mk shown" data-mk="2:appreciation">✓</button></td><td class="num">✕ 0 · ✓ 1</td></tr><tr class=""><td><b>Demonstrate Empathy</b></td><td><button type="button" class="mk " data-mk="0:empathy">—</button></td><td><button type="button" class="mk missed" data-mk="1:empathy">✕</button></td><td><button type="button" class="mk " data-mk="2:empathy">—</button></td><td class="num"><span class="miss-n">✕ 1</span> · ✓ 0</td></tr>
+        
+      </tbody></table></div>
+      </div></div>
+        </div>
+        <div id="s4-ai" class="ui" style="left: 770px; top: 548px" data-layout-allow-overflow data-layout-allow-occlusion>
+          <div class="pa z" style="zoom: 1.26; width: 830px"><div class="crop"><div class="ai-card"><div class="ai-h"><b>Step 3 · AI second opinion</b><span class="src">Offline suggestion (AI not available)</span></div><div class="ai-b">
+      <div class="verdict ok"><b>Agrees with you: Set Clear Expectations</b><p class="small">The KPIs and verbatims point the same way: Set Clear Expectations ranks first in the data, and it was the most-missed behavior in your calls.</p></div>
+      <div class="grid g2 mt"><div><span class="eyebrow">What the data says · high confidence</span><p class="small mt">MES NPS is below goal, and the negative verbatims point to this: having to call again, “nobody told me,” vague timelines. That lines up with Set Clear Expectations.</p>
+          <ul class="small"><li>Verbatim (0/10): “Still waiting, nobody told me how long it takes.”</li><li>Verbatim (2/10): “Third time I'm calling about the same claim. Nobody told me what happens next.”</li><li>MES NPS: 5 vs. goal 36</li></ul></div>
+        <div><span class="eyebrow">To settle it on the next calls</span><p class="small mt">On the next calls, confirm the moment Set Clear Expectations is missing (opening, middle or close).</p>
+          <span class="eyebrow">Listen for</span><ul class="small"><li>A date or business-day range.</li><li>What the member does next.</li><li>A reference number and a fallback.</li><li>Whether the member has to ask the same thing twice</li></ul></div></div></div></div></div></div>
+        </div>
+      </section>
+
+      <!-- 5 · 03 ¿Cómo? SMART + la semana -->
+      <section id="s5" class="clip scene" data-start="31.07" data-duration="8.42" data-track-index="1">
+        <canvas id="s5-ghost" class="ghostcv" width="640" height="520" style="left: 40px; top: 540px" data-layout-ignore data-glyph="03"></canvas>
+        <div id="s5-tag" class="tag"><span class="n">03</span><span class="q">¿Cómo lo coacheo?</span></div>
+        <div id="s5-c1" class="cap">¿“Subir el CSAT”? <em>No pasa</em>: es un KPI, no una acción.</div>
+        <div id="s5-c2" class="cap">Una conducta. Un compromiso. <em>Cuatro sesiones</em> en la semana.</div>
+        <div id="s5-smart" class="ui" style="left: 760px; top: 132px" data-layout-allow-overflow>
+          <div class="pa z" style="zoom: 1.5; width: 640px"><div class="card"><h3>T · SMART commitment</h3><p class="small muted">Write it in the agent’s words. It must be something you can hear on a call.</p>
+        <div class="fgrid mt"><label class="f wide">Agreed on-call action<textarea class="in">Raise my CSAT to 90%</textarea></label>
+        <label class="f">Target calls<input class="in" type="number" min="1" value="5"></label><label class="f">Out of<input class="in" type="number" min="1" value="5"></label>
+        <label class="f wide">How it’s checked<input class="in" value="SBS, 5 calls on Wed–Thu"></label>
+        <label class="f">Follow-up (Friday review)<input class="in" type="date" value="2026-10-23"></label></div>
+        <div class="smart mt"><div class="no"><b>S</b>That’s a KPI result. Write the on-call action that moves it.</div><div class="ok"><b>M</b>✓ Measurable</div><div class="ok"><b>A</b>✓ Achievable</div><div class="ok"><b>R</b>✓ Relevant</div><div class="ok"><b>T</b>✓ Time-bound</div></div></div></div>
+        </div>
+        <div id="s5-week" class="ui" style="left: 770px; top: 140px" data-layout-allow-overflow>
+          <div class="pa z" style="zoom: 1.72; width: 590px"><div class="ai-card"><div class="ai-h"><b>Step 5 · How to coach it this week</b></div><div class="ai-b"><div class="grid g4"><div class="card" style="padding:14px"><span class="eyebrow">Mon–Tue</span><h3 style="margin:4px 0 6px">Setting Goals</h3><span class="chip teal">Self Tape</span><p class="small mt">Play the key moment. Ask: “What did the member hear?”</p></div><div class="card" style="padding:14px"><span class="eyebrow">Mon–Tue</span><h3 style="margin:4px 0 6px">Skill Transfer</h3><span class="chip teal">Self Tape vs. Model</span><p class="small mt">Play 30 seconds of each at the same moment. Ask: “What’s different?”</p></div><div class="card" style="padding:14px"><span class="eyebrow">Wed–Thu</span><h3 style="margin:4px 0 6px">Monitor</h3><span class="chip teal">SBS</span><p class="small mt">Listen to 2–3 calls. Give one tip after each, then try it on the next call.</p></div><div class="card" style="padding:14px"><span class="eyebrow">Fri</span><h3 style="margin:4px 0 6px">Kudos/Accountability</h3><span class="chip teal">Self Tape</span><p class="small mt">Play the key moment. Ask: “What did the member hear?”</p></div></div></div></div></div>
+        </div>
+      </section>
+
+      <!-- 6 · 03 ¿Cómo? Práctica -->
+      <section id="s6" class="clip scene" data-start="39.49" data-duration="6.31" data-track-index="1">
+        <canvas id="s6-ghost" class="ghostcv" width="640" height="520" style="left: 40px; top: 540px" data-layout-ignore data-glyph="03"></canvas>
+        <div id="s6-tag" class="tag"><span class="n">03</span><span class="q">¿Cómo lo coacheo?</span><span class="sub">PRÁCTICA</span></div>
+        <div id="s6-c1" class="cap">La IA hace de miembro. <em>El agente practica.</em></div>
+        <div id="s6-c2" class="cap">Y recibe <em>cómo sonó</em>: ritmo, silencios, interrupciones.</div>
+        <div id="s6-call" class="ui" style="left: 740px; top: 104px" data-layout-allow-overflow>
+          <div class="pa z" style="zoom: 1.3; width: 790px"><div class="card"><div class="card-h"><h3>The call</h3><span class="small muted">min:sec from the start</span></div><div class="timeline"><div class="tl member"><div class="tl-h"><span class="mono">0:00</span><b>Frank</b><span class="chip warn plain">Frustrated</span></div><p>You charged me twice this month and my premium went up. What is going on?</p></div><div class="tl agent"><div class="tl-h"><span class="mono">0:06</span><b>Luis</b></div><p>Good morning, thank you for calling. My name is Luis, and I’m happy to help. May I have your name and member ID?</p><div class="tl-m"><span class="">answered after 1.9 s</span> · <span>spoke 8 s</span></div></div><div class="tl member"><div class="tl-h"><span class="mono">0:16</span><b>Frank</b></div><p>When do I get my money back?</p></div><div class="tl agent"><div class="tl-h"><span class="mono">0:20</span><b>Luis</b></div><p>I’m sorry you’ve had to call about this again. That sounds frustrating. Let me take care of this for you right now.</p><div class="tl-m"><span class="">answered after 0.9 s</span> · <span>spoke 8 s</span></div></div><div class="tl member"><div class="tl-h"><span class="mono">0:30</span><b>Frank</b><span class="chip warn plain">Worried</span></div><p>Why did the premium go up in the first place?</p></div><div class="tl agent"><div class="tl-h"><span class="mono">0:35</span><b>Luis</b></div><p>So just to confirm, you need a clear answer and a date. Here’s the next step: you’ll get an update in 5 to 7 business days, and I’ll give you a reference number today.</p><div class="tl-m"><span class="">answered after 1.5 s</span> · <span>spoke 12 s</span> · <span class="slow">talked over the member</span></div></div><div class="tl member"><div class="tl-h"><span class="mono">0:50</span><b>Frank</b><span class="chip ok plain">Calm</span></div><p>Will this happen again next month?</p></div><div class="tl agent"><div class="tl-h"><span class="mono">0:55</span><b>Luis</b></div><p>Before we hang up, is there anything else coming up, like an appointment or a refill?</p><div class="tl-m"><span class="">answered after 2.7 s</span> · <span>spoke 6 s</span></div></div><div class="tl member"><div class="tl-h"><span class="mono">1:03</span><b>Frank</b></div><p>Actually, yes. He wants to change his payment date to after his pension deposit.</p></div><div class="tl agent"><div class="tl-h"><span class="mono">1:11</span><b>Luis</b></div><p>You’d have to call back for that one.</p><div class="tl-m"><span class="">answered after 2.0 s</span> · <span>spoke 3 s</span></div></div><div class="tl agent"><div class="tl-h"><span class="mono">1:17</span><b>Luis</b></div><p>Okay, bye.</p><div class="tl-m"><span class="">answered after 2.8 s</span> · <span>spoke 1 s</span></div></div><div class="tl member"><div class="tl-h"><span class="mono">1:20</span><b>Frank</b><span class="chip warn plain">Frustrated</span></div><p>Fine. I guess I’ll call back if nothing happens.</p></div></div>
+          </div></div>
+        </div>
+        <div id="s6-snd" class="ui" style="left: 800px; top: 612px" data-layout-allow-overflow data-layout-allow-occlusion>
+          <div class="pa z" style="zoom: 1.3; width: 790px"><div class="card"><h3>How it sounded</h3><div class="dstats">
+            <div><b class="mono">164</b><small>words / min<br>target 120–165</small></div>
+            <div><b class="mono">2 s</b><small>average time to answer</small></div>
+            <div class=""><b class="mono">0</b><small>long silences (4 s+)</small></div>
+            <div class="warnv"><b class="mono">1</b><small>times they talked over the member</small></div>
+            <div><b class="mono">63%</b><small>of the talking was the agent</small></div></div>
+            <p class="small mt"><b>Delivery tip:</b> Good pace: about 164 words a minute.</p>
+            <ul class="small"><li>You cut the member off 1 time. Let them finish, then acknowledge (LARA).</li></ul>
+            <p class="small muted">Timings come from speech recognition and are approximate.</p></div></div>
+        </div>
+      </section>
+
+      <!-- 7 · 04 ¿Funcionó? -->
+      <section id="s7" class="clip scene" data-start="45.8" data-duration="8.43" data-track-index="1">
+        <canvas id="s7-ghost" class="ghostcv" width="640" height="520" style="left: 40px; top: 540px" data-layout-ignore data-glyph="04"></canvas>
+        <div id="s7-tag" class="tag"><span class="n">04</span><span class="q">¿Funcionó?</span></div>
+        <div id="s7-c1" class="cap">El viernes, se revisa <em>con evidencia</em>.</div>
+        <div id="s7-c2" class="cap">Y mides el KPI <em>antes y después</em> del coaching.</div>
+        <div id="s7-commit" class="ui" style="left: 740px; top: 100px" data-layout-allow-overflow>
+          <div class="pa z" style="zoom: 1.42; width: 720px"><div class="card"><div class="card-h"><h3>My commitment this week</h3><span class="chip ok">Met</span></div>
+    <div class="row"><span class="chip teal">LARA</span></div>
+      <div class="sticky mt"><span class="eyebrow">What I agreed to do on my calls</span><p style="font-weight:650;font-size:1.1rem;margin-top:4px">“After answering, ask ‘Did that answer your question?’”</p></div>
+      <p class="small mt"><b>Goal:</b> 5 of 5 calls · <b>Checked by:</b> Remote Call Listening, 5 calls · <b>Review:</b> Fri, Oct 16</p>
+      <p class="small muted mt">Listen fully, acknowledge what the member said, respond to it, then ask to confirm it landed. Sounds like: “So the claim from your March visit was denied and nobody told you why. Let me pull it up.” … “Did that answer your question?”</p>
+      <details class="mt"><summary class="small"><b>How to do it on the call</b></summary><ol class="small steps-ol"><li>Let the member finish without interrupting.</li><li>Acknowledge what they said in one sentence, using their words.</li><li>Respond to that exact point, in plain language.</li><li>Ask a check question to confirm it landed.</li></ol><p class="small"><b>Avoid:</b> Talking over the member to get to the account faster.; Reading plan codes or terms without explaining them.</p></details>
+      <div class="row mt"><span class="chip ok">You acknowledged this commitment</span></div>
+      <hr><div class="spread"><div><span class="eyebrow">My self-log</span><div class="small">Calls where I did it this week</div></div><div class="row"><button class="btn sm">−</button><b class="mono" style="font-size:1.6rem">2</b><button class="btn sm primary">+1 call</button></div></div>
+      <p class="small muted mt">Your supervisor checks real calls in Monitor on Wed–Thu. Your log helps you both see the habit forming.</p></div></div>
+        </div>
+        <div id="s7-week" class="ui" style="left: 900px; top: 560px" data-layout-allow-overflow data-layout-allow-occlusion>
+          <div class="pa z" style="zoom: 1.36; width: 660px"><div class="card"><h3>My coaching week</h3><div class="list"><div class="li"><span class="chip plain">Mon–Tue</span><div class="grow"><div class="t">Setting Goals</div><div class="small muted">Mon, Oct 12 10:00 · Self Tape</div></div><span class="chip ok">Held</span></div><div class="li"><span class="chip plain">Mon–Tue</span><div class="grow"><div class="t">Skill Transfer</div><div class="small muted">Mon, Oct 12 14:00 · Self Tape vs. Model</div></div><span class="chip ok">Held</span></div><div class="li"><span class="chip plain">Wed–Thu</span><div class="grow"><div class="t">Monitor</div><div class="small muted">Wed, Oct 14 11:00 · SBS</div></div><span class="chip ok">Held</span></div><div class="li"><span class="chip plain">Fri</span><div class="grow"><div class="t">Kudos/Accountability</div><div class="small muted">Fri, Oct 16 15:00 · Self Tape</div></div><span class="chip ok">Held</span></div></div></div></div>
+        </div>
+        <div id="s7-eff" class="ui" style="left: 712px; top: 150px" data-layout-allow-overflow>
+          <div class="pa z" style="zoom: 1.3; width: 845px"><div class="card"><div class="topline"><div><h1>Coaching effectiveness</h1><p class="sub">Focus KPI before the first coaching session (4 weeks) vs. after it, per agent.</p></div><div class="row"></div></div><div class="mt"><div class="tbl-wrap mt"><table class="tbl"><thead><tr><th>Agent</th><th>Behavior</th><th>Focus KPI</th><th>Before</th><th>After</th><th>Change</th><th>Commitments met</th></tr></thead><tbody>
+    <tr class="click"><td><b>Marisol Vega</b><div class="small muted">since Mon, Oct 5</div></td><td>Demonstrate Empathy</td><td>MES NPS</td>
+      <td class="num">9</td><td class="num">14</td><td><span class="chip ok">+5.5</span></td><td class="num">0/2</td></tr><tr class="click"><td><b>Diego Familia</b><div class="small muted">since Mon, Oct 5</div></td><td>Demonstrate Empathy</td><td>MES NPS</td>
+      <td class="num">17</td><td class="num">22</td><td><span class="chip ok">+5.5</span></td><td class="num">2/2</td></tr><tr class="click"><td><b>Jorge Ramírez</b><div class="small muted">since Mon, Oct 5</div></td><td>Set Clear Expectations</td><td>DD FCR</td>
+      <td class="num">85.6%</td><td class="num">90.1%</td><td><span class="chip ok">+4.5</span></td><td class="num">2/2</td></tr><tr class="click"><td><b>Kevin Rosario</b><div class="small muted">since Mon, Oct 5</div></td><td>Discover Needs</td><td>DD FCR</td>
+      <td class="num">82.8%</td><td class="num">86.5%</td><td><span class="chip ok">+3.7</span></td><td class="num">2/2</td></tr><tr class="click"><td><b>Miguel Abreu</b><div class="small muted">since Mon, Oct 5</div></td><td>LARA</td><td>CSAT</td>
+      <td class="num">86.3%</td><td class="num">89.8%</td><td><span class="chip ok">+3.5</span></td><td class="num">2/2</td></tr><tr class="click"><td><b>Valeria Núñez</b><div class="small muted">since Mon, Oct 5</div></td><td>Show Appreciation</td><td>CSAT</td>
+      <td class="num">86.0%</td><td class="num">89.0%</td><td><span class="chip ok">+3</span></td><td class="num">2/2</td></tr><tr class="click"><td><b>Gabriela Soto</b><div class="small muted">since Mon, Oct 5</div></td><td>Set Clear Expectations</td><td>DD FCR</td>
+      <td class="num">83.6%</td><td class="num">85.3%</td><td><span class="chip ok">+1.7</span></td><td class="num">2/2</td></tr><tr class="click"><td><b>Lucía Herrera</b><div class="small muted">since Mon, Oct 5</div></td><td>Be Warm &amp; Friendly</td><td>CSAT</td>
+      <td class="num">81.4%</td><td class="num">82.4%</td><td><span class="chip ok">+1</span></td><td class="num">2/2</td></tr><tr class="click"><td><b>Daniela Cruz</b><div class="small muted">since Mon, Oct 5</div></td><td>LARA</td><td>CSAT</td>
+      <td class="num">89.8%</td><td class="num">90.7%</td><td><span class="chip ok">+0.9</span></td><td class="num">2/2</td></tr><tr class="click"><td><b>Pedro Santana</b><div class="small muted">since Mon, Oct 5</div></td><td>Take Ownership</td><td>DD FCR</td>
+      <td class="num">83.4%</td><td class="num">83.9%</td><td><span class="chip ok">+0.5</span></td><td class="num">0/2</td></tr><tr class="click"><td><b>Paola Guzmán</b><div class="small muted">since Mon, Oct 5</div></td><td>Discover Needs</td><td>DD FCR</td>
+      <td class="num">82.1%</td><td class="num">82.3%</td><td><span class="chip ok">+0.2</span></td><td class="num">0/2</td></tr><tr class="click"><td><b>Samuel Peralta</b><div class="small muted">since Mon, Oct 5</div></td><td>Show Appreciation</td><td>CSAT</td>
+      <td class="num">86.7%</td><td class="num">85.3%</td><td><span class="chip bad">-1.4</span></td><td class="num">0/2</td></tr></tbody></table></div></div></div></div>
+        </div>
+      </section>
+
+      <!-- 8 · Outro -->
+      <section id="s8" class="clip scene" data-start="54.23" data-duration="5.77" data-track-index="1">
+        <div id="s8-list" class="checklist">
+          <div class="crow"><span class="cbox"><span class="fill"></span><svg viewBox="0 0 40 40"><path d="M9 21 L17 29 L32 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span class="qt2">¿A quién coacheo?</span></div>
+          <div class="crow"><span class="cbox"><span class="fill"></span><svg viewBox="0 0 40 40"><path d="M9 21 L17 29 L32 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span class="qt2">¿En qué conducta?</span></div>
+          <div class="crow"><span class="cbox"><span class="fill"></span><svg viewBox="0 0 40 40"><path d="M9 21 L17 29 L32 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span class="qt2">¿Cómo lo coacheo?</span></div>
+          <div class="crow"><span class="cbox"><span class="fill"></span><svg viewBox="0 0 40 40"><path d="M9 21 L17 29 L32 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" /></svg></span><span class="qt2">¿Funcionó?</span></div>
+        </div>
+        <div id="s8-lock" class="lockup" style="left: 1010px; top: 380px; gap: 30px">
+          <div class="lk-mark" style="width: 150px; height: 150px; border-radius: 32px; font-size: 100px">P</div>
+          <div class="lk-word" style="font-size: 186px">PULSE<span>.</span></div>
+        </div>
+        <div id="s8-line" class="endline">Cada semana, hasta que el compromiso <em>se sostenga</em>.</div>
+      </section>
+
+      <!-- Audio: warm bed + motion-matched accents -->
+      <audio id="bgm" src="assets/music/happy-beats-business-moves-vol-11-by-ende-dot-app.mp3" data-start="0" data-duration="60" data-track-index="10"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.34},{"t":57.4,"v":0.34},{"t":59.95,"v":0}]}]}'></audio>
+      <audio id="sfx-01" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="0.46" data-duration="0.183" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-02" src="assets/sfx/impact/impactSoft_medium_002.ogg" data-start="1.56" data-duration="0.135" data-track-index="12" data-volume="0.42"></audio>
+      <audio id="sfx-03" src="assets/sfx/impact/impactSoft_medium_003.ogg" data-start="2.61" data-duration="0.14" data-track-index="13" data-volume="0.42"></audio>
+      <audio id="sfx-04" src="assets/sfx/impact/impactSoft_medium_004.ogg" data-start="3.66" data-duration="0.147" data-track-index="14" data-volume="0.5"></audio>
+      <audio id="sfx-05" src="assets/sfx/interface/bong_001.ogg" data-start="8.42" data-duration="0.122" data-track-index="15" data-volume="0.7"></audio>
+      <audio id="sfx-06" src="assets/sfx/interface/drop_001.ogg" data-start="10.52" data-duration="0.109" data-track-index="16" data-volume="0.42"></audio>
+      <audio id="sfx-07" src="assets/sfx/interface/drop_002.ogg" data-start="12.63" data-duration="0.191" data-track-index="17" data-volume="0.42"></audio>
+      <audio id="sfx-08" src="assets/sfx/ui/click2.ogg" data-start="18.42" data-duration="0.055" data-track-index="18" data-volume="0.7"></audio>
+      <audio id="sfx-09" src="assets/sfx/ui/click2.ogg" data-start="23.96" data-duration="0.055" data-track-index="19" data-volume="0.5"></audio>
+      <audio id="sfx-10" src="assets/sfx/ui/click2.ogg" data-start="24.88" data-duration="0.055" data-track-index="20" data-volume="0.5"></audio>
+      <audio id="sfx-11" src="assets/sfx/ui/click2.ogg" data-start="25.94" data-duration="0.055" data-track-index="21" data-volume="0.5"></audio>
+      <audio id="sfx-12" src="assets/sfx/interface/switch_002.ogg" data-start="26.85" data-duration="0.61" data-track-index="22" data-volume="0.5"></audio>
+      <audio id="sfx-13" src="assets/sfx/interface/drop_003.ogg" data-start="27.32" data-duration="0.191" data-track-index="23" data-volume="0.42"></audio>
+      <audio id="sfx-14" src="assets/sfx/keyboard/keypress-001.wav" data-start="31.62" data-duration="0.25" data-track-index="24" data-volume="0.3"></audio>
+      <audio id="sfx-15" src="assets/sfx/keyboard/keypress-004.wav" data-start="31.715" data-duration="0.25" data-track-index="25" data-volume="0.3"></audio>
+      <audio id="sfx-16" src="assets/sfx/keyboard/keypress-007.wav" data-start="31.81" data-duration="0.25" data-track-index="26" data-volume="0.3"></audio>
+      <audio id="sfx-17" src="assets/sfx/keyboard/keypress-010.wav" data-start="31.905" data-duration="0.25" data-track-index="27" data-volume="0.3"></audio>
+      <audio id="sfx-18" src="assets/sfx/keyboard/keypress-013.wav" data-start="32" data-duration="0.25" data-track-index="28" data-volume="0.3"></audio>
+      <audio id="sfx-19" src="assets/sfx/keyboard/keypress-016.wav" data-start="32.095" data-duration="0.25" data-track-index="29" data-volume="0.3"></audio>
+      <audio id="sfx-20" src="assets/sfx/keyboard/keypress-019.wav" data-start="32.19" data-duration="0.25" data-track-index="30" data-volume="0.3"></audio>
+      <audio id="sfx-21" src="assets/sfx/keyboard/keypress-022.wav" data-start="32.285" data-duration="0.25" data-track-index="31" data-volume="0.3"></audio>
+      <audio id="sfx-22" src="assets/sfx/keyboard/keypress-001.wav" data-start="32.38" data-duration="0.25" data-track-index="32" data-volume="0.3"></audio>
+      <audio id="sfx-23" src="assets/sfx/keyboard/keypress-004.wav" data-start="32.475" data-duration="0.25" data-track-index="33" data-volume="0.3"></audio>
+      <audio id="sfx-24" src="assets/sfx/interface/error_005.ogg" data-start="32.65" data-duration="0.5" data-track-index="34" data-volume="0.28"></audio>
+      <audio id="sfx-25" src="assets/sfx/keyboard/keypress-010.wav" data-start="34" data-duration="0.25" data-track-index="35" data-volume="0.24"></audio>
+      <audio id="sfx-26" src="assets/sfx/keyboard/keypress-013.wav" data-start="34.1" data-duration="0.25" data-track-index="36" data-volume="0.24"></audio>
+      <audio id="sfx-27" src="assets/sfx/keyboard/keypress-016.wav" data-start="34.2" data-duration="0.25" data-track-index="37" data-volume="0.24"></audio>
+      <audio id="sfx-28" src="assets/sfx/keyboard/keypress-019.wav" data-start="34.3" data-duration="0.25" data-track-index="38" data-volume="0.24"></audio>
+      <audio id="sfx-29" src="assets/sfx/keyboard/keypress-022.wav" data-start="34.4" data-duration="0.25" data-track-index="39" data-volume="0.24"></audio>
+      <audio id="sfx-30" src="assets/sfx/keyboard/keypress-001.wav" data-start="34.5" data-duration="0.25" data-track-index="40" data-volume="0.24"></audio>
+      <audio id="sfx-31" src="assets/sfx/keyboard/keypress-004.wav" data-start="34.6" data-duration="0.25" data-track-index="41" data-volume="0.24"></audio>
+      <audio id="sfx-32" src="assets/sfx/keyboard/keypress-007.wav" data-start="34.7" data-duration="0.25" data-track-index="42" data-volume="0.24"></audio>
+      <audio id="sfx-33" src="assets/sfx/keyboard/keypress-010.wav" data-start="34.8" data-duration="0.25" data-track-index="43" data-volume="0.24"></audio>
+      <audio id="sfx-34" src="assets/sfx/keyboard/keypress-013.wav" data-start="34.9" data-duration="0.25" data-track-index="44" data-volume="0.24"></audio>
+      <audio id="sfx-35" src="assets/sfx/keyboard/keypress-016.wav" data-start="35" data-duration="0.25" data-track-index="45" data-volume="0.24"></audio>
+      <audio id="sfx-36" src="assets/sfx/keyboard/keypress-019.wav" data-start="35.1" data-duration="0.25" data-track-index="46" data-volume="0.24"></audio>
+      <audio id="sfx-37" src="assets/sfx/impact/impactBell_heavy_004.ogg" data-start="35.28" data-duration="0.301" data-track-index="47" data-volume="0.42"></audio>
+      <audio id="sfx-38" src="assets/sfx/interface/drop_001.ogg" data-start="36.3" data-duration="0.109" data-track-index="48" data-volume="0.5"></audio>
+      <audio id="sfx-39" src="assets/sfx/interface/drop_002.ogg" data-start="37.9" data-duration="0.191" data-track-index="49" data-volume="0.5"></audio>
+      <audio id="sfx-40" src="assets/sfx/interface/drop_003.ogg" data-start="42.65" data-duration="0.191" data-track-index="50" data-volume="0.45"></audio>
+      <audio id="sfx-41" src="assets/sfx/ui/click2.ogg" data-start="46.34" data-duration="0.055" data-track-index="51" data-volume="0.32"></audio>
+      <audio id="sfx-42" src="assets/sfx/impact/impactBell_heavy_003.ogg" data-start="47.37" data-duration="0.653" data-track-index="52" data-volume="0.5"></audio>
+      <audio id="sfx-43" src="assets/sfx/interface/drop_001.ogg" data-start="49.92" data-duration="0.109" data-track-index="53" data-volume="0.4"></audio>
+      <audio id="sfx-44" src="assets/sfx/ui/click2.ogg" data-start="54.35" data-duration="0.055" data-track-index="54" data-volume="0.34"></audio>
+      <audio id="sfx-45" src="assets/sfx/ui/click2.ogg" data-start="54.87" data-duration="0.055" data-track-index="55" data-volume="0.34"></audio>
+      <audio id="sfx-46" src="assets/sfx/ui/click2.ogg" data-start="55.4" data-duration="0.055" data-track-index="56" data-volume="0.34"></audio>
+      <audio id="sfx-47" src="assets/sfx/ui/click2.ogg" data-start="55.93" data-duration="0.055" data-track-index="57" data-volume="0.34"></audio>
+      <audio id="sfx-48" src="assets/sfx/impact/impactBell_heavy_000.ogg" data-start="56.31" data-duration="1.48" data-track-index="58" data-volume="0.6"></audio>
+    </div>
+
+    <script>
+      (function () {
+        const $ = (s, r) => (r || document).querySelector(s);
+        const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+        const fontsReady = Promise.all([
+          document.fonts.load('800 100px "Bricolage Grotesque"'),
+          document.fonts.load('600 40px "Bricolage Grotesque"'),
+          document.fonts.load('400 20px "Instrument Sans"'),
+          document.fonts.load('700 20px "Instrument Sans"'),
+          document.fonts.load('500 20px "IBM Plex Mono"'),
+          document.fonts.load('600 20px "IBM Plex Mono"'),
+        ]).then(() => document.fonts.ready);
+
+        // ---------- One-time setup: shape the captured app markup for the edit ----------
+        function setup() {
+          // Ghost numerals are painted on canvas: decorative, never audited as text.
+          $$("canvas.ghostcv").forEach((cv) => {
+            const g = cv.getContext("2d"), glyph = cv.dataset.glyph;
+            g.clearRect(0, 0, cv.width, cv.height);
+            g.fillStyle = "rgba(11, 92, 99, 0.11)";
+            g.textBaseline = "alphabetic";
+            const size = glyph === "?" ? 980 : 470;
+            g.font = '800 ' + size + 'px "Bricolage Grotesque"';
+            g.fillText(glyph, glyph === "?" ? 40 : 20, glyph === "?" ? cv.height - 120 : cv.height - 50);
+          });
+
+          // Scene 4: each marked ✓/✕ sits over the blank "—" it replaces, so marks can pop in.
+          $$("#s4-grid button.mk.shown, #s4-grid button.mk.missed").forEach((btn) => {
+            const blank = btn.cloneNode(false); blank.className = "mk"; blank.textContent = "—"; blank.removeAttribute("data-mk");
+            const w = document.createElement("span"); w.className = "mkw";
+            btn.replaceWith(w); w.append(blank, btn); btn.classList.add("mk-on");
+            blank.setAttribute("data-layout-allow-overlap", ""); btn.setAttribute("data-layout-allow-overlap", "");
+          });
+          $$("#s4-ai .src").forEach((e) => e.remove());
+          const head4 = $("#s4-grid .card-h");
+          const lockChip = document.createElement("span"); lockChip.className = "chip teal lockchip"; lockChip.id = "s4-lockchip"; lockChip.textContent = "Locked in";
+          head4.style.position = "relative"; head4.appendChild(lockChip);
+          lockChip.style.right = "0px"; lockChip.style.top = "2px";
+
+          // Scene 5: the action field becomes two typed layers; the S tile gets three stacked states.
+          const ta = $("#s5-smart textarea");
+          const fake = document.createElement("div"); fake.className = "in fakeTA";
+          fake.innerHTML = '<span class="lay" id="s5-l1"><span class="tx" id="s5-t1"></span><span class="caret"></span></span><span class="lay l2" id="s5-l2"><span class="tx" id="s5-t2"></span><span class="caret"></span></span>';
+          ta.replaceWith(fake);
+          const sBad = $("#s5-smart .smart > div");
+          const sTip = sBad.textContent.replace(/^S/, "").trim();
+          const tile = document.createElement("div"); tile.className = "stile"; tile.id = "s5-stile";
+          tile.innerHTML = '<div class="layer neutral" id="s5-sn"><b>S</b>Specific</div><div class="layer bad" id="s5-sb"><b>S</b>' + sTip + '</div><div class="layer good" id="s5-sg"><b>S</b>✓ Specific</div>';
+          sBad.replaceWith(tile);
+
+          // Scene 6: keep the first four turns of the call; trim the footnote.
+          $$("#s6-call .tl").forEach((e, i) => { if (i > 3) e.remove(); });
+          $$("#s6-snd p.small.muted").forEach((e) => e.remove());
+
+          // Scene 7: commitment card keeps the commitment itself; effectiveness keeps 5 rows.
+          const cc = $("#s7-commit .card");
+          $$("p.small.muted, details, hr, .spread", cc).forEach((e) => e.remove());
+          $$("#s7-eff tbody tr").forEach((e, i) => { if (i > 4) e.remove(); });
+        }
+
+        // ---------- Measurements for the scene 3 camera (taken before any tween exists) ----------
+        function measure() {
+          const sec = $("#s3"), prevStyle = sec.getAttribute("style");
+          sec.style.display = "block"; sec.style.visibility = "visible";
+          const app = $("#s3-app"), a = app.getBoundingClientRect();
+          const rel = (el) => { const r = el.getBoundingClientRect(); return { x: r.left - a.left, y: r.top - a.top, w: r.width, h: r.height }; };
+          const who = $$("#s3-app .card").find((c) => /Who to coach first/.test(c.textContent));
+          const row = $$("tbody tr", who).find((r) => /Luis Ortega/.test(r.textContent));
+          const name = $$("b, strong, .t, td", row)[0];
+          const out = { who: rel(who), row: rel(row), name: rel(name), rowEl: row };
+          if (prevStyle === null) sec.removeAttribute("style"); else sec.setAttribute("style", prevStyle);
+          return out;
+        }
+
+        function build(M) {
+          const tl = gsap.timeline({ paused: true });
+          const VW = 1120, VH = 828, WIN_X = 700, WIN_Y = 104 + 44;
+
+          const enter = (el, t, o) => {
+            o = o || {};
+            tl.fromTo(el, { opacity: 0, x: o.x || 0, y: o.y === undefined ? 34 : o.y, scale: o.s || 1 },
+              { opacity: 1, x: 0, y: 0, scale: 1, duration: o.d || 0.5, ease: o.e || "power3.out", stagger: o.st || 0, immediateRender: true }, t);
+          };
+          const leave = (el, t, o) => {
+            o = o || {};
+            tl.to(el, { opacity: 0, x: o.x || 0, y: o.y === undefined ? -22 : o.y, duration: o.d || 0.3, ease: "power2.in", stagger: o.st || 0 }, t);
+          };
+
+          // ---- Background: drifting board dots + music-reactive glows ----
+          tl.fromTo("#bg-dots", { x: 0, y: 0 }, { x: -40, y: -40, duration: 60, ease: "none" }, 0);
+          const A = window.AUDIO_DATA, gT = $("#glow-teal"), gS = $("#glow-sun");
+          for (let f = 0; f < A.rms.length; f += 1) {
+            tl.call(((r, b) => () => {
+              gsap.set(gT, { opacity: 0.62 + 0.38 * r, scale: 1 + 0.05 * b });
+              gsap.set(gS, { opacity: 0.55 + 0.45 * b });
+            })(A.rms[f], A.bass[f]), [], f / A.fps);
+          }
+          $$("canvas.ghostcv").forEach((cv) => {
+            const sc = cv.closest(".scene"), st = parseFloat(sc.dataset.start), du = parseFloat(sc.dataset.duration);
+            tl.fromTo(cv, { y: 30, opacity: 0 }, { y: -30, opacity: 1, duration: du, ease: "none", immediateRender: true }, st);
+          });
+
+          // ======== 1 · Hook (0 – 7.91) ========
+          enter("#s1-eb", 0.05, { y: 16, d: 0.5 });
+          tl.fromTo("#s1-rail", { scaleY: 0 }, { scaleY: 1, duration: 3.4, ease: "power2.inOut" }, 0.4);
+          const q = $$("#s1-q .qrow");
+          // 0.5s opens the hook; beat-locked: 1.60s and 3.70s (strong cues), 2.65s between
+          [0.5, 1.6, 2.65, 3.7].forEach((t, i) => {
+            tl.fromTo(q[i], { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.42, ease: "power4.out", immediateRender: true }, t - 0.06);
+            tl.fromTo($(".qn", q[i]), { scale: 0.4 }, { scale: 1, duration: 0.5, ease: "back.out(2.4)", immediateRender: true }, t - 0.06);
+          });
+          enter("#s1-foot", 4.75, { y: 20, d: 0.5 }); // beat-grid: 4.75s
+          leave(q, 7.48, { x: -50, y: 0, st: 0.04 });
+          leave(["#s1-foot", "#s1-eb", "#s1-rail"], 7.52);
+
+          // ======== 2 · Reveal (7.91 – 14.22) ========
+          tl.fromTo("#s2-mark", { opacity: 0, scale: 0.3, rotation: -12 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.7, ease: "back.out(1.9)", immediateRender: true }, 8.38); // beat-locked: 8.44s
+          tl.fromTo("#s2-word", { opacity: 0, x: -50, clipPath: "inset(0 100% 0 0)" }, { opacity: 1, x: 0, clipPath: "inset(0 0% 0 0)", duration: 0.75, ease: "power3.out", immediateRender: true }, 8.55);
+          enter("#s2-tag", 9.45, { y: 26, d: 0.55 });
+          enter($$("#s2-chips .xchip"), 10.54, { y: 30, d: 0.45, e: "back.out(1.6)", st: 1.05 }); // beat-grid: 10.54 / 11.60 / 12.65
+          tl.fromTo("#s2-side", { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 1.0, ease: "power3.out", immediateRender: true }, 7.95);
+          enter($$("#s2-side .nav button"), 8.35, { x: 24, y: 0, d: 0.35, st: 0.07 });
+          leave(["#s2-lock", "#s2-tag", "#s2-chips"], 13.86, { y: -30 });
+          leave("#s2-side", 13.86, { x: 80, y: 0 });
+
+          // ======== 3 · 01 ¿A quién? (14.22 – 22.65) ========
+          enter("#s3-tag", 14.28, { x: -30, y: 0 });
+          tl.fromTo("#s3-win", { opacity: 0, y: 90 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", immediateRender: true }, 14.22);
+          const s0 = VW / 1500;
+          const s1 = Math.min((VW - 70) / M.who.w, (VH - 70) / M.who.h, 1.5);
+          const x1 = (VW - M.who.w * s1) / 2 - M.who.x * s1, y1 = (VH - M.who.h * s1) / 2 - M.who.y * s1;
+          const FOCUS_W = 570; // name, KPI chips, trend and "this week" — the part of the row that answers "who"
+          const s2 = Math.min((VW - 90) / FOCUS_W, 1.85);
+          const rowCx = M.row.x + FOCUS_W / 2;
+          const x2 = VW / 2 - rowCx * s2, y2 = VH / 2 - (M.row.y + M.row.h / 2) * s2;
+          tl.fromTo("#s3-app", { x: 0, y: 0, scale: s0 }, { x: x1, y: y1, scale: s1, duration: 1.3, ease: "power3.inOut", immediateRender: true }, 15.3);
+          enter("#s3-c1", 15.28, { y: 30 });
+          // Cursor travels to Luis (at camera pose 1), clicks on the 18.44s beat.
+          const nx = WIN_X + x1 + (M.name.x + 30) * s1, ny = WIN_Y + y1 + (M.name.y + M.name.h / 2) * s1;
+          tl.fromTo("#s3-cur", { opacity: 0, x: 1780, y: 1000 }, { opacity: 1, x: 1700, y: 930, duration: 0.3, ease: "power1.out", immediateRender: true }, 17.2);
+          tl.to("#s3-cur", { x: nx, y: ny, duration: 0.85, ease: "power3.inOut" }, 17.5);
+          tl.to("#s3-cur", { scale: 0.82, duration: 0.08, yoyo: true, repeat: 1, ease: "power1.inOut", transformOrigin: "20% 10%" }, 18.4);
+          tl.fromTo(M.rowEl, { backgroundColor: "rgba(217,236,236,0)" }, { backgroundColor: "rgba(217,236,236,1)", duration: 0.35, immediateRender: true }, 18.44);
+          leave("#s3-c1", 18.2, { y: -20 });
+          enter("#s3-c2", 18.5, { y: 30 });
+          tl.to("#s3-cur", { opacity: 0, duration: 0.3 }, 19.0);
+          tl.fromTo("#s3-app", { x: x1, y: y1, scale: s1 }, { x: x2, y: y2, scale: s2, duration: 1.2, ease: "power3.inOut", immediateRender: false }, 19.1);
+          const chips3 = $$(".chip", M.rowEl);
+          tl.fromTo(chips3, { scale: 1 }, { scale: 1.12, duration: 0.25, yoyo: true, repeat: 1, ease: "power2.out", stagger: 0.12, immediateRender: false }, 20.4);
+          leave("#s3-win", 22.28, { x: -60, y: 0 });
+          leave(["#s3-tag", "#s3-c2"], 22.3);
+
+          // ======== 4 · 02 ¿En qué? (22.65 – 31.07) ========
+          enter("#s4-tag", 22.7, { x: -30, y: 0 });
+          tl.fromTo("#s4-grid", { opacity: 0, x: 90 }, { opacity: 1, x: 0, duration: 0.7, ease: "power3.out", immediateRender: true }, 22.65);
+          enter("#s4-c1", 23.17, { y: 30 });
+          const marks = $$("#s4-grid .mk-on");
+          const callStart = [23.7, 24.75, 25.81]; // beat-grid: one call per two beats
+          [0, 1, 2].forEach((c) => {
+            const mc = marks.filter((m) => m.dataset.mk.startsWith(c + ":"));
+            tl.fromTo(mc, { opacity: 0, scale: 1.7 }, { opacity: 1, scale: 1, duration: 0.28, ease: "back.out(2)", stagger: 0.13, immediateRender: true }, callStart[c]);
+          });
+          const topRow = $("#s4-grid tr.top"), tallies = $$("#s4-grid tbody td.num"), okChip = $("#s4-grid .card-h .chip.ok");
+          tl.fromTo($$("td", topRow), { backgroundColor: "rgba(247,224,219,0)" }, { backgroundColor: "rgba(247,224,219,1)", duration: 0.4, immediateRender: true }, 26.33);
+          tl.fromTo(tallies, { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.03, immediateRender: true }, 26.33);
+          if (okChip) tl.fromTo(okChip, { opacity: 0 }, { opacity: 1, duration: 0.25, immediateRender: true }, 26.33);
+          if (okChip) tl.to(okChip, { opacity: 0, duration: 0.15 }, 26.8);
+          tl.fromTo("#s4-lockchip", { opacity: 0, scale: 1.8 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.2)", immediateRender: true }, 26.86);
+          leave("#s4-c1", 26.95, { y: -20 });
+          tl.to("#s4-grid", { y: -50, duration: 0.6, ease: "power2.inOut" }, 27.2);
+          tl.to($$("#s4-grid tbody tr").slice(3), { opacity: 0, duration: 0.35, ease: "power1.out" }, 27.25);
+          tl.fromTo("#s4-ai", { opacity: 0, y: 160 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", immediateRender: true }, 27.3);
+          enter("#s4-c2", 27.39, { y: 30 });
+          tl.fromTo("#s4-ai .verdict", { scale: 0.94 }, { scale: 1, duration: 0.5, ease: "back.out(2)", immediateRender: true }, 27.85);
+          leave("#s4-grid", 30.7, { x: -60, y: -50 });
+          leave("#s4-ai", 30.7, { x: -60, y: 0 });
+          leave(["#s4-tag", "#s4-c2"], 30.72);
+
+          // ======== 5 · 03 ¿Cómo? SMART (31.07 – 39.49) ========
+          enter("#s5-tag", 31.12, { x: -30, y: 0 });
+          tl.fromTo("#s5-smart", { opacity: 0, x: 90 }, { opacity: 1, x: 0, duration: 0.7, ease: "power3.out", immediateRender: true }, 31.07);
+          const typeIn = (el, str, t0, dur) => {
+            const o = { n: 0 }, node = $(el);
+            tl.fromTo(o, { n: 0 }, { n: str.length, duration: dur, ease: "none", immediateRender: true, onUpdate: () => { node.textContent = str.slice(0, Math.round(o.n)); } }, t0);
+          };
+          const STR1 = "Raise my CSAT to 90%";
+          const STR2 = "Before closing, tell the member what happens next and by when.";
+          typeIn("#s5-t1", STR1, 31.62, 0.95);
+          tl.fromTo("#s5-sb", { opacity: 0 }, { opacity: 1, duration: 0.2, immediateRender: true }, 32.65);
+          tl.fromTo("#s5-stile", { x: 0 }, { keyframes: [{ x: -7, duration: 0.05 }, { x: 7, duration: 0.07 }, { x: -5, duration: 0.07 }, { x: 0, duration: 0.06 }], immediateRender: false }, 32.66);
+          enter("#s5-c1", 32.65, { y: 30 });
+          tl.to("#s5-l1", { opacity: 0, duration: 0.15 }, 33.85);
+          tl.fromTo("#s5-l2", { opacity: 0 }, { opacity: 1, duration: 0.01, immediateRender: true }, 33.95);
+          typeIn("#s5-t2", STR2, 34.0, 1.2);
+          tl.fromTo("#s5-sg", { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)", immediateRender: true }, 35.28);
+          tl.fromTo($$("#s5-smart .smart > div"), { scale: 1 }, { scale: 1.08, duration: 0.16, yoyo: true, repeat: 1, stagger: 0.06, immediateRender: false }, 35.3);
+          leave("#s5-c1", 35.95, { y: -20 });
+          leave("#s5-smart", 35.9, { x: -70, y: 0, d: 0.35 });
+          tl.fromTo("#s5-week", { opacity: 0 }, { opacity: 1, duration: 0.3, immediateRender: true }, 36.1);
+          tl.fromTo("#s5-week .ai-h", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.4, immediateRender: true }, 36.1);
+          tl.fromTo($$("#s5-week .grid.g4 > .card"), { opacity: 0, y: -70, rotation: -2 }, { opacity: 1, y: 0, rotation: 0, duration: 0.42, ease: "back.out(1.5)", stagger: 0.525, immediateRender: true }, 36.3); // beat-grid: 36.33 / 36.86 / 37.38 / 37.92
+          enter("#s5-c2", 36.33, { y: 30 });
+          leave("#s5-week", 39.12, { x: -60, y: 0 });
+          leave(["#s5-tag", "#s5-c2"], 39.14);
+
+          // ======== 6 · 03 Práctica (39.49 – 45.80) ========
+          enter("#s6-tag", 39.54, { x: -30, y: 0 });
+          tl.fromTo("#s6-call", { opacity: 0, x: 90 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", immediateRender: true }, 39.49);
+          tl.fromTo($$("#s6-call .tl"), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out", stagger: 0.52, immediateRender: true }, 39.9); // beat-grid: 40.02 / 40.54 / 41.06 / 41.60
+          enter("#s6-c1", 39.9, { y: 30 });
+          tl.fromTo("#s6-snd", { opacity: 0, y: 120 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", immediateRender: true }, 42.4);
+          tl.fromTo($$("#s6-snd .dstats > div"), { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.32, ease: "back.out(2)", stagger: 0.1, immediateRender: true }, 42.65);
+          leave("#s6-c1", 42.42, { y: -20 });
+          enter("#s6-c2", 42.65, { y: 30 });
+          leave(["#s6-call", "#s6-snd"], 45.42, { x: -60, y: 0 });
+          leave(["#s6-tag", "#s6-c2"], 45.44);
+
+          // ======== 7 · 04 ¿Funcionó? (45.80 – 54.23) ========
+          enter("#s7-tag", 45.85, { x: -30, y: 0 });
+          tl.fromTo("#s7-commit", { opacity: 0, x: 90 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", immediateRender: true }, 45.8);
+          tl.fromTo("#s7-week", { opacity: 0, y: 110 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out", immediateRender: true }, 45.95);
+          const held = $$("#s7-week .chip.ok");
+          tl.fromTo(held, { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2.2)", stagger: 0.18, immediateRender: true }, 46.34);
+          const met = $$("#s7-commit .card-h .chip")[0];
+          if (met) tl.fromTo(met, { opacity: 0, scale: 2.6, rotation: -8 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.4, ease: "back.out(2)", immediateRender: true }, 47.39); // beat-locked: 47.39s
+          enter("#s7-c1", 46.34, { y: 30 });
+          leave(["#s7-commit", "#s7-week"], 49.55, { y: -60, x: 0 });
+          leave("#s7-c1", 49.6, { y: -20 });
+          tl.fromTo("#s7-eff", { opacity: 0, y: 110 }, { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: true }, 49.9);
+          tl.fromTo($$("#s7-eff tbody tr"), { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.35, stagger: 0.12, immediateRender: true }, 50.1);
+          tl.fromTo($$("#s7-eff tbody .chip"), { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2.4)", stagger: 0.12, immediateRender: true }, 50.55);
+          enter("#s7-c2", 50.03, { y: 30 });
+          leave("#s7-eff", 53.86, { x: -60, y: 0 });
+          leave(["#s7-tag", "#s7-c2"], 53.88);
+
+          // ======== 8 · Outro (54.23 – 60) ========
+          const crows = $$("#s8-list .crow");
+          tl.fromTo(crows, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out", stagger: 0.08, immediateRender: true }, 54.23);
+          [54.23, 54.75, 55.28, 55.81].forEach((t, i) => { // beat-grid ticks
+            tl.fromTo($(".fill", crows[i]), { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.25, ease: "back.out(2)", immediateRender: true }, t + 0.12);
+            tl.fromTo($("path", crows[i]), { strokeDasharray: 40, strokeDashoffset: 40 }, { strokeDashoffset: 0, duration: 0.3, ease: "power2.out", immediateRender: true }, t + 0.18);
+          });
+          tl.fromTo("#s8-lock .lk-mark", { opacity: 0, scale: 0.4, rotation: -10 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.6, ease: "back.out(1.8)", immediateRender: true }, 56.33);
+          tl.fromTo("#s8-lock .lk-word", { opacity: 0, x: -40, clipPath: "inset(0 100% 0 0)" }, { opacity: 1, x: 0, clipPath: "inset(0 0% 0 0)", duration: 0.7, ease: "power3.out", immediateRender: true }, 56.45);
+          enter("#s8-line", 56.86, { y: 26 });
+          tl.fromTo("#s8-lock", { y: 0 }, { y: -10, duration: 3, ease: "sine.inOut", immediateRender: false }, 57.0);
+
+          return tl;
+        }
+
+        fontsReady.then(() => {
+          setup();
+          const M = measure();
+          const tl = build(M);
+          window.__timelines["main"] = tl;
+        });
+      })();
+    </script>
+  </body>
+</html>

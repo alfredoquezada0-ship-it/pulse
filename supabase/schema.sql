@@ -356,3 +356,9 @@ create table if not exists behaviors (
 );
 create index if not exists idx_behaviors_manager on behaviors(manager_id, position);
 alter table behaviors enable row level security;
+
+-- Lock down (same as migrations/010): the browser's public key can't touch any table; only the server's secret key can.
+revoke all on all tables in schema public from anon, authenticated;
+revoke all on all sequences in schema public from anon, authenticated;
+alter default privileges in schema public revoke all on tables from anon, authenticated;
+alter default privileges in schema public revoke all on sequences from anon, authenticated;

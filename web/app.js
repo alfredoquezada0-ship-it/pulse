@@ -119,7 +119,22 @@ async function renderLogin(notice = "") {
   const body = $("#login-body");
   if (supa) {
     body.innerHTML = `<form id="lf" class="fgrid"><label class="f">Work email<input class="in" id="em" type="email" autocomplete="username" required></label><label class="f">Password<input class="in" id="pw" type="password" autocomplete="current-password" required></label><div class="wide"><button class="btn primary">Sign in</button></div></form>`;
-    $("#lf").onsubmit = async (e) => { e.preventDefault(); try { await signInEmail($("#em").value.trim().toLowerCase(), $("#pw").value); start(); } catch (err) { toast(err.message, "err"); } };
+    // Bot protection (optional): Cloudflare Turnstile, checked by Supabase Auth when CAPTCHA is turned on there.
+    const siteKey = state.config.captchaSiteKey;
+    let captcha = null, widget = null;
+    if (siteKey) {
+      $("#lf").insertAdjacentHTML("beforeend", `<div class="f wide" id="cf"></div>`);
+      try {
+        await new Promise((ok, fail) => { if (window.turnstile) return ok(); const sc = document.createElement("script"); sc.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"; sc.onload = ok; sc.onerror = fail; document.head.appendChild(sc); });
+        widget = window.turnstile.render("#cf", { sitekey: siteKey, callback: (t) => (captcha = t), "expired-callback": () => (captcha = null) });
+      } catch { toast("The security check didn’t load. Check your connection and reload.", "err"); }
+    }
+    $("#lf").onsubmit = async (e) => {
+      e.preventDefault();
+      if (siteKey && !captcha) return toast("Complete the security check first.", "err");
+      try { await signInEmail($("#em").value.trim().toLowerCase(), $("#pw").value, captcha); start(); }
+      catch (err) { toast(err.message, "err"); if (widget != null) { window.turnstile?.reset(widget); captcha = null; } }
+    };
     return;
   }
   const users = await demoUsers();
